@@ -69,14 +69,14 @@ public class UserServiceImpl implements UserService {
 					}
 					return new Response<>(HttpStatus.OK.value(), "Login success.", loginResponse);
 				} else {
-					return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID_CREDENTIALS", null);
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID CREDENTIALS", null);
 				}
 			} else {
-				return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID_CREDENTIALS", null);
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID CREDENTIALS", null);
 			}
 
 		} else {
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID_CREDENTIALS", null);
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID CREDENTIALS", null);
 		}
 	}
 
