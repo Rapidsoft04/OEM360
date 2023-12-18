@@ -70,9 +70,11 @@ public class Utility {
 //								}
 //							}
 							return true;
-						} else if (userType.equalsIgnoreCase(UserType.DGM.name())) {
-							return true;
-						} else if (userType.equalsIgnoreCase(UserType.SENIOR_MANAGEMENT.name())) {
+						}
+//						else if (userType.equalsIgnoreCase(UserType.DGM.name())) {
+//							return true;
+//						} 
+						else if (userType.equalsIgnoreCase(UserType.SENIOR_MANAGEMENT.name())) {
 							return true;
 						}
 					}
