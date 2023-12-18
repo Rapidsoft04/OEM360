@@ -28,9 +28,9 @@ public class UserController {
 	@RequestMapping(value = "/v1/signIn", method = RequestMethod.POST)
 	public ResponseEntity<?> signIn(@RequestBody LoginRequest loginRequest) throws Exception {
 
-		LoginResponse loginResponse = userService.login(loginRequest);
+		Response<?> loginResponse = userService.login(loginRequest);
 
-		return new ResponseEntity<>(loginResponse, HttpStatus.OK);
+		return new ResponseEntity<>(loginResponse, HttpStatus.valueOf(loginResponse.getResponseCode()));
 
 	}
 

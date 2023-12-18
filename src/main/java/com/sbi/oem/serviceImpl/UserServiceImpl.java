@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
 	private JwtTokenUtil jwtTokenUtil;
 
 	@Override
-	public LoginResponse login(LoginRequest loginRequest) throws Exception {
+	public Response<?> login(LoginRequest loginRequest) throws Exception {
 		LoginResponse loginResponse = new LoginResponse();
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
@@ -67,15 +67,16 @@ public class UserServiceImpl implements UserService {
 							loginResponse.setCompany(credentialMaster.getUserId().getCompany());
 						}
 					}
-
+					return new Response<>(HttpStatus.OK.value(), "Login success.", loginResponse);
 				} else {
-					throw new UnauthorizedException("INVALID_CREDENTIALS");
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID_CREDENTIALS", null);
 				}
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID_CREDENTIALS", null);
 			}
 
-			return loginResponse;
 		} else {
-			throw new Exception("Invalid Credential");
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID_CREDENTIALS", null);
 		}
 	}
 
