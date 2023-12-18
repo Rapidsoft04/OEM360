@@ -25,32 +25,38 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private RecommendationTypeRepository recommendationTypeRepository;
-	
+
 	@Autowired
 	private DepartmentRepository departmentRepository;
-	
+
 	@Autowired
 	private ComponentRepository componentRepository;
-	
+
 	@Override
 	public Response<?> getRecommendationPageData(Long companyId) {
-		RecommendationPageDto  recommendationPageDto=new RecommendationPageDto();
-		List<RecommendationType> recommendationList=recommendationTypeRepository.findAllByCompanyId(companyId);
-		recommendationPageDto.setRecommendationTypeList(recommendationList);
-		List<Department> departmentList=departmentRepository.findAllByCompanyId(companyId);
-		recommendationPageDto.setDepartmentList(departmentList);
-		List<Component> componentList=componentRepository.findAllByCompanyId(companyId);
-		recommendationPageDto.setComponentList(componentList);
-		List<PriorityEnum> priorityEnumList=Arrays.asList(PriorityEnum.values());
-		List<PriorityResponseDto> priorityResponse=new ArrayList<>();
-		for(PriorityEnum enums:priorityEnumList) {
-			PriorityResponseDto dto=new PriorityResponseDto();
-			dto.setId(enums.getId());
-			dto.setName(enums.getName());
-			priorityResponse.add(dto);
+		try {
+			RecommendationPageDto recommendationPageDto = new RecommendationPageDto();
+			List<RecommendationType> recommendationList = recommendationTypeRepository.findAllByCompanyId(companyId);
+			recommendationPageDto.setRecommendationTypeList(recommendationList);
+			List<Department> departmentList = departmentRepository.findAllByCompanyId(companyId);
+			recommendationPageDto.setDepartmentList(departmentList);
+			List<Component> componentList = componentRepository.findAllByCompanyId(companyId);
+			recommendationPageDto.setComponentList(componentList);
+			List<PriorityEnum> priorityEnumList = Arrays.asList(PriorityEnum.values());
+			List<PriorityResponseDto> priorityResponse = new ArrayList<>();
+			for (PriorityEnum enums : priorityEnumList) {
+				PriorityResponseDto dto = new PriorityResponseDto();
+				dto.setId(enums.getId());
+				dto.setName(enums.getName());
+				priorityResponse.add(dto);
+			}
+			recommendationPageDto.setPriorityList(priorityResponse);
+			return new Response<>(HttpStatus.OK.value(), "Recommendation page data.", recommendationPageDto);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
 		}
-		recommendationPageDto.setPriorityList(priorityResponse);
-		return new Response<>(HttpStatus.OK.value(),"Recommendation page data.",recommendationPageDto);
+
 	}
 
 }
