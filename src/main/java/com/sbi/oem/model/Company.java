@@ -7,26 +7,30 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "user")
-public class User {
+@Table(name = "company")
+public class Company {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "user_name")
-	private String userName;
+	@Column(name = "company_name")
+	private String companyName;
+
+	@Column(name = "pan_no")
+	private String panNo;
+
+	@Column(name = "gst_no")
+	private String gsnNo;
 
 	@Column(name = "email")
 	private String email;
 
-	@Column(name = "phone_no")
-	private String phoneNo;
+	@Column(name = "address")
+	private String address;
 
 	@Column(name = "is_active")
 	private Boolean isActive;
@@ -43,15 +47,6 @@ public class User {
 	@Column(name = "updated_by")
 	private Long updatedBy;
 
-	@OneToOne
-	@JoinColumn(name = "company_id")
-	private Company company;
-
-	public User() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
 	public Long getId() {
 		return id;
 	}
@@ -60,12 +55,28 @@ public class User {
 		this.id = id;
 	}
 
-	public String getUserName() {
-		return userName;
+	public String getCompanyName() {
+		return companyName;
 	}
 
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+
+	public String getPanNo() {
+		return panNo;
+	}
+
+	public void setPanNo(String panNo) {
+		this.panNo = panNo;
+	}
+
+	public String getGsnNo() {
+		return gsnNo;
+	}
+
+	public void setGsnNo(String gsnNo) {
+		this.gsnNo = gsnNo;
 	}
 
 	public String getEmail() {
@@ -76,12 +87,12 @@ public class User {
 		this.email = email;
 	}
 
-	public String getPhoneNo() {
-		return phoneNo;
+	public String getAddress() {
+		return address;
 	}
 
-	public void setPhoneNo(String phoneNumber) {
-		this.phoneNo = phoneNumber;
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 	public Boolean getIsActive() {
@@ -124,21 +135,25 @@ public class User {
 		this.updatedBy = updatedBy;
 	}
 
-	public Company getCompany() {
-		return company;
-	}
-
-	public void setCompany(Company company) {
-		this.company = company;
-	}
-
-	public User(Long id, String userName, String email, String phoneNumber, Boolean isActive) {
+	public Company(Long id, String companyName, String panNo, String gsnNo, String email, String address,
+			Boolean isActive, Date createdAt, Long createdBy, Date updatedAt, Long updatedBy) {
 		super();
 		this.id = id;
-		this.userName = userName;
+		this.companyName = companyName;
+		this.panNo = panNo;
+		this.gsnNo = gsnNo;
 		this.email = email;
-		this.phoneNo = phoneNumber;
+		this.address = address;
 		this.isActive = isActive;
+		this.createdAt = createdAt;
+		this.createdBy = createdBy;
+		this.updatedAt = updatedAt;
+		this.updatedBy = updatedBy;
+	}
+
+	public Company() {
+		super();
+		// TODO Auto-generated constructor stub
 	}
 
 }

@@ -3,59 +3,70 @@ package com.sbi.oem.dto;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
+import com.sbi.oem.model.Company;
+
 public class LoginResponse {
 
 	private Long id;
-	    @NotNull(message = "email can not be blank")
-	    @Email
-	    private String email;
+	@NotNull(message = "email can not be blank")
+	@Email
+	private String email;
 
-	    private String userType;
-	    
-	    private String userName;
+	private String userType;
 
-	    @NotNull(message = "token can not be blank")
-	    private String token;
+	private String userName;
 
-		public String getEmail() {
-			return email;
-		}
+	@NotNull(message = "token can not be blank")
+	private String token;
 
-		public void setEmail(String email) {
-			this.email = email;
-		}
+	private Company company;
 
-		public String getUserType() {
-			return userType;
-		}
+	public String getEmail() {
+		return email;
+	}
 
-		public void setUserType(String userType) {
-			this.userType = userType;
-		}
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
-		public String getToken() {
-			return token;
-		}
+	public String getUserType() {
+		return userType;
+	}
 
-		public void setToken(String token) {
-			this.token = token;
-		}
+	public void setUserType(String userType) {
+		this.userType = userType;
+	}
 
-		public Long getId() {
-			return id;
-		}
+	public String getToken() {
+		return token;
+	}
 
-		public void setId(Long id) {
-			this.id = id;
-		}
+	public void setToken(String token) {
+		this.token = token;
+	}
 
-		public String getUserName() {
-			return userName;
-		}
+	public Long getId() {
+		return id;
+	}
 
-		public void setUserName(String userName) {
-			this.userName = userName;
-		}
-	    
-	    
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
+	}
+
 }

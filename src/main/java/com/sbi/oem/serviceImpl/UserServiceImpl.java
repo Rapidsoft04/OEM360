@@ -64,6 +64,7 @@ public class UserServiceImpl implements UserService {
 							loginResponse.setUserName(credentialMaster.getName());
 							loginResponse.setUserType(credentialMaster.getUserTypeId().name());
 							loginResponse.setToken(jwtTokenUtil.generateToken(userDetails));
+							loginResponse.setCompany(credentialMaster.getUserId().getCompany());
 						}
 					}
 
@@ -96,7 +97,7 @@ public class UserServiceImpl implements UserService {
 			User userDataSave = new User(null, signUpRequest.getUserName(), signUpRequest.getEmail(),
 					signUpRequest.getPhoneNo(), true);
 			userDataSave = userDataRepository.save(userDataSave);
-			credentialMasterSave.setUserId(userDataSave.getId());
+			credentialMasterSave.setUserId(userDataSave);
 			credentialMasterSave = credentialMasterRepository.save(credentialMasterSave);
 			if (credentialMasterSave != null)
 				return new Response<>(HttpStatus.OK.value(), "User Registered Succefully  !!!", credentialMasterSave);

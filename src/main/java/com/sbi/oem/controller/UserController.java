@@ -42,10 +42,10 @@ public class UserController {
 		return new ResponseEntity<>(customResponse, HttpStatus.valueOf(customResponse.getResponseCode()));
 
 	}
-	
+
 	@PostMapping("/v1/forgetPassword")
-	private ResponseEntity<?> forgetPassword(@RequestBody ForgetPasswordRequestDto forgetPassword){
-		Response<?> response=userService.forgetPassword(forgetPassword);
-		return new ResponseEntity<>(response,HttpStatus.OK);
+	private ResponseEntity<?> forgetPassword(@RequestBody ForgetPasswordRequestDto forgetPassword) {
+		Response<?> response = userService.forgetPassword(forgetPassword);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

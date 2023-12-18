@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -36,8 +38,9 @@ public class CredentialMaster {
 	@Column(name = "password")
 	private String password;
 
-	@Column(name = "user_id")
-	private Long userId;
+	@OneToOne
+	@JoinColumn(name = "user_id")
+	private User userId;
 
 	@Transient
 	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -90,16 +93,18 @@ public class CredentialMaster {
 		this.password = password;
 	}
 
-	public Long getUserId() {
+	
+
+	public User getUserId() {
 		return userId;
 	}
 
-	public void setUserId(Long userId) {
+	public void setUserId(User userId) {
 		this.userId = userId;
 	}
 
 	public CredentialMaster(Long id, String name, UserType userTypeId, String email, String phoneNo, String password,
-			Long userId) {
+			User userId) {
 		super();
 		this.id = id;
 		this.name = name;
