@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import com.sbi.oem.dto.PriorityResponseDto;
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationPageDto;
-import com.sbi.oem.dto.RecommendationResponseDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.UserType;
@@ -27,8 +26,6 @@ import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
-import com.sbi.oem.model.RecommendationStatus;
-import com.sbi.oem.model.RecommendationTrail;
 import com.sbi.oem.model.RecommendationType;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.ComponentRepository;
@@ -36,10 +33,9 @@ import com.sbi.oem.repository.CredentialMasterRepository;
 import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.DepartmentRepository;
 import com.sbi.oem.repository.RecommendationRepository;
-import com.sbi.oem.repository.RecommendationStatusRepository;
-import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
 import com.sbi.oem.repository.UserRepository;
+import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
 
 @Service
@@ -53,10 +49,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private ComponentRepository componentRepository;
-
+	
 	@Autowired
 	private FileSystemStorageService fileSystemStorageService;
-
+	
 	@Autowired
 	private RecommendationRepository recommendationRepository;
 
@@ -75,6 +71,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Autowired
 	private CredentialMasterRepository credentialMasterRepository;
 
+
+	@Autowired
+	private NotificationService notificationService;
+	
 	@SuppressWarnings("rawtypes")
 	@Lookup
 	public Response getResponse() {
@@ -111,10 +111,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Override
 	public Response<?> addRecommendation(RecommendationAddRequestDto recommendationAddRequestDto) {
 		try {
-			Recommendation recommendation = new Recommendation();
-			if (recommendationAddRequestDto.getFile() != null) {
+			Recommendation recommendation=new Recommendation();
+			if(recommendationAddRequestDto.getFile()!=null) {
 				String fileUrl = fileSystemStorageService.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
-				if (fileUrl != null && !fileUrl.isEmpty()) {
+				if(fileUrl!=null && !fileUrl.isEmpty()) {
 					recommendation.setFileUrl(fileUrl);
 				}
 			}
@@ -127,8 +127,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 			recommendation.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
 			recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
 			recommendation.setRecommendationType(new RecommendationType(recommendationAddRequestDto.getTypeId()));
-			List<Recommendation> recommendList = recommendationRepository.findAll();
-			String refId = generateReferenceId(recommendList.size());
+			List<Recommendation> recommendList=recommendationRepository.findAll();
+			String refId=generateReferenceId(recommendList.size());
 			recommendation.setReferenceId(refId);
 			recommendationRepository.save(recommendation);
 			RecommendationTrail trailData = new RecommendationTrail();
@@ -137,14 +137,16 @@ public class RecommendationServiceImpl implements RecommendationService {
 			trailData.setReferenceId(refId);
 			recommendationTrailRepository.save(trailData);
 			return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
+			notificationService.save(recommendation);
+			return new Response<>(HttpStatus.CREATED.value(),"Recommendation created successfully.",refId);
 		} catch (Exception e) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
 		}
 	}
-
+	
 	public static String generateReferenceId(int size) {
 		int year = Year.now().getValue();
-		String refId = "REF" + year + (size + 1);
+		String refId="REF"+year+(size+1);
 		return refId;
 	}
 
@@ -247,7 +249,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			}
 			return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
 		}
-
+		return null;
 	}
 
 }
