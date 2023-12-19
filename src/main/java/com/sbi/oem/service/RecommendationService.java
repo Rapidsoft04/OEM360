@@ -11,4 +11,6 @@ public interface RecommendationService {
 
 	Response<?> viewRecommendation(String refId);
 
+	Response<?> getAllRecommendedStatus();
+
 }
