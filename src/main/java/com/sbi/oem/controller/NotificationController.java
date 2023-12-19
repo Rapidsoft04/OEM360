@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.model.Notification;
+<<<<<<< Updated upstream
+=======
+import com.sbi.oem.model.Recommendation;
+>>>>>>> Stashed changes
 import com.sbi.oem.service.NotificationService;
 
 @RestController
@@ -22,8 +26,13 @@ public class NotificationController {
 	private NotificationService notificationService;
 
 	@PostMapping("/v1/save")
+<<<<<<< Updated upstream
 	public ResponseEntity<?> save(@RequestBody Notification notification) {
 		Response<?> response = notificationService.save(notification);
+=======
+	public ResponseEntity<?> save(@RequestBody Recommendation recommendation) {
+		Response<?> response = notificationService.save(recommendation);
+>>>>>>> Stashed changes
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 

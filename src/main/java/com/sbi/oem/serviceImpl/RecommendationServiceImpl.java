@@ -25,6 +25,7 @@ import com.sbi.oem.repository.ComponentRepository;
 import com.sbi.oem.repository.DepartmentRepository;
 import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
+import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
 
 @Service
@@ -45,6 +46,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Autowired
 	private RecommendationRepository recommendationRepository;
 	
+<<<<<<< Updated upstream
+=======
+	@Autowired
+	private NotificationService notificationService;
+	
+>>>>>>> Stashed changes
 	@SuppressWarnings("rawtypes")
 	@Lookup
 	public Response getResponse() {
@@ -101,6 +108,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 			String refId=generateReferenceId(recommendList.size());
 			recommendation.setReferenceId(refId);
 			recommendationRepository.save(recommendation);
+<<<<<<< Updated upstream
+=======
+			notificationService.save(recommendation);
+>>>>>>> Stashed changes
 			return new Response<>(HttpStatus.CREATED.value(),"Recommendation created successfully.",refId);
 		} catch (Exception e) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);

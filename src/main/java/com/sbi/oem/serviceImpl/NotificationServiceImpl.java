@@ -8,7 +8,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.sbi.oem.dto.Response;
+<<<<<<< Updated upstream
 import com.sbi.oem.model.Notification;
+=======
+import com.sbi.oem.model.DepartmentApprover;
+import com.sbi.oem.model.Notification;
+import com.sbi.oem.model.Recommendation;
+import com.sbi.oem.repository.DepartmentApproverRepository;
+>>>>>>> Stashed changes
 import com.sbi.oem.repository.NotificationRepository;
 import com.sbi.oem.service.NotificationService;
 
@@ -17,6 +24,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 	@Autowired
 	private NotificationRepository notificationRepository;
+<<<<<<< Updated upstream
 
 	@Override
 	public Response<?> save(Notification notification) {
@@ -31,6 +39,22 @@ public class NotificationServiceImpl implements NotificationService {
 			notification.setUpdatedAt(new Date());
 			Notification savedNotification = notificationRepository.save(notification);
 			return new Response<>(HttpStatus.CREATED.value(), "Success", savedNotification);
+=======
+	
+	@Autowired
+	private DepartmentApproverRepository departmentApproverRepository;
+
+	@Override
+	public Response<?> save(Recommendation recommendation) {
+		try {
+			DepartmentApprover departmentApprover = departmentApproverRepository.getByDepartmentId(recommendation.getDepartment().getId());
+			Notification newNotification = new Notification();
+			newNotification.setMessage(recommendation.getDescriptions());
+			newNotification.setReferenceId(recommendation.getReferenceId());
+			
+			
+			return new Response<>(HttpStatus.CREATED.value(), "Success", null);
+>>>>>>> Stashed changes
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
