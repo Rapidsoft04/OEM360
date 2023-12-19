@@ -49,4 +49,10 @@ public class RecommendationController {
 		Response<?> response=recommendationService.viewRecommendation(refId);
 		return new ResponseEntity<>(response,HttpStatus.valueOf(response.getResponseCode()));
 	}
+	
+	@GetMapping("/get/all")
+	public ResponseEntity<?> getAllRecommendations(){
+		Response<?> response=recommendationService.getAllRecommendations();
+		return new ResponseEntity<>(response,HttpStatus.OK);
+	}
 }

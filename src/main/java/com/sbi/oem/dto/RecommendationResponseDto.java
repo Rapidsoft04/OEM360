@@ -39,6 +39,8 @@ public class RecommendationResponseDto {
 
 	private List<RecommendationTrail> trailData;
 
+	private User approver;
+
 	public Long getId() {
 		return id;
 	}
@@ -149,6 +151,14 @@ public class RecommendationResponseDto {
 
 	public void setTrailData(List<RecommendationTrail> trailData) {
 		this.trailData = trailData;
+	}
+
+	public User getApprover() {
+		return approver;
+	}
+
+	public void setApprover(User approver) {
+		this.approver = approver;
 	}
 
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,

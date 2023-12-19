@@ -13,4 +13,6 @@ public interface RecommendationService {
 
 	Response<?> getAllRecommendedStatus();
 
+	Response<?> getAllRecommendations();
+
 }
