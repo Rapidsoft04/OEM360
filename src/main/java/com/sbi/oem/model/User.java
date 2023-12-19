@@ -52,6 +52,11 @@ public class User {
 		// TODO Auto-generated constructor stub
 	}
 
+	public User(Long id) {
+		super();
+		this.id = id;
+	}
+
 	public Long getId() {
 		return id;
 	}

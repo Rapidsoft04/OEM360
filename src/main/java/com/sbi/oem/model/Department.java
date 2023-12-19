@@ -72,4 +72,9 @@ public class Department {
 		// TODO Auto-generated constructor stub
 	}
 
+	public Department(Long id) {
+		super();
+		this.id = id;
+	}
+
 }

@@ -64,6 +64,11 @@ public class Component {
 		// TODO Auto-generated constructor stub
 	}
 
+	public Component(Long id) {
+		super();
+		this.id = id;
+	}
+
 	public Component(Long id, String name, Company company, Boolean isActive) {
 		super();
 		this.id = id;
