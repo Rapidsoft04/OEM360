@@ -11,6 +11,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.sbi.oem.dto.RecommendationResponseDto;
+
 @Entity
 @Table(name = "recommendation")
 public class Recommendation {
@@ -32,6 +36,7 @@ public class Recommendation {
 	@Column(name = "priority_id")
 	private Long priorityId;
 
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Column(name = "recommend_date")
 	private Date recommendDate;
 
@@ -184,6 +189,37 @@ public class Recommendation {
 		this.documentUrl = documentUrl;
 		this.createdAt = createdAt;
 		this.createdBy = createdBy;
+	}
+
+	public Recommendation(Long id, String referenceId, String descriptions, RecommendationType recommendationType,
+			Date recommendDate, Department department, Component component, String expectedImpact, String documentUrl,
+			String fileUrl, Date createdAt, User createdBy) {
+		super();
+		this.id = id;
+		this.referenceId = referenceId;
+		this.descriptions = descriptions;
+		this.recommendationType = recommendationType;
+		this.recommendDate = recommendDate;
+		this.department = department;
+		this.component = component;
+		this.expectedImpact = expectedImpact;
+		this.documentUrl = documentUrl;
+		this.fileUrl = fileUrl;
+		this.createdAt = createdAt;
+		this.createdBy = createdBy;
+	}
+
+	public RecommendationResponseDto convertToDto() {
+
+		return new RecommendationResponseDto(this.id != null ? this.id : null,
+				this.referenceId != null ? this.referenceId : null,
+				this.descriptions != null ? this.descriptions : null,
+				this.recommendationType != null ? this.recommendationType : null,
+				this.recommendDate != null ? this.recommendDate : null,
+				this.department != null ? this.department : null, this.component != null ? this.component : null,
+				this.expectedImpact != null ? this.expectedImpact : null,
+				this.documentUrl != null ? this.documentUrl : null, this.fileUrl != null ? this.fileUrl : null,
+				this.createdAt != null ? this.createdAt : null, this.createdBy != null ? this.createdBy : null);
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
@@ -14,16 +15,21 @@ import org.springframework.stereotype.Service;
 import com.sbi.oem.dto.PriorityResponseDto;
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationPageDto;
+import com.sbi.oem.dto.RecommendationResponseDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.Department;
 import com.sbi.oem.model.Recommendation;
+import com.sbi.oem.model.RecommendationStatus;
+import com.sbi.oem.model.RecommendationTrail;
 import com.sbi.oem.model.RecommendationType;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.ComponentRepository;
 import com.sbi.oem.repository.DepartmentRepository;
 import com.sbi.oem.repository.RecommendationRepository;
+import com.sbi.oem.repository.RecommendationStatusRepository;
+import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
 import com.sbi.oem.service.RecommendationService;
 
@@ -38,13 +44,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private ComponentRepository componentRepository;
-	
+
 	@Autowired
 	private FileSystemStorageService fileSystemStorageService;
-	
+
 	@Autowired
 	private RecommendationRepository recommendationRepository;
 	
+	@Autowired
+	private RecommendationTrailRepository recommendationTrailRepository;
+	
+	@Autowired
+	private RecommendationStatusRepository recommendationStatusRepository;
+
 	@SuppressWarnings("rawtypes")
 	@Lookup
 	public Response getResponse() {
@@ -81,10 +93,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Override
 	public Response<?> addRecommendation(RecommendationAddRequestDto recommendationAddRequestDto) {
 		try {
-			Recommendation recommendation=new Recommendation();
-			if(recommendationAddRequestDto.getFile()!=null) {
+			Recommendation recommendation = new Recommendation();
+			if (recommendationAddRequestDto.getFile() != null) {
 				String fileUrl = fileSystemStorageService.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
-				if(fileUrl!=null && !fileUrl.isEmpty()) {
+				if (fileUrl != null && !fileUrl.isEmpty()) {
 					recommendation.setFileUrl(fileUrl);
 				}
 			}
@@ -97,26 +109,58 @@ public class RecommendationServiceImpl implements RecommendationService {
 			recommendation.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
 			recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
 			recommendation.setRecommendationType(new RecommendationType(recommendationAddRequestDto.getTypeId()));
-			List<Recommendation> recommendList=recommendationRepository.findAll();
-			String refId=generateReferenceId(recommendList.size());
+			List<Recommendation> recommendList = recommendationRepository.findAll();
+			String refId = generateReferenceId(recommendList.size());
 			recommendation.setReferenceId(refId);
 			recommendationRepository.save(recommendation);
-			return new Response<>(HttpStatus.CREATED.value(),"Recommendation created successfully.",refId);
+			RecommendationTrail trailData=new RecommendationTrail();
+			trailData.setCreatedAt(new Date());
+			trailData.setRecommendationStatus(new RecommendationStatus(1L));
+			trailData.setReferenceId(refId);
+			recommendationTrailRepository.save(trailData);
+			return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
 		} catch (Exception e) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
 		}
 	}
-	
+
 	public static String generateReferenceId(int size) {
 		int year = Year.now().getValue();
-		String refId="REF"+year+(size+1);
+		String refId = "REF" + year + (size + 1);
 		return refId;
 	}
 
 	@Override
 	public Response<?> viewRecommendation(String refId) {
 		// TODO Auto-generated method stub
-		return null;
+		Optional<Recommendation> recommendation = recommendationRepository.findByReferenceId(refId);
+		if (recommendation != null && recommendation.isPresent()) {
+			RecommendationResponseDto responseDto=recommendation.get().convertToDto();
+			if(recommendation.get().getPriorityId()!=null) {
+				String priority="";
+				if(recommendation.get().getPriorityId().longValue()==1) {
+					priority=PriorityEnum.High.getName();
+				}
+				else if(recommendation.get().getPriorityId().longValue()==2) {
+					priority=PriorityEnum.Medium.getName();
+				}
+				else{
+					priority=PriorityEnum.Low.getName();
+				}
+				responseDto.setPriority(priority);
+			}
+			List<RecommendationTrail> trailList=recommendationTrailRepository.findAllByReferenceId(responseDto.getReferenceId());
+			responseDto.setTrailData(trailList);
+			return new Response<>(HttpStatus.OK.value(), "Recommendation data.", responseDto);
+		} else {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Data not exist.", null);
+		}
+	}
+
+	@Override
+	public Response<?> getAllRecommendedStatus() {
+		List<RecommendationStatus> statusList=recommendationStatusRepository.findAll();
+		return new Response<>(HttpStatus.OK.value(),"Recommend status list.",statusList);
 	}
 
 }

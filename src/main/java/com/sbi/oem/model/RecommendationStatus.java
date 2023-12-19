@@ -52,6 +52,12 @@ public class RecommendationStatus {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+	
+
+	public RecommendationStatus(Long id) {
+		super();
+		this.id = id;
+	}
 
 	public void setIsActive(Boolean isActive) {
 		this.isActive = isActive;
