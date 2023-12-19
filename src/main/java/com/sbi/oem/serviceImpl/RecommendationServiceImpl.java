@@ -21,7 +21,9 @@ import com.sbi.oem.dto.RecommendationPageDto;
 import com.sbi.oem.dto.RecommendationResponseDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
+import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.Component;
+import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
@@ -30,6 +32,7 @@ import com.sbi.oem.model.RecommendationTrail;
 import com.sbi.oem.model.RecommendationType;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.ComponentRepository;
+import com.sbi.oem.repository.CredentialMasterRepository;
 import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.DepartmentRepository;
 import com.sbi.oem.repository.RecommendationRepository;
@@ -68,6 +71,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private CredentialMasterRepository credentialMasterRepository;
 
 	@SuppressWarnings("rawtypes")
 	@Lookup
@@ -180,13 +186,44 @@ public class RecommendationServiceImpl implements RecommendationService {
 	public Response<?> getAllRecommendations() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		Optional<User> user = userRepository.findByEmail(auth.getName());
-		List<DepartmentApprover> departmentList = departmentApproverRepository.findAllByUserId(user.get().getId());
-		List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
-				.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
+		Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
 		List<RecommendationResponseDto> responseDtos = new ArrayList<>();
-		if (departmentIds != null && departmentIds.size() > 0) {
-			List<Recommendation> recommendationList = recommendationRepository.findAllByDepartmentIdIn(departmentIds);
+		if (master.get().getUserTypeId().name() != UserType.OEM_SI.name()) {
+			List<DepartmentApprover> departmentList = departmentApproverRepository.findAllByUserId(user.get().getId());
+			List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+					.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
 
+			if (departmentIds != null && departmentIds.size() > 0) {
+				List<Recommendation> recommendationList = recommendationRepository
+						.findAllByDepartmentIdIn(departmentIds);
+
+				for (Recommendation rcmnd : recommendationList) {
+					RecommendationResponseDto responseDto = rcmnd.convertToDto();
+					if (rcmnd.getPriorityId() != null) {
+						String priority = "";
+						if (rcmnd.getPriorityId().longValue() == 1) {
+							priority = PriorityEnum.High.getName();
+						} else if (rcmnd.getPriorityId().longValue() == 2) {
+							priority = PriorityEnum.Medium.getName();
+						} else {
+							priority = PriorityEnum.Low.getName();
+						}
+						responseDto.setPriority(priority);
+					}
+					Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+							.findAllByDepartmentId(rcmnd.getDepartment().getId());
+					responseDto.setApprover(departmentApprover.get().getAgm());
+					List<RecommendationTrail> trailList = recommendationTrailRepository
+							.findAllByReferenceId(responseDto.getReferenceId());
+					responseDto.setTrailData(trailList);
+					responseDtos.add(responseDto);
+				}
+				return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
+			} else {
+				return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
+			}
+		} else {
+			List<Recommendation> recommendationList = recommendationRepository.findAllByUserId(user.get().getId());
 			for (Recommendation rcmnd : recommendationList) {
 				RecommendationResponseDto responseDto = rcmnd.convertToDto();
 				if (rcmnd.getPriorityId() != null) {
@@ -209,9 +246,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 				responseDtos.add(responseDto);
 			}
 			return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
-		} else {
-			return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
 		}
+
 	}
 
 }
