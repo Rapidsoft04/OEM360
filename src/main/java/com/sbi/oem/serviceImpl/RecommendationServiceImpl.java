@@ -160,7 +160,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 				recommendationTrailRepository.save(trailData);
 				notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
 				emailTemplateService.sendMail(savedRecommendation);
-				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
+
+				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.",
+						savedRecommendation);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
 			}
@@ -331,7 +333,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					recommendationTrailRepository.save(trail);
 
 					notificationService.save(recommendation.get(), RecommendationStatusEnum.APPROVED_BY_APPOWNER);
-
+					emailTemplateService.sendMail(details, recommendation);
 					return new Response<>(HttpStatus.CREATED.value(), "Deployment details added successfully.", null);
 				}
 			} else {
