@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
+import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.service.RecommendationService;
 import com.sbi.oem.service.ValidationService;
 
@@ -66,6 +68,19 @@ public class RecommendationController {
 		if (validationResponse.getResponseCode() == HttpStatus.OK.value()) {
 			Response<?> response = recommendationService
 					.setRecommendationDeploymentDetails(recommendationDetailsRequestDto);
+			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+		} else {
+			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
+		}
+	}
+
+	@PostMapping("/rejected/by/appowner")
+	public ResponseEntity<?> recommendationRejectByAppOwner(
+			@RequestBody RecommendationRejectionRequestDto recommendation) {
+		Response<?> validationResponse = validationService
+				.checkForAppOwnerRecommendationRejectedPayload(recommendation);
+		if (validationResponse.getResponseCode() == HttpStatus.OK.value()) {
+			Response<?> response = recommendationService.rejectRecommendationByAppOwner(recommendation);
 			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 		} else {
 			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));

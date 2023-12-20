@@ -68,6 +68,15 @@ public class Recommendation {
 	@JoinColumn(name = "status_id")
 	private RecommendationStatus recommendationStatus;
 
+	@Column(name = "is_app_owner_approve")
+	private Boolean isAppOwnerApproved;
+
+	@Column(name = "is_agm_approve")
+	private Boolean isAgmApproved;
+
+	@Column(name = "is_app_owner_rejected")
+	private Boolean isAppOwnerRejected;
+
 	public Long getId() {
 		return id;
 	}
@@ -178,6 +187,30 @@ public class Recommendation {
 
 	public void setRecommendationStatus(RecommendationStatus recommendationStatus) {
 		this.recommendationStatus = recommendationStatus;
+	}
+
+	public Boolean getIsAppOwnerApproved() {
+		return isAppOwnerApproved;
+	}
+
+	public void setIsAppOwnerApproved(Boolean isAppOwnerApproved) {
+		this.isAppOwnerApproved = isAppOwnerApproved;
+	}
+
+	public Boolean getIsAgmApproved() {
+		return isAgmApproved;
+	}
+
+	public void setIsAgmApproved(Boolean isAgmApproved) {
+		this.isAgmApproved = isAgmApproved;
+	}
+
+	public Boolean getIsAppOwnerRejected() {
+		return isAppOwnerRejected;
+	}
+
+	public void setIsAppOwnerRejected(Boolean isAppOwnerRejected) {
+		this.isAppOwnerRejected = isAppOwnerRejected;
 	}
 
 	public Recommendation() {

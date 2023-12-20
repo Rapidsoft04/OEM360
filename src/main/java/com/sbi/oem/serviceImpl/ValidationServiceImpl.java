@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
+import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.service.ValidationService;
 
@@ -49,6 +50,17 @@ public class ValidationServiceImpl implements ValidationService {
 			return new Response<>(HttpStatus.OK.value(), "OK", null);
 		}
 
+	}
+
+	@Override
+	public Response<?> checkForAppOwnerRecommendationRejectedPayload(RecommendationRejectionRequestDto recommendation) {
+		if (recommendation.getReferenceId() == null || recommendation.getReferenceId().equals("")) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the reference id.", null);
+		} else if (recommendation.getRejectionMessage() == null || recommendation.getRejectionMessage().equals("")) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide reason for rejection.", null);
+		} else {
+			return new Response<>(HttpStatus.OK.value(), "OK", null);
+		}
 	}
 
 }
