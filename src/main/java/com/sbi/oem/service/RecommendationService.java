@@ -1,6 +1,7 @@
 package com.sbi.oem.service;
 
 import com.sbi.oem.dto.RecommendationAddRequestDto;
+import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.Response;
 
 public interface RecommendationService {
@@ -14,5 +15,7 @@ public interface RecommendationService {
 	Response<?> getAllRecommendedStatus();
 
 	Response<?> getAllRecommendations();
+
+	Response<?> setRecommendationDeploymentDetails(RecommendationDetailsRequestDto recommendationDetailsRequestDto);
 
 }
