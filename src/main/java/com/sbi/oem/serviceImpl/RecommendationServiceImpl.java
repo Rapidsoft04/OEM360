@@ -77,9 +77,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
 
-//	@Autowired
-//	private UserRepository userRepository;
-
 	@Autowired
 	private EmailTemplateService emailTemplateService;
 
@@ -201,6 +198,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 				List<RecommendationTrail> trailList = recommendationTrailRepository
 						.findAllByReferenceId(responseDto.getReferenceId());
 				responseDto.setTrailData(trailList);
+				List<RecommendationMessages> messageList = recommendationMessagesRepository.findAllByReferenceId(refId);
+				responseDto.setMessageList(messageList);
 				return new Response<>(HttpStatus.OK.value(), "Recommendation data.", responseDto);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Data not exist.", null);
@@ -260,6 +259,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 						List<RecommendationTrail> trailList = recommendationTrailRepository
 								.findAllByReferenceId(responseDto.getReferenceId());
 						responseDto.setTrailData(trailList);
+						List<RecommendationMessages> messageList = recommendationMessagesRepository
+								.findAllByReferenceId(responseDto.getReferenceId());
+						responseDto.setMessageList(messageList);
 						responseDtos.add(responseDto);
 					}
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
@@ -350,6 +352,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
 			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+
 				Optional<Recommendation> recommendObj = recommendationRepository
 						.findByReferenceId(recommendation.getReferenceId());
 				RecommendationMessages messages = recommendation.convertToEntity();
@@ -378,6 +381,110 @@ public class RecommendationServiceImpl implements RecommendationService {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 
+	}
+
+	@Override
+	public Response<?> revertApprovalRequestToAppOwnerForApproval(
+			RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+				messages.setCreatedAt(new Date());
+				recommendationMessagesRepository.save(messages);
+				return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(),
+						"You have no access revert recommendation request.", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
+		}
+
+	}
+
+	@Override
+	public Response<?> rejectRecommendationByAgm(RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				Optional<Recommendation> recommendObj = recommendationRepository
+						.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
+				if (recommendObj != null && recommendObj.isPresent()) {
+					if (recommendObj.get().getIsAppOwnerApproved() != null
+							&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
+						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+						messages.setCreatedAt(new Date());
+						recommendationMessagesRepository.save(messages);
+						return new Response<>(HttpStatus.OK.value(), "Recommendation reject request sent successfully.",
+								null);
+					} else {
+						recommendObj.get().setIsAgmApproved(false);
+						recommendationRepository.save(recommendObj.get());
+						RecommendationTrail trailData = new RecommendationTrail();
+						trailData.setCreatedAt(new Date());
+						trailData.setRecommendationStatus(new RecommendationStatus(4L));
+						trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
+						recommendationTrailRepository.save(trailData);
+						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+						messages.setCreatedAt(new Date());
+						recommendationMessagesRepository.save(messages);
+						return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
+					}
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(),
+						"You have no access to reject recommendation request.", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
+		}
+	}
+
+	@Override
+	public Response<?> acceptRecommendationRequestByAgm(
+			RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				Optional<Recommendation> recommendObj = recommendationRepository
+						.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
+				if (recommendObj.get().getIsAppOwnerApproved() != null
+						&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
+					recommendObj.get().setIsAgmApproved(true);
+					recommendObj.get().setRecommendationStatus(new RecommendationStatus(3L));
+					recommendationRepository.save(recommendObj.get());
+					RecommendationTrail trailData = new RecommendationTrail();
+					trailData.setCreatedAt(new Date());
+					trailData.setRecommendationStatus(new RecommendationStatus(3L));
+					trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
+					recommendationTrailRepository.save(trailData);
+					if (recommendationRejectionRequestDto.getAddtionalInformation() != null
+							|| !recommendationRejectionRequestDto.getAddtionalInformation().equals("")) {
+						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+						messages.setCreatedAt(new Date());
+						recommendationMessagesRepository.save(messages);
+					}
+					return new Response<>(HttpStatus.OK.value(), "Recommendation request accepted.", null);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(),
+							"Recommendation is not yet approved by app owner.", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
 	}
 
 }
