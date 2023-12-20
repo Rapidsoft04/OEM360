@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sbi.oem.dto.ForgetPasswordRequestDto;
 import com.sbi.oem.dto.LoginRequest;
-import com.sbi.oem.dto.LoginResponse;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.dto.SignUpRequest;
 import com.sbi.oem.service.UserService;
