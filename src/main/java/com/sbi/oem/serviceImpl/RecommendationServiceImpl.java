@@ -46,7 +46,6 @@ import com.sbi.oem.repository.UserRepository;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
-import com.sbi.oem.util.EmailService;
 
 @Service
 public class RecommendationServiceImpl implements RecommendationService {
@@ -77,16 +76,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 //	@Autowired
 //	private UserRepository userRepository;
-	
+
 	@Autowired
 	private EmailTemplateService emailTemplateService;
-
 
 	@Autowired
 	private CredentialMasterRepository credentialMasterRepository;
 
 	@Autowired
 	private NotificationService notificationService;
+	
+	@Autowired
 	private RecommendationDeplyomentDetailsRepository deplyomentDetailsRepository;
 
 	@SuppressWarnings("rawtypes")
@@ -150,16 +150,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 				String refId = generateReferenceId(recommendList.size());
 				recommendation.setReferenceId(refId);
 				Recommendation savedRecommendation = recommendationRepository.save(recommendation);
-				
+
 				RecommendationTrail trailData = new RecommendationTrail();
 				trailData.setCreatedAt(new Date());
 				trailData.setRecommendationStatus(new RecommendationStatus(1L));
 				trailData.setReferenceId(refId);
 				recommendationTrailRepository.save(trailData);
-				
+
 				notificationService.save(savedRecommendation);
+
 				emailTemplateService.sendMail(savedRecommendation);
-				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
+
+				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.",
+						savedRecommendation);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
 			}
@@ -303,7 +306,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 				trail.setRecommendationStatus(new RecommendationStatus(2L));
 				trail.setReferenceId(details.getRecommendRefId());
 				recommendationTrailRepository.save(trail);
-				return new Response<>(HttpStatus.CREATED.value(), "Deployment details added successfully.", null);
+				emailTemplateService.sendMail(details, recommendation);
+				return new Response<>(HttpStatus.CREATED.value(), "Deployment details added successfully.", details);
 			}
 		} else {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to provide deployment details.",
