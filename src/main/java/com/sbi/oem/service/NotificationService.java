@@ -12,5 +12,5 @@ public interface NotificationService {
 	
 	public void markAsSeen(Long userId);
 	
-	public void markAsSeenV2(Long id);
+	public void markAsSeenV2(Long notificationId);
 }

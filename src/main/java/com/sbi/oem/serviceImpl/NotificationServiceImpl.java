@@ -60,7 +60,7 @@ public class NotificationServiceImpl implements NotificationService {
 				newNotification.setIsSeen(false);
 				newNotification.setUser(agm);
 				notificationRepository.save(newNotification);
-			} else {
+			} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
 				User agm = departmentApprover.get().getAgm();
 				Notification newNotification = new Notification();
 				newNotification.setMessage(recommendation.getDescriptions());
@@ -71,8 +71,21 @@ public class NotificationServiceImpl implements NotificationService {
 				newNotification.setIsSeen(false);
 				newNotification.setUser(agm);
 				notificationRepository.save(newNotification);
+			} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
+				List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
+						departmentApprover.get().getApplicationOwner());
+				for (User user : userList) {
+					Notification newNotification = new Notification();
+					newNotification.setMessage(recommendation.getDescriptions());
+					newNotification.setReferenceId(recommendation.getReferenceId());
+					newNotification.setMessage("Your recommendation request has been approved by AGM.");
+					newNotification.setCreatedAt(new Date());
+					newNotification.setUpdatedAt(new Date());
+					newNotification.setIsSeen(false);
+					newNotification.setUser(user);
+					notificationRepository.save(newNotification);
+				}
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
