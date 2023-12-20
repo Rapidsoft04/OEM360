@@ -161,8 +161,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				trailData.setRecommendationStatus(new RecommendationStatus(1L));
 				trailData.setReferenceId(refId);
 				recommendationTrailRepository.save(trailData);
-
-				notificationService.save(savedRecommendation);
+				notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
 				emailTemplateService.sendMail(savedRecommendation);
 				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
 			} else {
