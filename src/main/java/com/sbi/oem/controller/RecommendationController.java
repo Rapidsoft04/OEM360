@@ -15,7 +15,6 @@ import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.Response;
-import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.service.RecommendationService;
 import com.sbi.oem.service.ValidationService;
 
@@ -85,5 +84,35 @@ public class RecommendationController {
 		} else {
 			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
 		}
+	}
+
+	@PostMapping("/reject/request/revert/by/agm")
+	public ResponseEntity<?> revertApprovalRequestToAppOwnerForApproval(
+			@RequestBody RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+		Response<?> response = recommendationService
+				.revertApprovalRequestToAppOwnerForApproval(recommendationRejectionRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
+	@PostMapping("/reject/by/agm")
+	public ResponseEntity<?> rejectRecommendationByAgm(
+			@RequestBody RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+		Response<?> validationResponse = validationService
+				.checkForAppOwnerRecommendationRejectedPayload(recommendationRejectionRequestDto);
+		if (validationResponse.getResponseCode() == HttpStatus.OK.value()) {
+			Response<?> response = recommendationService.rejectRecommendationByAgm(recommendationRejectionRequestDto);
+			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+		} else {
+			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
+		}
+	}
+
+	@PostMapping("/request/accept/by/agm")
+	public ResponseEntity<?> acceptRecommendationByAgm(
+			@RequestBody RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+		Response<?> response = recommendationService
+				.acceptRecommendationRequestByAgm(recommendationRejectionRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+
 	}
 }

@@ -77,9 +77,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
 
-//	@Autowired
-//	private UserRepository userRepository;
-
 	@Autowired
 	private EmailTemplateService emailTemplateService;
 
@@ -163,7 +160,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 				recommendationTrailRepository.save(trailData);
 				notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
 				emailTemplateService.sendMail(savedRecommendation);
-				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
+
+				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.",
+						savedRecommendation);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
 			}
@@ -180,53 +179,100 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Override
 	public Response<?> viewRecommendation(String refId) {
-		Optional<Recommendation> recommendation = recommendationRepository.findByReferenceId(refId);
-		if (recommendation != null && recommendation.isPresent()) {
-			RecommendationResponseDto responseDto = recommendation.get().convertToDto();
-			if (recommendation.get().getPriorityId() != null) {
-				String priority = "";
-				if (recommendation.get().getPriorityId().longValue() == 1) {
-					priority = PriorityEnum.High.getName();
-				} else if (recommendation.get().getPriorityId().longValue() == 2) {
-					priority = PriorityEnum.Medium.getName();
-				} else {
-					priority = PriorityEnum.Low.getName();
+		try {
+			Optional<Recommendation> recommendation = recommendationRepository.findByReferenceId(refId);
+			if (recommendation != null && recommendation.isPresent()) {
+				RecommendationResponseDto responseDto = recommendation.get().convertToDto();
+				if (recommendation.get().getPriorityId() != null) {
+					String priority = "";
+					if (recommendation.get().getPriorityId().longValue() == 1) {
+						priority = PriorityEnum.High.getName();
+					} else if (recommendation.get().getPriorityId().longValue() == 2) {
+						priority = PriorityEnum.Medium.getName();
+					} else {
+						priority = PriorityEnum.Low.getName();
+					}
+					responseDto.setPriority(priority);
 				}
-				responseDto.setPriority(priority);
+				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+						.findAllByDepartmentId(recommendation.get().getDepartment().getId());
+				responseDto.setApprover(departmentApprover.get().getAgm());
+				List<RecommendationTrail> trailList = recommendationTrailRepository
+						.findAllByReferenceId(responseDto.getReferenceId());
+				responseDto.setTrailData(trailList);
+				List<RecommendationMessages> messageList = recommendationMessagesRepository.findAllByReferenceId(refId);
+				responseDto.setMessageList(messageList);
+				return new Response<>(HttpStatus.OK.value(), "Recommendation data.", responseDto);
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Data not exist.", null);
 			}
-			Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-					.findAllByDepartmentId(recommendation.get().getDepartment().getId());
-			responseDto.setApprover(departmentApprover.get().getAgm());
-			List<RecommendationTrail> trailList = recommendationTrailRepository
-					.findAllByReferenceId(responseDto.getReferenceId());
-			responseDto.setTrailData(trailList);
-			return new Response<>(HttpStatus.OK.value(), "Recommendation data.", responseDto);
-		} else {
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Data not exist.", null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
+
 	}
 
 	@Override
 	public Response<?> getAllRecommendedStatus() {
-		List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
-		return new Response<>(HttpStatus.OK.value(), "Recommend status list.", statusList);
+		try {
+			List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+			return new Response<>(HttpStatus.OK.value(), "Recommend status list.", statusList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+
 	}
 
 	@Override
 	public Response<?> getAllRecommendations() {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
-		List<RecommendationResponseDto> responseDtos = new ArrayList<>();
-		if (master.get().getUserTypeId().name() != UserType.OEM_SI.name()) {
-			List<DepartmentApprover> departmentList = departmentApproverRepository
-					.findAllByUserId(master.get().getUserId().getId());
-			List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
-					.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			List<RecommendationResponseDto> responseDtos = new ArrayList<>();
+			if (master.get().getUserTypeId().name() != UserType.OEM_SI.name()) {
+				List<DepartmentApprover> departmentList = departmentApproverRepository
+						.findAllByUserId(master.get().getUserId().getId());
+				List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+						.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
 
-			if (departmentIds != null && departmentIds.size() > 0) {
+				if (departmentIds != null && departmentIds.size() > 0) {
+					List<Recommendation> recommendationList = recommendationRepository
+							.findAllByDepartmentIdIn(departmentIds);
+
+					for (Recommendation rcmnd : recommendationList) {
+						RecommendationResponseDto responseDto = rcmnd.convertToDto();
+						if (rcmnd.getPriorityId() != null) {
+							String priority = "";
+							if (rcmnd.getPriorityId().longValue() == 1) {
+								priority = PriorityEnum.High.getName();
+							} else if (rcmnd.getPriorityId().longValue() == 2) {
+								priority = PriorityEnum.Medium.getName();
+							} else {
+								priority = PriorityEnum.Low.getName();
+							}
+							responseDto.setPriority(priority);
+						}
+						Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+								.findAllByDepartmentId(rcmnd.getDepartment().getId());
+						responseDto.setApprover(departmentApprover.get().getAgm());
+						responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+						List<RecommendationTrail> trailList = recommendationTrailRepository
+								.findAllByReferenceId(responseDto.getReferenceId());
+						responseDto.setTrailData(trailList);
+						List<RecommendationMessages> messageList = recommendationMessagesRepository
+								.findAllByReferenceId(responseDto.getReferenceId());
+						responseDto.setMessageList(messageList);
+						responseDtos.add(responseDto);
+					}
+					return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
+				} else {
+					return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
+				}
+			} else {
 				List<Recommendation> recommendationList = recommendationRepository
-						.findAllByDepartmentIdIn(departmentIds);
-
+						.findAllByUserId(master.get().getUserId().getId());
 				for (Recommendation rcmnd : recommendationList) {
 					RecommendationResponseDto responseDto = rcmnd.convertToDto();
 					if (rcmnd.getPriorityId() != null) {
@@ -250,35 +296,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 					responseDtos.add(responseDto);
 				}
 				return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
-			} else {
-				return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
 			}
-		} else {
-			List<Recommendation> recommendationList = recommendationRepository
-					.findAllByUserId(master.get().getUserId().getId());
-			for (Recommendation rcmnd : recommendationList) {
-				RecommendationResponseDto responseDto = rcmnd.convertToDto();
-				if (rcmnd.getPriorityId() != null) {
-					String priority = "";
-					if (rcmnd.getPriorityId().longValue() == 1) {
-						priority = PriorityEnum.High.getName();
-					} else if (rcmnd.getPriorityId().longValue() == 2) {
-						priority = PriorityEnum.Medium.getName();
-					} else {
-						priority = PriorityEnum.Low.getName();
-					}
-					responseDto.setPriority(priority);
-				}
-				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-						.findAllByDepartmentId(rcmnd.getDepartment().getId());
-				responseDto.setApprover(departmentApprover.get().getAgm());
-				responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
-				List<RecommendationTrail> trailList = recommendationTrailRepository
-						.findAllByReferenceId(responseDto.getReferenceId());
-				responseDto.setTrailData(trailList);
-				responseDtos.add(responseDto);
-			}
-			return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 
 	}
@@ -286,63 +307,185 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Override
 	public Response<?> setRecommendationDeploymentDetails(
 			RecommendationDetailsRequestDto recommendationDetailsRequestDto) {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
-		if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
-			Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
-					.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
-			if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
-				return new Response<>(HttpStatus.BAD_REQUEST.value(),
-						"Deployment details already exist for the provided recommendation.", null);
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+				Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
+						.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
+				if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(),
+							"Deployment details already exist for the provided recommendation.", null);
+				} else {
+					RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
+					details.setCreatedAt(new Date());
+					deplyomentDetailsRepository.save(details);
+					Optional<Recommendation> recommendation = recommendationRepository
+							.findByReferenceId(details.getRecommendRefId());
+					recommendation.get().setRecommendationStatus(new RecommendationStatus(2L));
+					recommendation.get().setIsAppOwnerApproved(true);
+					recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+					recommendationRepository.save(recommendation.get());
+					RecommendationTrail trail = new RecommendationTrail();
+					trail.setCreatedAt(new Date());
+					trail.setRecommendationStatus(new RecommendationStatus(2L));
+					trail.setReferenceId(details.getRecommendRefId());
+					recommendationTrailRepository.save(trail);
+
+					notificationService.save(recommendation.get(), RecommendationStatusEnum.APPROVED_BY_APPOWNER);
+					emailTemplateService.sendMail(details, recommendation);
+					return new Response<>(HttpStatus.CREATED.value(), "Deployment details added successfully.", null);
+				}
 			} else {
-				RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
-				details.setCreatedAt(new Date());
-				deplyomentDetailsRepository.save(details);
-				Optional<Recommendation> recommendation = recommendationRepository
-						.findByReferenceId(details.getRecommendRefId());
-				recommendation.get().setRecommendationStatus(new RecommendationStatus(2L));
-				recommendation.get().setIsAppOwnerApproved(true);
-				recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
-				recommendationRepository.save(recommendation.get());
-				RecommendationTrail trail = new RecommendationTrail();
-				trail.setCreatedAt(new Date());
-				trail.setRecommendationStatus(new RecommendationStatus(2L));
-				trail.setReferenceId(details.getRecommendRefId());
-				recommendationTrailRepository.save(trail);
-
-				notificationService.save(recommendation.get(), RecommendationStatusEnum.APPROVED_BY_APPOWNER);
-
-				return new Response<>(HttpStatus.CREATED.value(), "Deployment details added successfully.", null);
+				return new Response<>(HttpStatus.BAD_REQUEST.value(),
+						"You have no access to provide deployment details.", null);
 			}
-		} else {
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to provide deployment details.",
-					null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+
 		}
 
 	}
 
 	@Override
 	public Response<?> rejectRecommendationByAppOwner(RecommendationRejectionRequestDto recommendation) {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
-		if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
-			Optional<Recommendation> recommendObj = recommendationRepository
-					.findByReferenceId(recommendation.getReferenceId());
-			RecommendationMessages messages = recommendation.convertToEntity();
-			messages.setCreatedAt(new Date());
-			recommendationMessagesRepository.save(messages);
-			recommendObj.get().setIsAppOwnerRejected(true);
-			recommendObj.get().setRecommendationStatus(new RecommendationStatus(2L));
-			recommendationRepository.save(recommendObj.get());
-			RecommendationTrail recommendTrail = new RecommendationTrail();
-			recommendTrail.setCreatedAt(new Date());
-			recommendTrail.setRecommendationStatus(new RecommendationStatus(2L));
-			recommendTrail.setReferenceId(recommendation.getReferenceId());
-			recommendationTrailRepository.save(recommendTrail);
-			notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_APPOWNER);
-			return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
-		} else {
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to reject.", null);
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+
+				Optional<Recommendation> recommendObj = recommendationRepository
+						.findByReferenceId(recommendation.getReferenceId());
+				RecommendationMessages messages = recommendation.convertToEntity();
+				messages.setCreatedAt(new Date());
+				recommendationMessagesRepository.save(messages);
+				recommendObj.get().setIsAppOwnerRejected(true);
+				recommendObj.get().setRecommendationStatus(new RecommendationStatus(2L));
+				recommendationRepository.save(recommendObj.get());
+				RecommendationTrail recommendTrail = new RecommendationTrail();
+				recommendTrail.setCreatedAt(new Date());
+				recommendTrail.setRecommendationStatus(new RecommendationStatus(2L));
+				recommendTrail.setReferenceId(recommendation.getReferenceId());
+				recommendationTrailRepository.save(recommendTrail);
+				Optional<RecommendationDeplyomentDetails> recommendDeploymentDetails = deplyomentDetailsRepository
+						.findByRecommendRefId(recommendation.getReferenceId());
+				if (recommendDeploymentDetails != null && recommendDeploymentDetails.isPresent()) {
+					deplyomentDetailsRepository.delete(recommendDeploymentDetails.get());
+				}
+				notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED);
+				return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to reject.", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+
+	}
+
+	@Override
+	public Response<?> revertApprovalRequestToAppOwnerForApproval(
+			RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+				messages.setCreatedAt(new Date());
+				recommendationMessagesRepository.save(messages);
+				return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(),
+						"You have no access revert recommendation request.", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
+		}
+
+	}
+
+	@Override
+	public Response<?> rejectRecommendationByAgm(RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				Optional<Recommendation> recommendObj = recommendationRepository
+						.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
+				if (recommendObj != null && recommendObj.isPresent()) {
+					if (recommendObj.get().getIsAppOwnerApproved() != null
+							&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
+						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+						messages.setCreatedAt(new Date());
+						recommendationMessagesRepository.save(messages);
+						return new Response<>(HttpStatus.OK.value(), "Recommendation reject request sent successfully.",
+								null);
+					} else {
+						recommendObj.get().setIsAgmApproved(false);
+						recommendationRepository.save(recommendObj.get());
+						RecommendationTrail trailData = new RecommendationTrail();
+						trailData.setCreatedAt(new Date());
+						trailData.setRecommendationStatus(new RecommendationStatus(4L));
+						trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
+						recommendationTrailRepository.save(trailData);
+						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+						messages.setCreatedAt(new Date());
+						recommendationMessagesRepository.save(messages);
+						return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
+					}
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(),
+						"You have no access to reject recommendation request.", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
+		}
+	}
+
+	@Override
+	public Response<?> acceptRecommendationRequestByAgm(
+			RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				Optional<Recommendation> recommendObj = recommendationRepository
+						.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
+				if (recommendObj.get().getIsAppOwnerApproved() != null
+						&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
+					recommendObj.get().setIsAgmApproved(true);
+					recommendObj.get().setRecommendationStatus(new RecommendationStatus(3L));
+					recommendationRepository.save(recommendObj.get());
+					RecommendationTrail trailData = new RecommendationTrail();
+					trailData.setCreatedAt(new Date());
+					trailData.setRecommendationStatus(new RecommendationStatus(3L));
+					trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
+					recommendationTrailRepository.save(trailData);
+					if (recommendationRejectionRequestDto.getAddtionalInformation() != null
+							|| !recommendationRejectionRequestDto.getAddtionalInformation().equals("")) {
+						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+						messages.setCreatedAt(new Date());
+						recommendationMessagesRepository.save(messages);
+					}
+					return new Response<>(HttpStatus.OK.value(), "Recommendation request accepted.", null);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(),
+							"Recommendation is not yet approved by app owner.", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 	}
 

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.Department;
+import com.sbi.oem.model.RecommendationMessages;
 import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.RecommendationTrail;
 import com.sbi.oem.model.RecommendationType;
@@ -45,6 +46,8 @@ public class RecommendationResponseDto {
 	private User appOwner;
 
 	private RecommendationStatus status;
+
+	private List<RecommendationMessages> messageList;
 
 	public Long getId() {
 		return id;
@@ -182,9 +185,18 @@ public class RecommendationResponseDto {
 		this.status = status;
 	}
 
+	public List<RecommendationMessages> getMessageList() {
+		return messageList;
+	}
+
+	public void setMessageList(List<RecommendationMessages> messageList) {
+		this.messageList = messageList;
+	}
+
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,
 			RecommendationType recommendationType, Date recommendDate, Department department, Component component,
-			String expectedImpact, String documentUrl, String fileUrl, Date createdAt, User createdBy,RecommendationStatus status) {
+			String expectedImpact, String documentUrl, String fileUrl, Date createdAt, User createdBy,
+			RecommendationStatus status) {
 		super();
 		this.id = id;
 		this.referenceId = referenceId;
@@ -198,7 +210,7 @@ public class RecommendationResponseDto {
 		this.fileUrl = fileUrl;
 		this.createdAt = createdAt;
 		this.createdBy = createdBy;
-		this.status=status;
+		this.status = status;
 	}
 
 }
