@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.sbi.oem.dto.PriorityResponseDto;
 import com.sbi.oem.dto.RecommendationAddRequestDto;
+import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.RecommendationPageDto;
 import com.sbi.oem.dto.RecommendationResponseDto;
 import com.sbi.oem.dto.Response;
@@ -27,6 +28,7 @@ import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
+import com.sbi.oem.model.RecommendationDeplyomentDetails;
 import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.RecommendationTrail;
 import com.sbi.oem.model.RecommendationType;
@@ -35,6 +37,7 @@ import com.sbi.oem.repository.ComponentRepository;
 import com.sbi.oem.repository.CredentialMasterRepository;
 import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.DepartmentRepository;
+import com.sbi.oem.repository.RecommendationDeplyomentDetailsRepository;
 import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.repository.RecommendationStatusRepository;
 import com.sbi.oem.repository.RecommendationTrailRepository;
@@ -70,14 +73,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
 
-	@Autowired
-	private UserRepository userRepository;
+//	@Autowired
+//	private UserRepository userRepository;
 
 	@Autowired
 	private CredentialMasterRepository credentialMasterRepository;
 
 	@Autowired
 	private NotificationService notificationService;
+	private RecommendationDeplyomentDetailsRepository deplyomentDetailsRepository;
 
 	@SuppressWarnings("rawtypes")
 	@Lookup
@@ -115,12 +119,39 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Override
 	public Response<?> addRecommendation(RecommendationAddRequestDto recommendationAddRequestDto) {
 		try {
-			Recommendation recommendation = new Recommendation();
-			if (recommendationAddRequestDto.getFile() != null) {
-				String fileUrl = fileSystemStorageService.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
-				if (fileUrl != null && !fileUrl.isEmpty()) {
-					recommendation.setFileUrl(fileUrl);
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
+				Recommendation recommendation = new Recommendation();
+				if (recommendationAddRequestDto.getFile() != null) {
+					String fileUrl = fileSystemStorageService
+							.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
+					if (fileUrl != null && !fileUrl.isEmpty()) {
+						recommendation.setFileUrl(fileUrl);
+					}
 				}
+				recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
+				recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
+				recommendation.setCreatedAt(new Date());
+				recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
+				recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
+				recommendation.setDepartment(new Department(recommendationAddRequestDto.getDepartmentId()));
+				recommendation.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
+				recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
+				recommendation.setRecommendationType(new RecommendationType(recommendationAddRequestDto.getTypeId()));
+				recommendation.setRecommendationStatus(new RecommendationStatus(1L));
+				List<Recommendation> recommendList = recommendationRepository.findAll();
+				String refId = generateReferenceId(recommendList.size());
+				recommendation.setReferenceId(refId);
+				recommendationRepository.save(recommendation);
+				RecommendationTrail trailData = new RecommendationTrail();
+				trailData.setCreatedAt(new Date());
+				trailData.setRecommendationStatus(new RecommendationStatus(1L));
+				trailData.setReferenceId(refId);
+				recommendationTrailRepository.save(trailData);
+				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
 			}
 			recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
 			recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
@@ -146,6 +177,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			notificationService.save(savedRecommendation);
 			
 			return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
+
 		} catch (Exception e) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
 		}
@@ -194,11 +226,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Override
 	public Response<?> getAllRecommendations() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		Optional<User> user = userRepository.findByEmail(auth.getName());
 		Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
 		List<RecommendationResponseDto> responseDtos = new ArrayList<>();
 		if (master.get().getUserTypeId().name() != UserType.OEM_SI.name()) {
-			List<DepartmentApprover> departmentList = departmentApproverRepository.findAllByUserId(user.get().getId());
+			List<DepartmentApprover> departmentList = departmentApproverRepository
+					.findAllByUserId(master.get().getUserId().getId());
 			List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 					.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
 
@@ -222,6 +254,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 							.findAllByDepartmentId(rcmnd.getDepartment().getId());
 					responseDto.setApprover(departmentApprover.get().getAgm());
+					responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
 					List<RecommendationTrail> trailList = recommendationTrailRepository
 							.findAllByReferenceId(responseDto.getReferenceId());
 					responseDto.setTrailData(trailList);
@@ -232,7 +265,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 				return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
 			}
 		} else {
-			List<Recommendation> recommendationList = recommendationRepository.findAllByUserId(user.get().getId());
+			List<Recommendation> recommendationList = recommendationRepository
+					.findAllByUserId(master.get().getUserId().getId());
 			for (Recommendation rcmnd : recommendationList) {
 				RecommendationResponseDto responseDto = rcmnd.convertToDto();
 				if (rcmnd.getPriorityId() != null) {
@@ -249,12 +283,46 @@ public class RecommendationServiceImpl implements RecommendationService {
 				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 						.findAllByDepartmentId(rcmnd.getDepartment().getId());
 				responseDto.setApprover(departmentApprover.get().getAgm());
+				responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
 				List<RecommendationTrail> trailList = recommendationTrailRepository
 						.findAllByReferenceId(responseDto.getReferenceId());
 				responseDto.setTrailData(trailList);
 				responseDtos.add(responseDto);
 			}
 			return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
+		}
+
+	}
+
+	@Override
+	public Response<?> setRecommendationDeploymentDetails(
+			RecommendationDetailsRequestDto recommendationDetailsRequestDto) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+		if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+			Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
+					.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
+			if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(),
+						"Deployment details already exist for the provided recommendation.", null);
+			} else {
+				RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
+				details.setCreatedAt(new Date());
+				deplyomentDetailsRepository.save(details);
+				Optional<Recommendation> recommendation = recommendationRepository
+						.findByReferenceId(details.getRecommendRefId());
+				recommendation.get().setRecommendationStatus(new RecommendationStatus(2L));
+				recommendationRepository.save(recommendation.get());
+				RecommendationTrail trail = new RecommendationTrail();
+				trail.setCreatedAt(new Date());
+				trail.setRecommendationStatus(new RecommendationStatus(2L));
+				trail.setReferenceId(details.getRecommendRefId());
+				recommendationTrailRepository.save(trail);
+				return new Response<>(HttpStatus.CREATED.value(), "Deployment details added successfully.", null);
+			}
+		} else {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to provide deployment details.",
+					null);
 		}
 
 	}

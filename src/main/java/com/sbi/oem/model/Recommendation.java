@@ -64,6 +64,10 @@ public class Recommendation {
 	@JoinColumn(name = "created_by")
 	private User createdBy;
 
+	@OneToOne
+	@JoinColumn(name = "status_id")
+	private RecommendationStatus recommendationStatus;
+
 	public Long getId() {
 		return id;
 	}
@@ -168,6 +172,14 @@ public class Recommendation {
 		this.fileUrl = fileUrl;
 	}
 
+	public RecommendationStatus getRecommendationStatus() {
+		return recommendationStatus;
+	}
+
+	public void setRecommendationStatus(RecommendationStatus recommendationStatus) {
+		this.recommendationStatus = recommendationStatus;
+	}
+
 	public Recommendation() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -219,7 +231,8 @@ public class Recommendation {
 				this.department != null ? this.department : null, this.component != null ? this.component : null,
 				this.expectedImpact != null ? this.expectedImpact : null,
 				this.documentUrl != null ? this.documentUrl : null, this.fileUrl != null ? this.fileUrl : null,
-				this.createdAt != null ? this.createdAt : null, this.createdBy != null ? this.createdBy : null);
+				this.createdAt != null ? this.createdAt : null, this.createdBy != null ? this.createdBy : null,
+				this.recommendationStatus != null ? this.recommendationStatus : null);
 	}
 
 }
