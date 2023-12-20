@@ -143,40 +143,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 				List<Recommendation> recommendList = recommendationRepository.findAll();
 				String refId = generateReferenceId(recommendList.size());
 				recommendation.setReferenceId(refId);
-				recommendationRepository.save(recommendation);
+				Recommendation savedRecommendation = recommendationRepository.save(recommendation);
+				
 				RecommendationTrail trailData = new RecommendationTrail();
 				trailData.setCreatedAt(new Date());
 				trailData.setRecommendationStatus(new RecommendationStatus(1L));
 				trailData.setReferenceId(refId);
 				recommendationTrailRepository.save(trailData);
+				
+				notificationService.save(savedRecommendation);
 				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
 			}
-			recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
-			recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
-			recommendation.setCreatedAt(new Date());
-			recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
-			recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
-			recommendation.setDepartment(new Department(recommendationAddRequestDto.getDepartmentId()));
-			recommendation.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
-			recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
-			recommendation.setRecommendationType(new RecommendationType(recommendationAddRequestDto.getTypeId()));
-			List<Recommendation> recommendList = recommendationRepository.findAll();
-			String refId = generateReferenceId(recommendList.size());
-			recommendation.setReferenceId(refId);
-
-			Recommendation savedRecommendation = recommendationRepository.save(recommendation);
-
-			RecommendationTrail trailData = new RecommendationTrail();
-			trailData.setCreatedAt(new Date());
-			trailData.setRecommendationStatus(new RecommendationStatus(1L));
-			trailData.setReferenceId(refId);
-			recommendationTrailRepository.save(trailData);
-			
-			notificationService.save(savedRecommendation);
-			
-			return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
 
 		} catch (Exception e) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
