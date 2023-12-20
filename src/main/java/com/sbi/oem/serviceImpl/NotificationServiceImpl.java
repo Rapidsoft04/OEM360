@@ -42,8 +42,7 @@ public class NotificationServiceImpl implements NotificationService {
 					Notification newNotification = new Notification();
 					newNotification.setMessage(recommendation.getDescriptions());
 					newNotification.setReferenceId(recommendation.getReferenceId());
-					newNotification
-							.setMessage("New recommendation request has been created.");
+					newNotification.setMessage("New recommendation request has been created.");
 					newNotification.setCreatedAt(new Date());
 					newNotification.setUpdatedAt(new Date());
 					newNotification.setIsSeen(false);
@@ -55,8 +54,18 @@ public class NotificationServiceImpl implements NotificationService {
 				Notification newNotification = new Notification();
 				newNotification.setMessage(recommendation.getDescriptions());
 				newNotification.setReferenceId(recommendation.getReferenceId());
-				newNotification
-						.setMessage("App owner has accepted a new recommendation.");
+				newNotification.setMessage("App owner has accepted a new recommendation.");
+				newNotification.setCreatedAt(new Date());
+				newNotification.setUpdatedAt(new Date());
+				newNotification.setIsSeen(false);
+				newNotification.setUser(agm);
+				notificationRepository.save(newNotification);
+			} else {
+				User agm = departmentApprover.get().getAgm();
+				Notification newNotification = new Notification();
+				newNotification.setMessage(recommendation.getDescriptions());
+				newNotification.setReferenceId(recommendation.getReferenceId());
+				newNotification.setMessage("App owner has rejected a recommendation.");
 				newNotification.setCreatedAt(new Date());
 				newNotification.setUpdatedAt(new Date());
 				newNotification.setIsSeen(false);
@@ -76,20 +85,32 @@ public class NotificationServiceImpl implements NotificationService {
 			return new Response<>(HttpStatus.OK.value(), "success", list);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(HttpStatus.BAD_REQUEST.value(),"Something went wrong",null);
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 	}
 
 	@Override
 	public void markAsSeen(Long userId) {
 		try {
-			List<Notification> list = notificationRepository.findByUserId(userId);
-			for (Notification notification : list) {
-				notificationRepository.markAsSeen(userId);
+			notificationRepository.markAsSeen(userId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void markAsSeenV2(Long id) {
+		try {
+			Optional<Notification> notification = notificationRepository.findById(id);
+			if (notification != null && notification.isPresent()) {
+				notification.get().setIsSeen(true);
+				notification.get().setUpdatedAt(new Date());
+				notificationRepository.save(notification.get());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 	}
 
 }

@@ -11,4 +11,6 @@ public interface NotificationService {
 	public Response<?> getNotificationByUserId(Long userId);
 	
 	public void markAsSeen(Long userId);
+	
+	public void markAsSeenV2(Long id);
 }

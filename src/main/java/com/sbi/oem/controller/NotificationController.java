@@ -22,21 +22,27 @@ public class NotificationController {
 	@Autowired
 	private NotificationService notificationService;
 
-	@PostMapping("/v1/save")
+	@PostMapping("/save")
 	public ResponseEntity<?> save(@RequestBody Recommendation recommendation) {
 		notificationService.save(recommendation, RecommendationStatusEnum.CREATED);
 		return new ResponseEntity<>("success", HttpStatus.OK);
 	}
 
-	@GetMapping("/v1/notification-request")
+	@GetMapping("/pending/request")
 	public ResponseEntity<?> getByUserId(@RequestParam("userId") Long userId) {
 		Response<?> response = notificationService.getNotificationByUserId(userId);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 	
-	@PostMapping("/v1/mark-seen")
+	@PostMapping("/mark-seen")
 	public ResponseEntity<?> markAsSeen(@RequestParam("userId") Long userId) {
 		notificationService.markAsSeen(userId);
+		return new ResponseEntity<>("success", HttpStatus.OK);
+	}
+	
+	@PostMapping("/mark/seen")
+	public ResponseEntity<?> markAsSeenV2(@RequestParam("id") Long id) {
+		notificationService.markAsSeenV2(id);
 		return new ResponseEntity<>("success", HttpStatus.OK);
 	}
 }

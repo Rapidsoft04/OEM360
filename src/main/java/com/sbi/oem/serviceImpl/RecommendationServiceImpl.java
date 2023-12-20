@@ -339,6 +339,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			recommendTrail.setRecommendationStatus(new RecommendationStatus(2L));
 			recommendTrail.setReferenceId(recommendation.getReferenceId());
 			recommendationTrailRepository.save(recommendTrail);
+			notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED);
 			return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
 		} else {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to reject.", null);
