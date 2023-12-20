@@ -43,8 +43,10 @@ import com.sbi.oem.repository.RecommendationStatusRepository;
 import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
 import com.sbi.oem.repository.UserRepository;
+import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
+import com.sbi.oem.util.EmailService;
 
 @Service
 public class RecommendationServiceImpl implements RecommendationService {
@@ -75,6 +77,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 //	@Autowired
 //	private UserRepository userRepository;
+	
+	@Autowired
+	private EmailTemplateService emailTemplateService;
+
 
 	@Autowired
 	private CredentialMasterRepository credentialMasterRepository;
@@ -152,11 +158,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 				recommendationTrailRepository.save(trailData);
 				
 				notificationService.save(savedRecommendation);
+				emailTemplateService.sendMail(savedRecommendation);
 				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
 			}
-
 		} catch (Exception e) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
 		}
