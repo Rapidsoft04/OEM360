@@ -373,7 +373,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				if (recommendDeploymentDetails != null && recommendDeploymentDetails.isPresent()) {
 					deplyomentDetailsRepository.delete(recommendDeploymentDetails.get());
 				}
-				notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED);
+				notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_APPOWNER);
 				return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to reject.", null);
