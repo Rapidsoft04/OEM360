@@ -40,6 +40,7 @@ import com.sbi.oem.repository.RecommendationStatusRepository;
 import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
 import com.sbi.oem.repository.UserRepository;
+import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
 
 @Service
@@ -74,6 +75,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private CredentialMasterRepository credentialMasterRepository;
+
+	@Autowired
+	private NotificationService notificationService;
 
 	@SuppressWarnings("rawtypes")
 	@Lookup
@@ -130,12 +134,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 			List<Recommendation> recommendList = recommendationRepository.findAll();
 			String refId = generateReferenceId(recommendList.size());
 			recommendation.setReferenceId(refId);
-			recommendationRepository.save(recommendation);
+
+			Recommendation savedRecommendation = recommendationRepository.save(recommendation);
+
 			RecommendationTrail trailData = new RecommendationTrail();
 			trailData.setCreatedAt(new Date());
 			trailData.setRecommendationStatus(new RecommendationStatus(1L));
 			trailData.setReferenceId(refId);
 			recommendationTrailRepository.save(trailData);
+			
+			notificationService.save(savedRecommendation);
+			
 			return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
 		} catch (Exception e) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
