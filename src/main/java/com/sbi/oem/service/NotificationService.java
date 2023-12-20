@@ -1,11 +1,12 @@
 package com.sbi.oem.service;
 
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.model.Recommendation;
 
 public interface NotificationService {
 
-	public void save(Recommendation recommendation);
+	public void save(Recommendation recommendation, RecommendationStatusEnum status);
 	
 	public Response<?> getNotificationByUserId(Long userId);
 	

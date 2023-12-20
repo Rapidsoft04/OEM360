@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.service.NotificationService;
 
@@ -23,7 +24,7 @@ public class NotificationController {
 
 	@PostMapping("/v1/save")
 	public ResponseEntity<?> save(@RequestBody Recommendation recommendation) {
-		notificationService.save(recommendation);
+		notificationService.save(recommendation, RecommendationStatusEnum.CREATED);
 		return new ResponseEntity<>("success", HttpStatus.OK);
 	}
 

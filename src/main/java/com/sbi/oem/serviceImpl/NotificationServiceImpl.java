@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Notification;
 import com.sbi.oem.model.Recommendation;
@@ -28,22 +29,38 @@ public class NotificationServiceImpl implements NotificationService {
 	private DepartmentApproverRepository departmentApproverRepository;
 
 	@Override
-	public void save(Recommendation recommendation) {
+	public void save(Recommendation recommendation, RecommendationStatusEnum status) {
 		try {
+
 			Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 					.findAllByDepartmentId(recommendation.getDepartment().getId());
-			List<User> userList = Arrays.asList(departmentApprover.get().getAgm(), departmentApprover.get().getApplicationOwner());
-			
-			for (User user : userList) {
+
+			if (status.equals(RecommendationStatusEnum.CREATED)) {
+				List<User> userList = Arrays.asList(departmentApprover.get().getAgm(),
+						departmentApprover.get().getApplicationOwner());
+				for (User user : userList) {
+					Notification newNotification = new Notification();
+					newNotification.setMessage(recommendation.getDescriptions());
+					newNotification.setReferenceId(recommendation.getReferenceId());
+					newNotification
+							.setMessage("New recommendation request has been created.");
+					newNotification.setCreatedAt(new Date());
+					newNotification.setUpdatedAt(new Date());
+					newNotification.setIsSeen(false);
+					newNotification.setUser(user);
+					notificationRepository.save(newNotification);
+				}
+			} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {
+				User agm = departmentApprover.get().getAgm();
 				Notification newNotification = new Notification();
 				newNotification.setMessage(recommendation.getDescriptions());
 				newNotification.setReferenceId(recommendation.getReferenceId());
 				newNotification
-						.setMessage("New Recommendation Alert. Reference ID - " + recommendation.getReferenceId());
+						.setMessage("App owner has accepted a new recommendation.");
 				newNotification.setCreatedAt(new Date());
 				newNotification.setUpdatedAt(new Date());
 				newNotification.setIsSeen(false);
-				newNotification.setUser(user);
+				newNotification.setUser(agm);
 				notificationRepository.save(newNotification);
 			}
 
@@ -59,7 +76,7 @@ public class NotificationServiceImpl implements NotificationService {
 			return new Response<>(HttpStatus.OK.value(), "success", list);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+			return new Response<>(HttpStatus.BAD_REQUEST.value(),"Something went wrong",null);
 		}
 	}
 
@@ -67,7 +84,7 @@ public class NotificationServiceImpl implements NotificationService {
 	public void markAsSeen(Long userId) {
 		try {
 			List<Notification> list = notificationRepository.findByUserId(userId);
-			for(Notification notification : list) {				
+			for (Notification notification : list) {
 				notificationRepository.markAsSeen(userId);
 			}
 		} catch (Exception e) {

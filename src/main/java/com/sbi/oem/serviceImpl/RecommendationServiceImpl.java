@@ -22,6 +22,7 @@ import com.sbi.oem.dto.RecommendationPageDto;
 import com.sbi.oem.dto.RecommendationResponseDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
+import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.CredentialMaster;
@@ -81,6 +82,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private NotificationService notificationService;
+	
+	@Autowired
 	private RecommendationDeplyomentDetailsRepository deplyomentDetailsRepository;
 
 	@SuppressWarnings("rawtypes")
@@ -144,14 +147,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 				String refId = generateReferenceId(recommendList.size());
 				recommendation.setReferenceId(refId);
 				Recommendation savedRecommendation = recommendationRepository.save(recommendation);
-				
+
 				RecommendationTrail trailData = new RecommendationTrail();
 				trailData.setCreatedAt(new Date());
 				trailData.setRecommendationStatus(new RecommendationStatus(1L));
 				trailData.setReferenceId(refId);
 				recommendationTrailRepository.save(trailData);
-				
-				notificationService.save(savedRecommendation);
+
+				notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
 				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
@@ -297,6 +300,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 				trail.setRecommendationStatus(new RecommendationStatus(2L));
 				trail.setReferenceId(details.getRecommendRefId());
 				recommendationTrailRepository.save(trail);
+
+				notificationService.save(recommendation.get(), RecommendationStatusEnum.APPROVED_BY_APPOWNER);
+
 				return new Response<>(HttpStatus.CREATED.value(), "Deployment details added successfully.", null);
 			}
 		} else {
