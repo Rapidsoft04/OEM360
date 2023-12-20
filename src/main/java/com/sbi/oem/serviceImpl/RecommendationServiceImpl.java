@@ -75,13 +75,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
 
-	@Autowired
-	private UserRepository userRepository;
+//	@Autowired
+//	private UserRepository userRepository;
 	
 	@Autowired
 	private EmailTemplateService emailTemplateService;
-//	@Autowired
-//	private UserRepository userRepository;
+
 
 	@Autowired
 	private CredentialMasterRepository credentialMasterRepository;
@@ -159,6 +158,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				recommendationTrailRepository.save(trailData);
 				
 				notificationService.save(savedRecommendation);
+				emailTemplateService.sendMail(savedRecommendation);
 				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
