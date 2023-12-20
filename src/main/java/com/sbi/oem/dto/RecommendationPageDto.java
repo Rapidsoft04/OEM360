@@ -2,7 +2,6 @@ package com.sbi.oem.dto;
 
 import java.util.List;
 
-import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.Department;
 import com.sbi.oem.model.RecommendationType;

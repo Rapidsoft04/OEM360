@@ -19,6 +19,7 @@ import com.sbi.oem.dto.PriorityResponseDto;
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.RecommendationPageDto;
+import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.RecommendationResponseDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
@@ -30,6 +31,7 @@ import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.model.RecommendationDeplyomentDetails;
+import com.sbi.oem.model.RecommendationMessages;
 import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.RecommendationTrail;
 import com.sbi.oem.model.RecommendationType;
@@ -39,11 +41,12 @@ import com.sbi.oem.repository.CredentialMasterRepository;
 import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.DepartmentRepository;
 import com.sbi.oem.repository.RecommendationDeplyomentDetailsRepository;
+import com.sbi.oem.repository.RecommendationMessagesRepository;
 import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.repository.RecommendationStatusRepository;
 import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
-import com.sbi.oem.repository.UserRepository;
+import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
 
@@ -78,13 +81,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 //	private UserRepository userRepository;
 
 	@Autowired
+	private EmailTemplateService emailTemplateService;
+
+	@Autowired
 	private CredentialMasterRepository credentialMasterRepository;
 
 	@Autowired
 	private NotificationService notificationService;
-	
 	@Autowired
 	private RecommendationDeplyomentDetailsRepository deplyomentDetailsRepository;
+
+	@Autowired
+	private RecommendationMessagesRepository recommendationMessagesRepository;
 
 	@SuppressWarnings("rawtypes")
 	@Lookup
@@ -154,12 +162,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 				trailData.setReferenceId(refId);
 				recommendationTrailRepository.save(trailData);
 
-				notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
+				notificationService.save(savedRecommendation);
+				emailTemplateService.sendMail(savedRecommendation);
 				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", refId);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
 			}
-
 		} catch (Exception e) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
 		}
@@ -294,6 +302,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 				Optional<Recommendation> recommendation = recommendationRepository
 						.findByReferenceId(details.getRecommendRefId());
 				recommendation.get().setRecommendationStatus(new RecommendationStatus(2L));
+				recommendation.get().setIsAppOwnerApproved(true);
+				recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 				recommendationRepository.save(recommendation.get());
 				RecommendationTrail trail = new RecommendationTrail();
 				trail.setCreatedAt(new Date());
@@ -310,6 +320,30 @@ public class RecommendationServiceImpl implements RecommendationService {
 					null);
 		}
 
+	}
+
+	@Override
+	public Response<?> rejectRecommendationByAppOwner(RecommendationRejectionRequestDto recommendation) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+		if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+			Optional<Recommendation> recommendObj = recommendationRepository
+					.findByReferenceId(recommendation.getReferenceId());
+			RecommendationMessages messages = recommendation.convertToEntity();
+			messages.setCreatedAt(new Date());
+			recommendationMessagesRepository.save(messages);
+			recommendObj.get().setIsAppOwnerRejected(true);
+			recommendObj.get().setRecommendationStatus(new RecommendationStatus(2L));
+			recommendationRepository.save(recommendObj.get());
+			RecommendationTrail recommendTrail = new RecommendationTrail();
+			recommendTrail.setCreatedAt(new Date());
+			recommendTrail.setRecommendationStatus(new RecommendationStatus(2L));
+			recommendTrail.setReferenceId(recommendation.getReferenceId());
+			recommendationTrailRepository.save(recommendTrail);
+			return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
+		} else {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to reject.", null);
+		}
 	}
 
 }

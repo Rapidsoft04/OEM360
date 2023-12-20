@@ -16,7 +16,6 @@ import com.sbi.oem.dto.LoginResponse;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.dto.SignUpRequest;
 import com.sbi.oem.enums.UserType;
-import com.sbi.oem.exception.UnauthorizedException;
 import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.CredentialMasterRepository;
@@ -64,6 +63,7 @@ public class UserServiceImpl implements UserService {
 							loginResponse.setUserName(credentialMaster.getName());
 							loginResponse.setUserType(credentialMaster.getUserTypeId().name());
 							loginResponse.setToken(jwtTokenUtil.generateToken(userDetails));
+							loginResponse.setImageUrl(credentialMaster.getUserId().getUserLogoUrl());
 							loginResponse.setCompany(credentialMaster.getUserId().getCompany());
 						}
 					}
