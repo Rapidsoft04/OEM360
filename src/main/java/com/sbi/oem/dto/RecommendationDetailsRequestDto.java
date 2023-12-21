@@ -31,6 +31,8 @@ public class RecommendationDetailsRequestDto {
 
 	private User createdBy;
 
+	private String description;
+
 	public Long getId() {
 		return id;
 	}
@@ -101,6 +103,14 @@ public class RecommendationDetailsRequestDto {
 
 	public void setCreatedBy(User createdBy) {
 		this.createdBy = createdBy;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public RecommendationDeplyomentDetails convertToEntity() {
