@@ -77,6 +77,9 @@ public class Recommendation {
 	@Column(name = "is_app_owner_rejected")
 	private Boolean isAppOwnerRejected;
 
+	@Column(name = "updated_at")
+	private Date updatedAt;
+
 	public Long getId() {
 		return id;
 	}
@@ -211,6 +214,14 @@ public class Recommendation {
 
 	public void setIsAppOwnerRejected(Boolean isAppOwnerRejected) {
 		this.isAppOwnerRejected = isAppOwnerRejected;
+	}
+
+	public Date getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Date updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 	public Recommendation() {
