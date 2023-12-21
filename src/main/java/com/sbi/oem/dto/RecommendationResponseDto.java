@@ -32,6 +32,8 @@ public class RecommendationResponseDto {
 	private Component component;
 
 	private String expectedImpact;
+	
+	private String impactedDepartment;
 
 	private String documentUrl;
 
@@ -225,9 +227,17 @@ public class RecommendationResponseDto {
 		this.isAppOwnerRejected = isAppOwnerRejected;
 	}
 
+	public String getImpactedDepartment() {
+		return impactedDepartment;
+	}
+
+	public void setImpactedDepartment(String impactedDepartment) {
+		this.impactedDepartment = impactedDepartment;
+	}
+
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,
 			RecommendationType recommendationType, Date recommendDate, Department department, Component component,
-			String expectedImpact, String documentUrl, String fileUrl, Date createdAt, User createdBy,
+			String expectedImpact,String impactedDepartment, String documentUrl, String fileUrl, Date createdAt, User createdBy,
 			RecommendationStatus status, Boolean isAppOwnerApproved, Boolean isAgmApproved,
 			Boolean isAppOwnerRejected) {
 		super();
@@ -239,6 +249,7 @@ public class RecommendationResponseDto {
 		this.department = department;
 		this.component = component;
 		this.expectedImpact = expectedImpact;
+		this.impactedDepartment=impactedDepartment;
 		this.documentUrl = documentUrl;
 		this.fileUrl = fileUrl;
 		this.createdAt = createdAt;

@@ -51,6 +51,9 @@ public class Recommendation {
 	@Column(name = "expected_impact")
 	private String expectedImpact;
 
+	@Column(name = "impacted_department")
+	private String impactedDepartment;
+
 	@Column(name = "document_url")
 	private String documentUrl;
 
@@ -224,6 +227,14 @@ public class Recommendation {
 		this.updatedAt = updatedAt;
 	}
 
+	public String getImpactedDepartment() {
+		return impactedDepartment;
+	}
+
+	public void setImpactedDepartment(String impactedDepartment) {
+		this.impactedDepartment = impactedDepartment;
+	}
+
 	public Recommendation() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -274,6 +285,7 @@ public class Recommendation {
 				this.recommendDate != null ? this.recommendDate : null,
 				this.department != null ? this.department : null, this.component != null ? this.component : null,
 				this.expectedImpact != null ? this.expectedImpact : null,
+				this.impactedDepartment != null ? this.impactedDepartment : null,
 				this.documentUrl != null ? this.documentUrl : null, this.fileUrl != null ? this.fileUrl : null,
 				this.createdAt != null ? this.createdAt : null, this.createdBy != null ? this.createdBy : null,
 				this.recommendationStatus != null ? this.recommendationStatus : null,
