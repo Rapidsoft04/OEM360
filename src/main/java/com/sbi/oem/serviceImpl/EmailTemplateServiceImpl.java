@@ -26,6 +26,7 @@ import com.sbi.oem.model.Component;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.model.RecommendationDeplyomentDetails;
+import com.sbi.oem.model.RecommendationMessages;
 import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.RecommendationType;
 import com.sbi.oem.repository.ComponentRepository;
@@ -240,6 +241,12 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 		Instant instant = date.toInstant();
 		LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
 		return localDate.format(dateFormatter);
+	}
+
+	@Override
+	public Response<?> sendMail(RecommendationMessages messages, RecommendationStatusEnum rejectedByAppowner) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
