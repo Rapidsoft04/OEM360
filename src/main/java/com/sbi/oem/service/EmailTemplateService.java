@@ -16,7 +16,7 @@ public interface EmailTemplateService {
 	
 	  Response<?> sendMail(Recommendation recommendation, RecommendationStatusEnum status);
 
-	  Response<?> sendMail(RecommendationDeplyomentDetails details ,Optional<Recommendation> recommendation);
+	  Response<?> sendMail(RecommendationDeplyomentDetails details ,RecommendationStatusEnum recommendation);
 
 	  Response<?> sendMail(RecommendationMessages messages, RecommendationStatusEnum rejectedByAppowner);
 

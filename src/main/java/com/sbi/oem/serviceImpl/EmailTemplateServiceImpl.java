@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.mail.MessagingException;
 
+import org.hibernate.internal.build.AllowSysOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import com.sbi.oem.repository.ComponentRepository;
 import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
+import com.sbi.oem.repository.UserRepository;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.RecommendationService;
 import com.sbi.oem.util.EmailService;
@@ -43,6 +45,9 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 	@Autowired
 	private EmailService emailService;
+	
+	@Autowired
+	private UserRepository userRepository;
 
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
@@ -70,8 +75,11 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 					Optional<Component> userComponent = componentRepository
 							.findById(recommendation.getComponent().getId());
+					
 					Optional<RecommendationType> userRecommendationType = recommendationTypeRepository
 							.findById(recommendation.getRecommendationType().getId());
+					
+					Optional<User> user = userRepository.findById(recommendation.getCreatedBy().getId());
 
 					String priority = "";
 					if (recommendation.getPriorityId().longValue() == 1) {
@@ -82,24 +90,21 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						priority = PriorityEnum.Low.getName();
 					}
 
-					Date recommendDate = recommendation.getRecommendDate();
-					LocalDate localDate = recommendDate.toInstant().atZone(java.time.ZoneId.systemDefault())
-							.toLocalDate();
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-					String formattedDate = localDate.format(formatter);
 
 					byte[] userRecommendationfile =null;
+					String fileName =null;
 					
-					if(!recommendation.getFileUrl().isEmpty()) {
+					
+					if(recommendation.getFileUrl() != null) {
 					   userRecommendationfile = convertMultipartFileToBytes(recommendation.getFileUrl());
+					   fileName = recommendation.getReferenceId();
 					}
 					
-					
-					String fileName = recommendation.getReferenceId();
 
 					String agmEmail = userDepartment.get().getAgm().getEmail();
 					String applicationOwnerEmail = userDepartment.get().getApplicationOwner().getEmail();
-					String[] ccEmails = { applicationOwnerEmail };
+					String OemMail = user.get().getEmail();
+					String[] ccEmails = { applicationOwnerEmail, OemMail };
 
 					
 					
@@ -112,10 +117,12 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						mailSubject = "OEM Recommendation Request";
 						mailHeading = "OEM Recommendation Request";
 						
-					}else {
+						
+					}else if(status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)){
+						
 						
 						mailSubject = "OEM Recommendation Approved";
-						mailHeading = "OEM Recommendation Approved";
+						mailHeading = "OEM Recommendation Approved By AGM";
 					}
 					
 
@@ -135,7 +142,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 							mailHeading,
 							recommendation.getReferenceId(), userRecommendationType.get().getName(), priority,
 							recommendation.getDescriptions(), userDepartment.get().getDepartment().getName(),
-							userComponent.get().getName(), formattedDate,
+							userComponent.get().getName(), formatDate(recommendation.getRecommendDate()),
 							recommendation.getExpectedImpact() != null ? recommendation.getExpectedImpact() : "NA");
 
 					emailService.sendMailAndFile(agmEmail, ccEmails, mailSubject, content, userRecommendationfile,
@@ -189,23 +196,47 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 	}
 
 	@Override
-	public Response<?> sendMail(RecommendationDeplyomentDetails details, Optional<Recommendation> recommendation) {
+	public Response<?> sendMail(RecommendationDeplyomentDetails details, RecommendationStatusEnum status) {
 		try {
 
 			CompletableFuture.runAsync(() -> {
 
 				try {
 
+					Optional<Recommendation> userRecommendation = recommendationRepository.findByReferenceId(details.getRecommendRefId());
+
 					Optional<DepartmentApprover> userDepartment = departmentApproverRepository
-							.findAllByDepartmentId(recommendation.get().getDepartment().getId());
-
-					String agmEmail = userDepartment.get().getAgm().getEmail();
-
-					String mailSubject = "AppOwner Approval";
+							.findAllByDepartmentId(userRecommendation.get().getDepartment().getId());
+					
+					String OemMail = userRecommendation.get().getCreatedBy().getEmail();
+					
+					
+					String sendEmail = "";
+					String mailSubject ="";
+					String mailHeading ="";
+					String[] ccEmails = {OemMail};
+					
+					
+					if(status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {
+						
+						
+						mailSubject = "Appication Owner Approval";
+						mailHeading = "OEM Recommended Request Accepted";
+						sendEmail = userDepartment.get().getAgm().getEmail();
+						
+					}else if(status.equals(RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS)) {
+						
+						mailSubject = "Update Deployment Details";
+						mailHeading = "OEM Recommended Deployment Details";
+						sendEmail = userDepartment.get().getAgm().getEmail();
+						
+					}
+					
+				
 
 					String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
 							+ "<div style='max-width: 1200px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
-							+ "<h1 style='font-size: 24px; color: #333; font-weight: bold; '>OEM Recommended Request Accepted</h1>"
+							+ "<h1 style='font-size: 24px; color: #333; font-weight: bold; '> %s</h1>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Reference Id : </b>%s</p>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Development Start Date : </b>%s</p>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Development End Date : </b>%s</p>"
@@ -215,6 +246,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 							+ "<p style='font-size: 16px; color: #555;  '><b> Global Support Number : </b>%s</p>"
 							+ "</div>",
 
+							mailHeading,
 							details.getRecommendRefId(), formatDate(details.getDevelopmentStartDate()),
 							formatDate(details.getDevelopementEndDate()), formatDate(details.getTestCompletionDate()),
 							formatDate(details.getDeploymentDate()), details.getImpactedDepartment(),
@@ -222,7 +254,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 					);
 
-					emailService.sendMail(agmEmail, agmEmail, mailSubject, content);
+					emailService.sendMail(sendEmail, ccEmails, mailSubject, content);
 					System.out.println("Mail sent to AGM successfully!!");
 
 				} catch (MessagingException e) {
@@ -262,12 +294,12 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 					Optional<DepartmentApprover> userDepartment = departmentApproverRepository
 							.findAllByDepartmentId(userRecommendation.get().getDepartment().getId());
-					
 
 
 					String sendEmail = "";
 					String mailSubject ="";
 					String mailHeading ="";
+					String[] ccEmail= {};
 					
 					if(status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
 						
@@ -280,6 +312,19 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						mailSubject = "OEM Recommendation Rejected ";
 						mailHeading = "OEM Recommendation Rejected by AGM";
 						sendEmail= userDepartment.get().getApplicationOwner().getEmail();
+					}else if(status.equals(RecommendationStatusEnum.REVERTED_BY_AGM)) {
+						
+						mailSubject = "OEM Recommendation Reverted ";
+						mailHeading = "OEM Recommendation Reverted by AGM";
+						sendEmail= userDepartment.get().getApplicationOwner().getEmail();
+						
+						
+					}else if(status.equals(RecommendationStatusEnum.REJECT_RECOMMENDATION)) {
+						
+						mailSubject = "OEM Recommendation Rejected Completely";
+						mailHeading = "OEM Recommendation Rejected by AGM && Application Owner";
+						//OEM mail
+						sendEmail = userRecommendation.get().getCreatedBy().getEmail();
 					}
 					
 					
@@ -301,7 +346,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 					);
 
-					emailService.sendMail(sendEmail, sendEmail, mailSubject, content);
+					emailService.sendMail(sendEmail, ccEmail, mailSubject, content);
 					System.out.println("Mail sent to AGM successfully!!");
 
 				} catch (MessagingException e) {

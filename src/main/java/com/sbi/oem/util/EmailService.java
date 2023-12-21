@@ -25,7 +25,8 @@ public class EmailService {
 	@Autowired
 	private JavaMailSender javaMailSender;
 
-	public void sendMailMultipart(String toEmail, String cc, String subject, String message) throws MessagingException {
+	public void sendMailMultipart(String toEmail, String[] cc, String subject, String message)
+			throws MessagingException {
 
 		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
@@ -41,12 +42,12 @@ public class EmailService {
 		javaMailSender.send(mimeMessage);
 	}
 
-	public void sendMail(String toEmail, String cc, String subject, String message) throws MessagingException {
+	public void sendMail(String toEmail, String[] cc, String subject, String message) throws MessagingException {
 		sendMailMultipart(toEmail, cc, subject, message);
 	}
 
-	public void sendMailAndFile(String toEmail, String[] cc, String subject, String message, byte[] file, String fileName)
-			throws MessagingException {
+	public void sendMailAndFile(String toEmail, String[] cc, String subject, String message, byte[] file,
+			String fileName) throws MessagingException {
 
 		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 		try {
@@ -55,27 +56,32 @@ public class EmailService {
 
 			helper.setFrom(fromMail);
 			helper.setTo(toEmail);
-			helper.setCc(cc);
+
+			for (String ccRecipient : cc) {
+				System.out.println(ccRecipient);
+				helper.addCc(ccRecipient);
+			}
 
 			helper.setSubject(subject);
 			helper.setText(message, true);
-			
-			MimeBodyPart textPart = new MimeBodyPart();
-	        textPart.setText(message, "utf-8", "html");
-
-//	    // Attach the file
-//	    if (file != null && fileName != null) {
-//	        helper.addAttachment(fileName, new ByteArrayResource(file));
-//	    }
-
-			MimeBodyPart attachmentPart = new MimeBodyPart();
-			DataSource source = new ByteArrayDataSource(file, "application/octet-stream");
-			attachmentPart.setDataHandler(new DataHandler(source));
-			attachmentPart.setFileName(fileName);
 
 			Multipart multipart = new MimeMultipart();
+
+			MimeBodyPart textPart = new MimeBodyPart();
+			textPart.setText(message, "utf-8", "html");
 			multipart.addBodyPart(textPart);
-			multipart.addBodyPart(attachmentPart);
+
+			if (file != null && file.length > 0) {
+				MimeBodyPart attachmentPart = new MimeBodyPart();
+				DataSource source = new ByteArrayDataSource(file, "application/octet-stream");
+				attachmentPart.setDataHandler(new DataHandler(source));
+				attachmentPart.setFileName(fileName);
+				multipart.addBodyPart(attachmentPart);
+			} else {
+				System.out.println("No file attached to the email.");
+
+			}
+
 			mimeMessage.setContent(multipart);
 
 			javaMailSender.send(mimeMessage);
