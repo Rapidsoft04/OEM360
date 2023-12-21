@@ -58,8 +58,9 @@ public class EmailService {
 			helper.setTo(toEmail);
 
 			for (String ccRecipient : cc) {
-				System.out.println(ccRecipient);
-				helper.addCc(ccRecipient);
+				if (ccRecipient != null) {
+					helper.addCc(ccRecipient);
+				}	
 			}
 
 			helper.setSubject(subject);
