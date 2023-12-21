@@ -163,7 +163,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				emailTemplateService.sendMail(savedRecommendation);
 
 				return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.",
-						savedRecommendation);
+						null);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
 			}
