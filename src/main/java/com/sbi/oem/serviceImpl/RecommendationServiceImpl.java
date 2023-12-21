@@ -444,6 +444,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
+						notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECT_RECOMMENDATION);
+						// Test
 						return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
 					}
 				} else {
