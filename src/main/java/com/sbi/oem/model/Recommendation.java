@@ -276,7 +276,10 @@ public class Recommendation {
 				this.expectedImpact != null ? this.expectedImpact : null,
 				this.documentUrl != null ? this.documentUrl : null, this.fileUrl != null ? this.fileUrl : null,
 				this.createdAt != null ? this.createdAt : null, this.createdBy != null ? this.createdBy : null,
-				this.recommendationStatus != null ? this.recommendationStatus : null);
+				this.recommendationStatus != null ? this.recommendationStatus : null,
+				this.isAppOwnerApproved != null ? this.isAppOwnerApproved : null,
+				this.isAgmApproved != null ? this.isAgmApproved : null,
+				this.isAppOwnerRejected != null ? this.isAppOwnerRejected : null);
 	}
 
 }
