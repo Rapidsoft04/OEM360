@@ -62,5 +62,11 @@ public class RecommendationStatus {
 	public void setIsActive(Boolean isActive) {
 		this.isActive = isActive;
 	}
+	
+	public RecommendationStatus(String statusName) {
+		super();
+		this.statusName = statusName;
+	}
 
+	
 }
