@@ -489,4 +489,34 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 	}
 
+	@Override
+	public Response<?> updateDeploymentDetails(RecommendationDetailsRequestDto recommendationDetailsRequestDto) {
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+				Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
+						.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
+				if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
+					RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
+					details.setId(recommendDeployDetails.get().getId());
+					deplyomentDetailsRepository.save(details);
+					Optional<Recommendation> recommendation = recommendationRepository
+							.findByReferenceId(details.getRecommendRefId());
+					recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+					recommendationRepository.save(recommendation.get());
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Deployment details updated successfully.",
+							null);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found.", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
 }
