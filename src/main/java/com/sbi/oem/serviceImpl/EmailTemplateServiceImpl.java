@@ -29,8 +29,10 @@ import com.sbi.oem.model.RecommendationDeplyomentDetails;
 import com.sbi.oem.model.RecommendationMessages;
 import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.RecommendationType;
+import com.sbi.oem.model.User;
 import com.sbi.oem.repository.ComponentRepository;
 import com.sbi.oem.repository.DepartmentApproverRepository;
+import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.RecommendationService;
@@ -50,6 +52,9 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 	@Autowired
 	private RecommendationTypeRepository recommendationTypeRepository;
+	
+	@Autowired
+	private RecommendationRepository recommendationRepository;
 
 	@Override
 	public Response<?> sendMail(Recommendation recommendation ,RecommendationStatusEnum status) {
@@ -98,8 +103,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 					
 					
-					String mailSubject ="OEM Recommendation Request";
-					String mailHeading ="OEM Recommendation Request";
+					String mailSubject ="";
+					String mailHeading ="";
 					
 					
 					if(status.equals(RecommendationStatusEnum.CREATED)) {
@@ -244,9 +249,75 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 	}
 
 	@Override
-	public Response<?> sendMail(RecommendationMessages messages, RecommendationStatusEnum rejectedByAppowner) {
-		// TODO Auto-generated method stub
-		return null;
+	public Response<?> sendMail(RecommendationMessages messages, RecommendationStatusEnum status) {
+		
+		try {
+
+			CompletableFuture.runAsync(() -> {
+
+				try {
+					
+					
+					Optional<Recommendation> userRecommendation = recommendationRepository.findByReferenceId(messages.getReferenceId());
+
+					Optional<DepartmentApprover> userDepartment = departmentApproverRepository
+							.findAllByDepartmentId(userRecommendation.get().getDepartment().getId());
+					
+
+
+					String sendEmail = "";
+					String mailSubject ="";
+					String mailHeading ="";
+					
+					if(status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
+						
+						mailSubject = "OEM Recommendation Rejected ";
+						mailHeading = "OEM Recommendation Rejected by Application Owner";
+						sendEmail = userDepartment.get().getAgm().getEmail();
+						
+					}else if(status.equals(RecommendationStatusEnum.REJECTED_BY_AGM)){
+						
+						mailSubject = "OEM Recommendation Rejected ";
+						mailHeading = "OEM Recommendation Rejected by AGM";
+						sendEmail= userDepartment.get().getApplicationOwner().getEmail();
+					}
+					
+					
+					
+
+					String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
+							+ "<div style='max-width: 1200px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
+							+ "<h1 style='font-size: 24px; color: #333; font-weight: bold; '> %s </h1>"
+							+ "<p style='font-size: 16px; color: #555;  '><b> Reference ID : </b>%s</p>"
+							+ "<p style='font-size: 16px; color: #555;  '><b> RejectionReason : </b>%s</p>"
+							+ "<p style='font-size: 16px; color: #555;  '><b> AdditionalMessage : </b>%s</p>"
+							+ "</div>",
+
+							mailHeading, 
+							messages.getReferenceId(),
+							messages.getRejectionReason(),
+							messages.getAdditionalMessage()
+							
+
+					);
+
+					emailService.sendMail(sendEmail, sendEmail, mailSubject, content);
+					System.out.println("Mail sent to AGM successfully!!");
+
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
+
+			});
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to send email", null);
+		}
+
+		return new Response<>(HttpStatus.OK.value(), "Mail Send Successfully", null);
+		
 	}
 
 }
