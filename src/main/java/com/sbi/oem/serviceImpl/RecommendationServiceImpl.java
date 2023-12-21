@@ -141,6 +141,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
 				recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
 				recommendation.setCreatedAt(new Date());
+				recommendation.setUpdatedAt(new Date());
 				recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
 				recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
 				recommendation.setDepartment(new Department(recommendationAddRequestDto.getDepartmentId()));
@@ -325,6 +326,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					recommendation.get().setRecommendationStatus(new RecommendationStatus(2L));
 					recommendation.get().setIsAppOwnerApproved(true);
 					recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+					recommendation.get().setUpdatedAt(new Date());
 					recommendationRepository.save(recommendation.get());
 					RecommendationTrail trail = new RecommendationTrail();
 					trail.setCreatedAt(new Date());
@@ -362,6 +364,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				recommendationMessagesRepository.save(messages);
 				recommendObj.get().setIsAppOwnerRejected(true);
 				recommendObj.get().setRecommendationStatus(new RecommendationStatus(2L));
+				recommendObj.get().setUpdatedAt(new Date());
 				recommendationRepository.save(recommendObj.get());
 				RecommendationTrail recommendTrail = new RecommendationTrail();
 				recommendTrail.setCreatedAt(new Date());
@@ -395,6 +398,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 				RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 				messages.setCreatedAt(new Date());
 				recommendationMessagesRepository.save(messages);
+				Optional<Recommendation> recommendationObj=recommendationRepository.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
+				recommendationObj.get().setUpdatedAt(new Date());
+				recommendationRepository.save(recommendationObj.get());
 				return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(),
@@ -421,10 +427,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
+						recommendObj.get().setUpdatedAt(new Date());
+						recommendationRepository.save(recommendObj.get());
 						return new Response<>(HttpStatus.OK.value(), "Recommendation reject request sent successfully.",
 								null);
 					} else {
 						recommendObj.get().setIsAgmApproved(false);
+						recommendObj.get().setUpdatedAt(new Date());
 						recommendationRepository.save(recommendObj.get());
 						RecommendationTrail trailData = new RecommendationTrail();
 						trailData.setCreatedAt(new Date());
@@ -462,6 +471,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
 					recommendObj.get().setIsAgmApproved(true);
 					recommendObj.get().setRecommendationStatus(new RecommendationStatus(3L));
+					recommendObj.get().setUpdatedAt(new Date());
 					recommendationRepository.save(recommendObj.get());
 					RecommendationTrail trailData = new RecommendationTrail();
 					trailData.setCreatedAt(new Date());
@@ -504,6 +514,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<Recommendation> recommendation = recommendationRepository
 							.findByReferenceId(details.getRecommendRefId());
 					recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+					recommendation.get().setUpdatedAt(new Date());
 					recommendationRepository.save(recommendation.get());
 					if (recommendationDetailsRequestDto.getDescription() != null
 							|| !recommendationDetailsRequestDto.getDescription().equals("")) {
