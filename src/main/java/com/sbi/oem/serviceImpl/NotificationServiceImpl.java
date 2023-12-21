@@ -76,7 +76,7 @@ public class NotificationServiceImpl implements NotificationService {
 						User appOwner = departmentApprover.get().getApplicationOwner();
 						String text = "Your recommendation request has been rejected by AGM.";
 						createNotification(recommendation.getReferenceId(), text, appOwner);
-					} else if (status.equals(RecommendationStatusEnum.REJECT_RECOMMENDATION)) {
+					} else if (status.equals(RecommendationStatusEnum.RECCOMENDATION_REJECTED)) {
 						// Notification to OEM
 						User oem = recommendation.getCreatedBy();
 						String text = "AGM has Rejected the recommendation";

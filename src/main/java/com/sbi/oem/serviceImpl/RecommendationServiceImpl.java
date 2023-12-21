@@ -232,7 +232,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
 			List<RecommendationResponseDto> responseDtos = new ArrayList<>();
-			if (master.get().getUserTypeId().name() != UserType.OEM_SI.name()) {
+			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 				List<DepartmentApprover> departmentList = departmentApproverRepository
 						.findAllByUserId(master.get().getUserId().getId());
 				List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
@@ -271,6 +271,75 @@ public class RecommendationServiceImpl implements RecommendationService {
 				} else {
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
 				}
+			} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				List<Recommendation> recommendationList = recommendationRepository
+						.findAllByUserId(master.get().getUserId().getId());
+				for (Recommendation rcmnd : recommendationList) {
+					RecommendationResponseDto responseDto = rcmnd.convertToDto();
+					if (rcmnd.getPriorityId() != null) {
+						String priority = "";
+						if (rcmnd.getPriorityId().longValue() == 1) {
+							priority = PriorityEnum.High.getName();
+						} else if (rcmnd.getPriorityId().longValue() == 2) {
+							priority = PriorityEnum.Medium.getName();
+						} else {
+							priority = PriorityEnum.Low.getName();
+						}
+						responseDto.setPriority(priority);
+					}
+					if (rcmnd.getIsAppOwnerApproved() != null && rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
+						responseDto.setStatus(
+								new RecommendationStatus(RecommendationStatusEnum.RECOMMENDATION_APPROVED.name()));
+					}
+					if (rcmnd.getIsAppOwnerApproved() != null
+							&& rcmnd.getIsAppOwnerApproved().booleanValue() == false) {
+						responseDto.setStatus(
+								new RecommendationStatus(RecommendationStatusEnum.RECCOMENDATION_REJECTED.name()));
+					}
+					Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+							.findAllByDepartmentId(rcmnd.getDepartment().getId());
+					responseDto.setApprover(departmentApprover.get().getAgm());
+					responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+					List<RecommendationTrail> trailList = recommendationTrailRepository
+							.findAllByReferenceId(responseDto.getReferenceId());
+					responseDto.setTrailData(trailList);
+					List<RecommendationMessages> messageList = recommendationMessagesRepository
+							.findAllByReferenceId(responseDto.getReferenceId());
+					responseDto.setMessageList(messageList);
+					responseDtos.add(responseDto);
+				}
+				return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
+			} else if (master.get().getUserTypeId().name().equals(UserType.SENIOR_MANAGEMENT.name())) {
+				List<Recommendation> recommendationList = recommendationRepository
+						.findAllByUserId(master.get().getUserId().getId());
+				for (Recommendation rcmnd : recommendationList) {
+					RecommendationResponseDto responseDto = rcmnd.convertToDto();
+					if (rcmnd.getPriorityId() != null) {
+						String priority = "";
+						if (rcmnd.getPriorityId().longValue() == 1) {
+							priority = PriorityEnum.High.getName();
+						} else if (rcmnd.getPriorityId().longValue() == 2) {
+							priority = PriorityEnum.Medium.getName();
+						} else {
+							priority = PriorityEnum.Low.getName();
+						}
+						responseDto.setPriority(priority);
+					}
+					Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+							.findAllByDepartmentId(rcmnd.getDepartment().getId());
+					responseDto.setApprover(departmentApprover.get().getAgm());
+					responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+					List<RecommendationTrail> trailList = recommendationTrailRepository
+							.findAllByReferenceId(responseDto.getReferenceId());
+					responseDto.setTrailData(trailList);
+					List<RecommendationMessages> messageList = recommendationMessagesRepository
+							.findAllByReferenceId(responseDto.getReferenceId());
+					responseDto.setMessageList(messageList);
+					responseDtos.add(responseDto);
+
+				}
+				return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
+
 			} else {
 				List<Recommendation> recommendationList = recommendationRepository
 						.findAllByUserId(master.get().getUserId().getId());
@@ -294,9 +363,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 					List<RecommendationTrail> trailList = recommendationTrailRepository
 							.findAllByReferenceId(responseDto.getReferenceId());
 					responseDto.setTrailData(trailList);
+//					List<RecommendationMessages> messageList = recommendationMessagesRepository
+//							.findAllByReferenceId(responseDto.getReferenceId());
+//					responseDto.setMessageList(messageList);
 					responseDtos.add(responseDto);
+
 				}
 				return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
+
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -398,8 +472,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 				RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 				messages.setCreatedAt(new Date());
 				recommendationMessagesRepository.save(messages);
-				notificationService.getRecommendationByReferenceId(messages.getReferenceId(), RecommendationStatusEnum.REVERTED_BY_AGM);
-				Optional<Recommendation> recommendationObj=recommendationRepository.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
+				notificationService.getRecommendationByReferenceId(messages.getReferenceId(),
+						RecommendationStatusEnum.REVERTED_BY_AGM);
+				Optional<Recommendation> recommendationObj = recommendationRepository
+						.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
 				recommendationObj.get().setUpdatedAt(new Date());
 				recommendationRepository.save(recommendationObj.get());
 				return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
@@ -445,7 +521,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
-						notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECT_RECOMMENDATION);
+						notificationService.save(recommendObj.get(), RecommendationStatusEnum.RECCOMENDATION_REJECTED);
 						return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
 					}
 				} else {
@@ -487,7 +563,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
 					}
-					
+
 					notificationService.save(recommendObj.get(), RecommendationStatusEnum.APPROVED_BY_AGM);
 					return new Response<>(HttpStatus.OK.value(), "Recommendation request accepted.", null);
 				} else {
