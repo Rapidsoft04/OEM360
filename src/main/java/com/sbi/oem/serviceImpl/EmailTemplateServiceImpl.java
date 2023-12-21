@@ -319,7 +319,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						sendEmail= userDepartment.get().getApplicationOwner().getEmail();
 						
 						
-					}else if(status.equals(RecommendationStatusEnum.REJECT_RECOMMENDATION)) {
+					}else if(status.equals(RecommendationStatusEnum.RECCOMENDATION_REJECTED)) {
 						
 						mailSubject = "OEM Recommendation Rejected Completely";
 						mailHeading = "OEM Recommendation Rejected by AGM && Application Owner";
