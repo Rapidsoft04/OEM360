@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
+import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
@@ -50,7 +51,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 	private RecommendationTypeRepository recommendationTypeRepository;
 
 	@Override
-	public Response<?> sendMail(Recommendation recommendation) {
+	public Response<?> sendMail(Recommendation recommendation ,RecommendationStatusEnum status) {
 
 		try {
 
@@ -81,27 +82,41 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 					String formattedDate = localDate.format(formatter);
 
-					byte[] userRecommendationfile = convertMultipartFileToBytes(recommendation.getFileUrl());
+					byte[] userRecommendationfile =null;
+					
+					if(!recommendation.getFileUrl().isEmpty()) {
+					   userRecommendationfile = convertMultipartFileToBytes(recommendation.getFileUrl());
+					}
+					
+					
 					String fileName = recommendation.getReferenceId();
 
 					String agmEmail = userDepartment.get().getAgm().getEmail();
 					String applicationOwnerEmail = userDepartment.get().getApplicationOwner().getEmail();
 					String[] ccEmails = { applicationOwnerEmail };
 
-//				String mailSubject ="";
-//				if(recommendation.getRecommendationStatus().getId() ==1) {
-//					 mailSubject = "OEM Recommendation Request";
-//				}else if(recommendation.getRecommendationStatus().getId() == 3) {
-//					 mailSubject = "OEM Recommendation Approved";
-//				}else if(recommendation.getRecommendationStatus().getId() ==4) {
-//					 mailSubject = "OEM Recommendation Rejected";
-//				}
+					
+					
+					String mailSubject ="OEM Recommendation Request";
+					String mailHeading ="OEM Recommendation Request";
+					
+					
+					if(status.equals(RecommendationStatusEnum.CREATED)) {
+						
+						mailSubject = "OEM Recommendation Request";
+						mailHeading = "OEM Recommendation Request";
+						
+					}else {
+						
+						mailSubject = "OEM Recommendation Approved";
+						mailHeading = "OEM Recommendation Approved";
+					}
+					
 
-					String mailSubject = "OEM Recommendation Request";
 
 					String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
 							+ "<div style='max-width: 1200px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
-							+ "<h1 style='font-size: 24px; color: #333; font-weight: bold; '>OEM Recommendation Request</h1>"
+							+ "<h1 style='font-size: 24px; color: #333; font-weight: bold; '> %s </h1>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Reference Id : </b>%s</p>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Recommendation Type : </b>%s</p>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Priority Type : </b>%s</p>"
@@ -111,7 +126,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 							+ "<p style='font-size: 16px; color: #555;  '><b> Recommend Date : </b>%s</p>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Expected Impact : </b>%s</p>" + "</div>"
 							+ "</div>",
-
+							mailHeading,
 							recommendation.getReferenceId(), userRecommendationType.get().getName(), priority,
 							recommendation.getDescriptions(), userDepartment.get().getDepartment().getName(),
 							userComponent.get().getName(), formattedDate,
