@@ -38,7 +38,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 			Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 					.findAllByDepartmentId(recommendation.getDepartment().getId());
-
+			// Notification to AGM & APP OWNER
 			if (status.equals(RecommendationStatusEnum.CREATED)) {
 				List<User> userList = Arrays.asList(departmentApprover.get().getAgm(),
 						departmentApprover.get().getApplicationOwner());
@@ -54,6 +54,7 @@ public class NotificationServiceImpl implements NotificationService {
 					notificationRepository.save(newNotification);
 				}
 			} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {
+				// Notification to AGM
 				User agm = departmentApprover.get().getAgm();
 				Notification newNotification = new Notification();
 				newNotification.setMessage(recommendation.getDescriptions());
@@ -65,6 +66,7 @@ public class NotificationServiceImpl implements NotificationService {
 				newNotification.setUser(agm);
 				notificationRepository.save(newNotification);
 			} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
+				// Notification to AGM
 				User agm = departmentApprover.get().getAgm();
 				Notification newNotification = new Notification();
 				newNotification.setMessage(recommendation.getDescriptions());
