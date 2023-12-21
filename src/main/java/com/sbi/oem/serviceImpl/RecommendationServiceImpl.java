@@ -487,6 +487,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
 					}
+					
+					notificationService.save(recommendObj.get(), RecommendationStatusEnum.APPROVED_BY_AGM);
 					return new Response<>(HttpStatus.OK.value(), "Recommendation request accepted.", null);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(),
@@ -528,6 +530,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
 						recommendationMessagesRepository.save(messages);
 					}
+					notificationService.save(recommendation.get(), RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Deployment details updated successfully.",
 							null);
 				} else {

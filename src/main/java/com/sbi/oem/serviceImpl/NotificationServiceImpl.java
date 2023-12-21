@@ -19,7 +19,6 @@ import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.NotificationRepository;
 import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.service.NotificationService;
-import com.sbi.oem.service.RecommendationService;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -117,7 +116,27 @@ public class NotificationServiceImpl implements NotificationService {
 					notificationRepository.save(newNotification);
 				}
 			} else if(status.equals(RecommendationStatusEnum.REJECT_RECOMMENDATION)) {
-				
+				User oem = recommendation.getCreatedBy();
+				Notification newNotification = new Notification();
+				newNotification.setMessage(recommendation.getDescriptions());
+				newNotification.setReferenceId(recommendation.getReferenceId());
+				newNotification.setMessage("AGM has Rejected the recommendation");
+				newNotification.setCreatedAt(new Date());
+				newNotification.setUpdatedAt(new Date());
+				newNotification.setIsSeen(false);
+				newNotification.setUser(oem);
+				notificationRepository.save(newNotification);
+			} else if(status.equals(RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS)) {
+				User agm = departmentApprover.get().getAgm();
+				Notification newNotification = new Notification();
+				newNotification.setMessage(recommendation.getDescriptions());
+				newNotification.setReferenceId(recommendation.getReferenceId());
+				newNotification.setMessage("Deployment Details have been updated");
+				newNotification.setCreatedAt(new Date());
+				newNotification.setUpdatedAt(new Date());
+				newNotification.setIsSeen(false);
+				newNotification.setUser(agm);
+				notificationRepository.save(newNotification);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
