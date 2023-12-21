@@ -398,6 +398,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 				RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 				messages.setCreatedAt(new Date());
 				recommendationMessagesRepository.save(messages);
+				notificationService.getRecommendationByReferenceId(messages.getReferenceId(), RecommendationStatusEnum.REVERTED_BY_AGM);
+				Optional<Recommendation> recommendationObj=recommendationRepository.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
+				recommendationObj.get().setUpdatedAt(new Date());
+				recommendationRepository.save(recommendationObj.get());
 				return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(),
@@ -424,6 +428,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
+						notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM);
+						recommendObj.get().setUpdatedAt(new Date());
+						recommendationRepository.save(recommendObj.get());
 						return new Response<>(HttpStatus.OK.value(), "Recommendation reject request sent successfully.",
 								null);
 					} else {
@@ -477,6 +484,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
 					}
+					
+					notificationService.save(recommendObj.get(), RecommendationStatusEnum.APPROVED_BY_AGM);
 					return new Response<>(HttpStatus.OK.value(), "Recommendation request accepted.", null);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(),
@@ -517,6 +526,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
 						recommendationMessagesRepository.save(messages);
 					}
+					notificationService.save(recommendation.get(), RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Deployment details updated successfully.",
 							null);
 				} else {
