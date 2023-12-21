@@ -395,6 +395,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 				messages.setCreatedAt(new Date());
 				recommendationMessagesRepository.save(messages);
+				notificationService.getRecommendationByReferenceId(messages.getReferenceId(), RecommendationStatusEnum.REVERTED_BY_AGM);
 				return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(),
@@ -421,6 +422,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
+						notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM);
 						return new Response<>(HttpStatus.OK.value(), "Recommendation reject request sent successfully.",
 								null);
 					} else {
@@ -434,6 +436,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
+						notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECT_RECOMMENDATION);
 						return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
 					}
 				} else {

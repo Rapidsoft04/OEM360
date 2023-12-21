@@ -17,7 +17,9 @@ import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.NotificationRepository;
+import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.service.NotificationService;
+import com.sbi.oem.service.RecommendationService;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -27,6 +29,9 @@ public class NotificationServiceImpl implements NotificationService {
 
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
+
+	@Autowired
+	private RecommendationRepository recommendationRepository;
 
 	@Override
 	public void save(Recommendation recommendation, RecommendationStatusEnum status) {
@@ -85,6 +90,34 @@ public class NotificationServiceImpl implements NotificationService {
 					newNotification.setUser(user);
 					notificationRepository.save(newNotification);
 				}
+			} else if (status.equals(RecommendationStatusEnum.REVERTED_BY_AGM)) {
+				User appOwner = departmentApprover.get().getApplicationOwner();
+				Notification newNotification = new Notification();
+				newNotification.setMessage(recommendation.getDescriptions());
+				newNotification.setReferenceId(recommendation.getReferenceId());
+				newNotification.setMessage("AGM has commented on your recommendation");
+				newNotification.setCreatedAt(new Date());
+				newNotification.setUpdatedAt(new Date());
+				newNotification.setIsSeen(false);
+				newNotification.setUser(appOwner);
+				notificationRepository.save(newNotification);
+			} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_AGM)) {
+				// Notification to OEM & APP OWNER
+				List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
+						departmentApprover.get().getApplicationOwner());
+				for (User user : userList) {
+					Notification newNotification = new Notification();
+					newNotification.setMessage(recommendation.getDescriptions());
+					newNotification.setReferenceId(recommendation.getReferenceId());
+					newNotification.setMessage("Your recommendation request has been rejected by AGM.");
+					newNotification.setCreatedAt(new Date());
+					newNotification.setUpdatedAt(new Date());
+					newNotification.setIsSeen(false);
+					newNotification.setUser(user);
+					notificationRepository.save(newNotification);
+				}
+			} else if(status.equals(RecommendationStatusEnum.REJECT_RECOMMENDATION)) {
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -123,7 +156,18 @@ public class NotificationServiceImpl implements NotificationService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
+	@Override
+	public void getRecommendationByReferenceId(String referenceId, RecommendationStatusEnum status) {
+		try {
+			Optional<Recommendation> recommendation = recommendationRepository.findByReferenceId(referenceId);
+			if (recommendation != null && recommendation.isPresent()) {
+				save(recommendation.get(), status);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
 }
