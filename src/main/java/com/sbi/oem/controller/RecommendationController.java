@@ -115,4 +115,17 @@ public class RecommendationController {
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 
 	}
+
+	@PostMapping("/deployment/details/update")
+	public ResponseEntity<?> updateDeploymentDetails(
+			@RequestBody RecommendationDetailsRequestDto recommendationDetailsRequestDto) {
+		Response<?> validationResponse = validationService
+				.checkForDeploymentDetailsAddPayload(recommendationDetailsRequestDto);
+		if (validationResponse.getResponseCode() == HttpStatus.OK.value()) {
+			Response<?> response = recommendationService.updateDeploymentDetails(recommendationDetailsRequestDto);
+			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+		} else {
+			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
+		}
+	}
 }
