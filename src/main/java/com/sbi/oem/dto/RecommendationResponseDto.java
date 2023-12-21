@@ -3,6 +3,8 @@ package com.sbi.oem.dto;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Column;
+
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.Department;
 import com.sbi.oem.model.RecommendationMessages;
@@ -48,6 +50,12 @@ public class RecommendationResponseDto {
 	private RecommendationStatus status;
 
 	private List<RecommendationMessages> messageList;
+
+	private Boolean isAppOwnerApproved;
+
+	private Boolean isAgmApproved;
+
+	private Boolean isAppOwnerRejected;
 
 	public Long getId() {
 		return id;
@@ -193,10 +201,35 @@ public class RecommendationResponseDto {
 		this.messageList = messageList;
 	}
 
+	public Boolean getIsAppOwnerApproved() {
+		return isAppOwnerApproved;
+	}
+
+	public void setIsAppOwnerApproved(Boolean isAppOwnerApproved) {
+		this.isAppOwnerApproved = isAppOwnerApproved;
+	}
+
+	public Boolean getIsAgmApproved() {
+		return isAgmApproved;
+	}
+
+	public void setIsAgmApproved(Boolean isAgmApproved) {
+		this.isAgmApproved = isAgmApproved;
+	}
+
+	public Boolean getIsAppOwnerRejected() {
+		return isAppOwnerRejected;
+	}
+
+	public void setIsAppOwnerRejected(Boolean isAppOwnerRejected) {
+		this.isAppOwnerRejected = isAppOwnerRejected;
+	}
+
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,
 			RecommendationType recommendationType, Date recommendDate, Department department, Component component,
 			String expectedImpact, String documentUrl, String fileUrl, Date createdAt, User createdBy,
-			RecommendationStatus status) {
+			RecommendationStatus status, Boolean isAppOwnerApproved, Boolean isAgmApproved,
+			Boolean isAppOwnerRejected) {
 		super();
 		this.id = id;
 		this.referenceId = referenceId;
@@ -211,6 +244,9 @@ public class RecommendationResponseDto {
 		this.createdAt = createdAt;
 		this.createdBy = createdBy;
 		this.status = status;
+		this.isAppOwnerApproved = isAppOwnerApproved;
+		this.isAgmApproved = isAgmApproved;
+		this.isAppOwnerRejected = isAppOwnerRejected;
 	}
 
 }
