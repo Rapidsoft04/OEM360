@@ -505,12 +505,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findByReferenceId(details.getRecommendRefId());
 					recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 					recommendationRepository.save(recommendation.get());
-					RecommendationMessages messages=new RecommendationMessages();
-					messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
-					messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
-					messages.setCreatedAt(new Date());
-					messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
-					recommendationMessagesRepository.save(messages);
+					if (recommendationDetailsRequestDto.getDescription() != null
+							|| !recommendationDetailsRequestDto.getDescription().equals("")) {
+						RecommendationMessages messages = new RecommendationMessages();
+						messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
+						messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
+						messages.setCreatedAt(new Date());
+						messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
+						recommendationMessagesRepository.save(messages);
+					}
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Deployment details updated successfully.",
 							null);
 				} else {
