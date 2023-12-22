@@ -11,7 +11,6 @@ import javax.mail.util.ByteArrayDataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -78,19 +77,17 @@ public class EmailService {
 				attachmentPart.setDataHandler(new DataHandler(source));
 				attachmentPart.setFileName(fileName);
 				multipart.addBodyPart(attachmentPart);
-			} else {
-				System.out.println("No file attached to the email.");
-
 			}
 
 			mimeMessage.setContent(multipart);
 
 			javaMailSender.send(mimeMessage);
 
-			System.out.println("Mail sent successfully");
+			
 		} catch (MessagingException e) {
+			
 			e.printStackTrace();
-			System.out.println("Failed to send email: " + e.getMessage());
+			
 		}
 	}
 

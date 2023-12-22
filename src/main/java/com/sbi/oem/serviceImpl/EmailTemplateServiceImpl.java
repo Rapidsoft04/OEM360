@@ -127,18 +127,23 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					
 
 
-					String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
-							+ "<div style='max-width: 1200px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
-							+ "<h1 style='font-size: 24px; color: #333; font-weight: bold; '> %s </h1>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Reference Id : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Recommendation Type : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Priority Type : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Descriptions : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Department Name :</b> %s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Component Name : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Recommend Date : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Expected Impact : </b>%s</p>" + "</div>"
-							+ "</div>",
+					String content = String.format(
+						    "<div style='background-color: #f4f4f4; padding: 20px;'>"
+						    + "<div style='max-width: 1200px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
+						    + "<div style='background-image: url(https://www.freepnglogos.com/uploads/sbi-logo-png/sbi-logo-sbi-symbol-meaning-history-and-evolution-11.png);"
+						    + "background-size: contain; background-blend-mode: hard-light; background-repeat: no-repeat; background-position: center;'>"
+						    + "<h1 style='font-size: 24px; color: #333; font-weight: bold;'> %s </h1>"
+						    + "<p style='font-size: 16px; color: #555;'><b> Reference Id : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #555;'><b> Recommendation Type : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #555;'><b> Priority Type : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #555;'><b> Descriptions : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #555;'><b> Department Name :</b> %s</p>"
+						    + "<p style='font-size: 16px; color: #555;'><b> Component Name : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #555;'><b> Recommend Date : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #555;'><b> Expected Impact : </b>%s</p>"
+						    + "</div>"
+						    + "</div>"
+						    + "</div>",
 							mailHeading,
 							recommendation.getReferenceId(), userRecommendationType.get().getName(), priority,
 							recommendation.getDescriptions(), userDepartment.get().getDepartment().getName(),
@@ -147,7 +152,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 					emailService.sendMailAndFile(agmEmail, ccEmails, mailSubject, content, userRecommendationfile,
 							fileName);
-					System.out.println("Mail sent to AGM successfully!!");
+					
 
 //	                    emailService.sendMail(applicationOwnerEmail, mailSubject, content);
 //	                    System.out.println("Mail sent to Application Owner successfully!!");
@@ -255,7 +260,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					);
 
 					emailService.sendMail(sendEmail, ccEmails, mailSubject, content);
-					System.out.println("Mail sent to AGM successfully!!");
+					
 
 				} catch (MessagingException e) {
 					e.printStackTrace();
@@ -347,7 +352,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					);
 
 					emailService.sendMail(sendEmail, ccEmail, mailSubject, content);
-					System.out.println("Mail sent to AGM successfully!!");
+					
 
 				} catch (MessagingException e) {
 					e.printStackTrace();
