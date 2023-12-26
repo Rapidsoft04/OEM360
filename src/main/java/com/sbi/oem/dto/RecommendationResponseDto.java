@@ -64,6 +64,8 @@ public class RecommendationResponseDto {
 
 	List<RecommendationResponseDto> approvedRecommendation;
 
+	List<RecommendationResponseDto> recommendations;
+
 	public Long getId() {
 		return id;
 	}
@@ -254,6 +256,14 @@ public class RecommendationResponseDto {
 
 	public void setApprovedRecommendation(List<RecommendationResponseDto> approvedRecommendation) {
 		this.approvedRecommendation = approvedRecommendation;
+	}
+
+	public List<RecommendationResponseDto> getRecommendations() {
+		return recommendations;
+	}
+
+	public void setRecommendations(List<RecommendationResponseDto> recommendations) {
+		this.recommendations = recommendations;
 	}
 
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,
