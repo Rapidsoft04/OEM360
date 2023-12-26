@@ -120,6 +120,7 @@ public class NotificationServiceImpl implements NotificationService {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 	}
+	
 	@Override
 	public void markAsSeen(Long userId) {
 		try {
