@@ -62,7 +62,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 	private RecommendationRepository recommendationRepository;
 
 	@Override
-	public Response<?> sendMail(Recommendation recommendation ,RecommendationStatusEnum status) {
+	public Response<?> sendMailRecommendation(Recommendation recommendation ,RecommendationStatusEnum status) {
 
 		try {
 
@@ -184,7 +184,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 
 	@Override
-	public Response<?> sendMail(RecommendationDeplyomentDetails details, RecommendationStatusEnum status) {
+	public Response<?> sendMailRecommendationDeplyomentDetails(RecommendationDeplyomentDetails details, RecommendationStatusEnum status) {
 		try {
 
 			CompletableFuture.runAsync(() -> {
@@ -275,7 +275,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 	}
 
 	@Override
-	public Response<?> sendMail(RecommendationMessages messages, RecommendationStatusEnum status) {
+	public Response<?> sendMailRecommendationMessages(RecommendationMessages messages, RecommendationStatusEnum status) {
 		
 		try {
 
