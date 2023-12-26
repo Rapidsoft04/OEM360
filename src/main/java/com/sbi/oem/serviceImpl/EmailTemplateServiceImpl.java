@@ -62,7 +62,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 	private RecommendationRepository recommendationRepository;
 
 	@Override
-	public Response<?> sendMail(Recommendation recommendation ,RecommendationStatusEnum status) {
+	public Response<?> sendMailRecommendation(Recommendation recommendation ,RecommendationStatusEnum status) {
 
 		try {
 
@@ -104,7 +104,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					String agmEmail = userDepartment.get().getAgm().getEmail();
 					String applicationOwnerEmail = userDepartment.get().getApplicationOwner().getEmail();
 					String OemMail = user.get().getEmail();
-					String[] ccEmails = { applicationOwnerEmail, OemMail };
+					String[] ccEmails = {};
+					String sendMail= "";
 
 					
 					
@@ -116,6 +117,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						
 						mailSubject = "OEM Recommendation Request";
 						mailHeading = "OEM Recommendation Request";
+						sendMail =agmEmail;
+						ccEmails = new String[]{applicationOwnerEmail};
 						
 						
 					}else if(status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)){
@@ -123,31 +126,42 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						
 						mailSubject = "OEM Recommendation Approved";
 						mailHeading = "OEM Recommendation Approved By AGM";
+						sendMail =OemMail;
+						ccEmails =new String[]{applicationOwnerEmail};
 					}
 					
 
 
-					String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
-							+ "<div style='max-width: 1200px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
-							+ "<h1 style='font-size: 24px; color: #333; font-weight: bold; '> %s </h1>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Reference Id : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Recommendation Type : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Priority Type : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Descriptions : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Department Name :</b> %s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Component Name : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Recommend Date : </b>%s</p>"
-							+ "<p style='font-size: 16px; color: #555;  '><b> Expected Impact : </b>%s</p>" + "</div>"
-							+ "</div>",
+					String content = String.format(
+						    "<div style='background-color: #f4f4f4; padding: 20px;'>"
+						    + "<div style='max-width: 1600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
+						    + "<div style='background-image: url(https://www.freepnglogos.com/uploads/sbi-logo-png/sbi-logo-sbi-symbol-meaning-history-and-evolution-11.png);"
+						    + "background-size: contain; background-blend-mode: hard-light; background-repeat: no-repeat; background-position: center; background-color: rgba(255, 255, 255, 2);'>"
+						    + "<h1 style='font-size: 24px; color: #333; font-weight: bold;'> %s </h1>"
+						    + "<p style='font-size: 16px; color: #333;'><b> Reference Id : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #333;'><b> Recommendation Type : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #333;'><b> Priority Type : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #333;'><b> Descriptions : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #333;'><b> Department Name :</b> %s</p>"
+						    + "<p style='font-size: 16px; color: #333;'><b> Component Name : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #333;'><b> Recommend Date : </b>%s</p>"
+						    + "<p style='font-size: 16px; color: #333;'><b> Expected Impact : </b>%s</p>"
+						    + "</div>"
+						    + "</div>"
+						    + "</div>",
 							mailHeading,
-							recommendation.getReferenceId(), userRecommendationType.get().getName(), priority,
-							recommendation.getDescriptions(), userDepartment.get().getDepartment().getName(),
-							userComponent.get().getName(), formatDate(recommendation.getRecommendDate()),
-							recommendation.getExpectedImpact() != null ? recommendation.getExpectedImpact() : "NA");
+							recommendation.getReferenceId(), 
+							userRecommendationType.get().getName() != null ? userRecommendationType.get().getName() :"NA", 
+							priority != null ? priority :"NA",
+							recommendation.getDescriptions() != null ? recommendation.getDescriptions() : "NA",
+							userDepartment.get().getDepartment().getName() != null ? userDepartment.get().getDepartment().getName() : "NA",
+							userComponent.get().getName() != null ? userComponent.get().getName() :"NA",
+							recommendation.getRecommendDate() != null ? formatDate(recommendation.getRecommendDate()) :"NA",
+							recommendation.getExpectedImpact() != null ? recommendation.getExpectedImpact() : "NA"); 
 
-					emailService.sendMailAndFile(agmEmail, ccEmails, mailSubject, content, userRecommendationfile,
+					emailService.sendMailAndFile(sendMail, ccEmails, mailSubject, content, userRecommendationfile,
 							fileName);
-					System.out.println("Mail sent to AGM successfully!!");
+					
 
 //	                    emailService.sendMail(applicationOwnerEmail, mailSubject, content);
 //	                    System.out.println("Mail sent to Application Owner successfully!!");
@@ -167,36 +181,10 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 		return new Response<>(HttpStatus.OK.value(), "Mail Send Successfully", null);
 	}
 
-	private byte[] convertMultipartFileToBytes(String fileUrl) {
 
-		if (fileUrl == null || fileUrl.isEmpty()) {
-			return null;
-		}
-
-		try {
-			URL url = new URL(fileUrl);
-			URLConnection connection = url.openConnection();
-
-			try (InputStream inputStream = connection.getInputStream();
-					ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-
-				byte[] buffer = new byte[4096];
-				int bytesRead;
-
-				while ((bytesRead = inputStream.read(buffer)) != -1) {
-					outputStream.write(buffer, 0, bytesRead);
-				}
-
-				return outputStream.toByteArray();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
 
 	@Override
-	public Response<?> sendMail(RecommendationDeplyomentDetails details, RecommendationStatusEnum status) {
+	public Response<?> sendMailRecommendationDeplyomentDetails(RecommendationDeplyomentDetails details, RecommendationStatusEnum status) {
 		try {
 
 			CompletableFuture.runAsync(() -> {
@@ -235,7 +223,9 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 				
 
 					String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
-							+ "<div style='max-width: 1200px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
+							+ "<div style='max-width: 1600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
+							+ "<div style='background-image: url(https://www.freepnglogos.com/uploads/sbi-logo-png/sbi-logo-sbi-symbol-meaning-history-and-evolution-11.png);"
+						    + "background-size: contain; background-blend-mode: hard-light; background-repeat: no-repeat; background-position: center; background-color: rgba(255, 255, 255, 2);'>"
 							+ "<h1 style='font-size: 24px; color: #333; font-weight: bold; '> %s</h1>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Reference Id : </b>%s</p>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Development Start Date : </b>%s</p>"
@@ -244,18 +234,22 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 							+ "<p style='font-size: 16px; color: #555;  '><b> Deployment Date : </b>%s</p>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Impacted Department : </b>%s</p>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Global Support Number : </b>%s</p>"
+							+ "</div>"
 							+ "</div>",
 
 							mailHeading,
-							details.getRecommendRefId(), formatDate(details.getDevelopmentStartDate()),
-							formatDate(details.getDevelopementEndDate()), formatDate(details.getTestCompletionDate()),
-							formatDate(details.getDeploymentDate()), details.getImpactedDepartment(),
+							details.getRecommendRefId(), 
+							details.getDevelopmentStartDate() != null ?  formatDate(details.getDevelopmentStartDate()) :"NA",
+							details.getDevelopementEndDate() != null ?  formatDate(details.getDevelopementEndDate()) :"NA",
+							details.getTestCompletionDate() != null ? formatDate(details.getTestCompletionDate()) :"NA",
+							details.getDeploymentDate() != null ?  formatDate(details.getDeploymentDate()) :"NA" , 
+							details.getImpactedDepartment() != null ? details.getImpactedDepartment() : "NA",
 							details.getGlobalSupportNumber() != null ? details.getGlobalSupportNumber() : "NA"
 
 					);
 
 					emailService.sendMail(sendEmail, ccEmails, mailSubject, content);
-					System.out.println("Mail sent to AGM successfully!!");
+					
 
 				} catch (MessagingException e) {
 					e.printStackTrace();
@@ -281,7 +275,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 	}
 
 	@Override
-	public Response<?> sendMail(RecommendationMessages messages, RecommendationStatusEnum status) {
+	public Response<?> sendMailRecommendationMessages(RecommendationMessages messages, RecommendationStatusEnum status) {
 		
 		try {
 
@@ -331,23 +325,26 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					
 
 					String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
-							+ "<div style='max-width: 1200px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
+							+ "<div style='max-width: 1600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
+							+ "<div style='background-image: url(https://www.freepnglogos.com/uploads/sbi-logo-png/sbi-logo-sbi-symbol-meaning-history-and-evolution-11.png);"
+						    + "background-size: contain; background-blend-mode: hard-light; background-repeat: no-repeat; background-position: center; background-color: rgba(255, 255, 255, 2);'>"
 							+ "<h1 style='font-size: 24px; color: #333; font-weight: bold; '> %s </h1>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> Reference ID : </b>%s</p>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> RejectionReason : </b>%s</p>"
 							+ "<p style='font-size: 16px; color: #555;  '><b> AdditionalMessage : </b>%s</p>"
+							+ "</div>"
 							+ "</div>",
 
 							mailHeading, 
-							messages.getReferenceId(),
-							messages.getRejectionReason(),
-							messages.getAdditionalMessage()
+							messages.getReferenceId() != null ? messages.getReferenceId() :"NA",
+							messages.getRejectionReason() != null ? messages.getRejectionReason() :"NA",
+							messages.getAdditionalMessage() != null ? messages.getAdditionalMessage() :"NA"
 							
 
 					);
 
 					emailService.sendMail(sendEmail, ccEmail, mailSubject, content);
-					System.out.println("Mail sent to AGM successfully!!");
+					
 
 				} catch (MessagingException e) {
 					e.printStackTrace();
@@ -363,6 +360,34 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 		return new Response<>(HttpStatus.OK.value(), "Mail Send Successfully", null);
 		
+	}
+	
+	private byte[] convertMultipartFileToBytes(String fileUrl) {
+
+		if (fileUrl == null || fileUrl.isEmpty()) {
+			return null;
+		}
+
+		try {
+			URL url = new URL(fileUrl);
+			URLConnection connection = url.openConnection();
+
+			try (InputStream inputStream = connection.getInputStream();
+					ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+				byte[] buffer = new byte[4096];
+				int bytesRead;
+
+				while ((bytesRead = inputStream.read(buffer)) != -1) {
+					outputStream.write(buffer, 0, bytesRead);
+				}
+
+				return outputStream.toByteArray();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 }

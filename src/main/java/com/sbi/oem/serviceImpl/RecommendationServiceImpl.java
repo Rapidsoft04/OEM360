@@ -165,7 +165,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					trailData.setReferenceId(refId);
 					recommendationTrailRepository.save(trailData);
 					notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
-					emailTemplateService.sendMail(savedRecommendation, RecommendationStatusEnum.CREATED);
+					emailTemplateService.sendMailRecommendation(recommendation,RecommendationStatusEnum.CREATED);
 
 					return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", null);
 				}
@@ -432,7 +432,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					recommendationTrailRepository.save(trail);
 
 					notificationService.save(recommendation.get(), RecommendationStatusEnum.APPROVED_BY_APPOWNER);
-					emailTemplateService.sendMail(details, RecommendationStatusEnum.APPROVED_BY_APPOWNER);
+					emailTemplateService.sendMailRecommendationDeplyomentDetails(details, RecommendationStatusEnum.APPROVED_BY_APPOWNER);
 					return new Response<>(HttpStatus.CREATED.value(), "Deployment details added successfully.", null);
 				}
 			} else {
@@ -473,7 +473,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					deplyomentDetailsRepository.delete(recommendDeploymentDetails.get());
 				}
 				notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_APPOWNER);
-				emailTemplateService.sendMail(messages, RecommendationStatusEnum.REJECTED_BY_APPOWNER);
+				emailTemplateService.sendMailRecommendationMessages(messages, RecommendationStatusEnum.REJECTED_BY_APPOWNER);
 				return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to reject.", null);
@@ -497,7 +497,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				recommendationMessagesRepository.save(messages);
 				notificationService.getRecommendationByReferenceId(messages.getReferenceId(),
 						RecommendationStatusEnum.REVERTED_BY_AGM);
-				emailTemplateService.sendMail(messages, RecommendationStatusEnum.REVERTED_BY_AGM);
+				emailTemplateService.sendMailRecommendationMessages(messages, RecommendationStatusEnum.REVERTED_BY_AGM);
 				Optional<Recommendation> recommendationObj = recommendationRepository
 						.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
 				recommendationObj.get().setUpdatedAt(new Date());
@@ -529,7 +529,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
 						notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM);
-						emailTemplateService.sendMail(messages, RecommendationStatusEnum.REJECTED_BY_AGM);
+						emailTemplateService.sendMailRecommendationMessages(messages, RecommendationStatusEnum.REJECTED_BY_AGM);
 						recommendObj.get().setUpdatedAt(new Date());
 						recommendationRepository.save(recommendObj.get());
 						return new Response<>(HttpStatus.OK.value(), "Recommendation reject request sent successfully.",
@@ -546,7 +546,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						messages.setCreatedAt(new Date());
 						recommendationMessagesRepository.save(messages);
 						notificationService.save(recommendObj.get(), RecommendationStatusEnum.RECCOMENDATION_REJECTED);
-						emailTemplateService.sendMail(messages, RecommendationStatusEnum.RECCOMENDATION_REJECTED);
+						emailTemplateService.sendMailRecommendationMessages(messages, RecommendationStatusEnum.RECCOMENDATION_REJECTED);
 						return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
 					}
 				} else {
@@ -589,7 +589,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					}
 
 					notificationService.save(recommendObj.get(), RecommendationStatusEnum.APPROVED_BY_AGM);
-					emailTemplateService.sendMail(recommendObj.get(), RecommendationStatusEnum.APPROVED_BY_AGM);
+					emailTemplateService.sendMailRecommendation(recommendObj.get(), RecommendationStatusEnum.APPROVED_BY_AGM);
 					return new Response<>(HttpStatus.OK.value(), "Recommendation request accepted.", null);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(),
@@ -631,7 +631,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendationMessagesRepository.save(messages);
 					}
 					notificationService.save(recommendation.get(), RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
-					emailTemplateService.sendMail(savedDeploymentDetails,
+					emailTemplateService.sendMailRecommendationDeplyomentDetails(savedDeploymentDetails,
 							RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Deployment details updated successfully.",
