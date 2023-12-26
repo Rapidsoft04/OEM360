@@ -126,8 +126,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						
 						mailSubject = "OEM Recommendation Approved";
 						mailHeading = "OEM Recommendation Approved By AGM";
-						sendMail =applicationOwnerEmail;
-						ccEmails =new String[]{OemMail};
+						sendMail =OemMail;
+						ccEmails =new String[]{applicationOwnerEmail};
 					}
 					
 
