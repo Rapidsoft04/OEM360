@@ -1,5 +1,6 @@
 package com.sbi.oem.dto;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class RecommendationResponseDto {
 	private Component component;
 
 	private String expectedImpact;
-	
+
 	private String impactedDepartment;
 
 	private String documentUrl;
@@ -58,6 +59,10 @@ public class RecommendationResponseDto {
 	private Boolean isAgmApproved;
 
 	private Boolean isAppOwnerRejected;
+
+	List<RecommendationResponseDto> pendingRecommendation;
+
+	List<RecommendationResponseDto> approvedRecommendation;
 
 	public Long getId() {
 		return id;
@@ -235,10 +240,26 @@ public class RecommendationResponseDto {
 		this.impactedDepartment = impactedDepartment;
 	}
 
+	public List<RecommendationResponseDto> getPendingRecommendation() {
+		return pendingRecommendation;
+	}
+
+	public void setPendingRecommendation(List<RecommendationResponseDto> pendingRecommendation) {
+		this.pendingRecommendation = pendingRecommendation;
+	}
+
+	public List<RecommendationResponseDto> getApprovedRecommendation() {
+		return approvedRecommendation;
+	}
+
+	public void setApprovedRecommendation(List<RecommendationResponseDto> approvedRecommendation) {
+		this.approvedRecommendation = approvedRecommendation;
+	}
+
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,
 			RecommendationType recommendationType, Date recommendDate, Department department, Component component,
-			String expectedImpact,String impactedDepartment, String documentUrl, String fileUrl, Date createdAt, User createdBy,
-			RecommendationStatus status, Boolean isAppOwnerApproved, Boolean isAgmApproved,
+			String expectedImpact, String impactedDepartment, String documentUrl, String fileUrl, Date createdAt,
+			User createdBy, RecommendationStatus status, Boolean isAppOwnerApproved, Boolean isAgmApproved,
 			Boolean isAppOwnerRejected) {
 		super();
 		this.id = id;
@@ -249,7 +270,7 @@ public class RecommendationResponseDto {
 		this.department = department;
 		this.component = component;
 		this.expectedImpact = expectedImpact;
-		this.impactedDepartment=impactedDepartment;
+		this.impactedDepartment = impactedDepartment;
 		this.documentUrl = documentUrl;
 		this.fileUrl = fileUrl;
 		this.createdAt = createdAt;
@@ -258,6 +279,11 @@ public class RecommendationResponseDto {
 		this.isAppOwnerApproved = isAppOwnerApproved;
 		this.isAgmApproved = isAgmApproved;
 		this.isAppOwnerRejected = isAppOwnerRejected;
+	}
+
+	public RecommendationResponseDto() {
+		super();
+		// TODO Auto-generated constructor stub
 	}
 
 }
