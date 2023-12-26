@@ -17,7 +17,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 	@Query(value = "SELECT * FROM recommendation where department_id in (?1) order by updated_at desc",nativeQuery = true)
 	List<Recommendation> findAllByDepartmentIdIn(List<Long> departmentIds);
 
-	@Query(value = "SELECT * FROM recommendation where created_by=?1 order by updated_at asc",nativeQuery = true)
+	@Query(value = "SELECT * FROM recommendation where created_by=?1 order by updated_at desc",nativeQuery = true)
 	List<Recommendation> findAllByUserId(Long id);
 
 }
