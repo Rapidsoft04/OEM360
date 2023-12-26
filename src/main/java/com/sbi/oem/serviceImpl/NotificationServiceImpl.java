@@ -40,7 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
 				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 						.findAllByDepartmentId(recommendation.getDepartment().getId());
 				// Notification to AGM & APP OWNER
-				if (departmentApprover.get() != null && !departmentApprover.isEmpty()) {
+				if (departmentApprover != null && !departmentApprover.isEmpty()) {
 					if (status.equals(RecommendationStatusEnum.CREATED)) {
 						List<User> userList = Arrays.asList(departmentApprover.get().getAgm(),
 								departmentApprover.get().getApplicationOwner());
