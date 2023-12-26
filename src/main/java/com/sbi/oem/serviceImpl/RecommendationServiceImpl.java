@@ -166,6 +166,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					List<Recommendation> recommendList = recommendationRepository.findAll();
 					String refId = generateReferenceId(recommendList.size());
 					recommendation.setReferenceId(refId);
+					recommendation.setUpdatedAt(new Date());
 					Recommendation savedRecommendation = recommendationRepository.save(recommendation);
 
 					RecommendationTrail trailData = new RecommendationTrail();
