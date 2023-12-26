@@ -153,6 +153,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					recommendation
 							.setRecommendationType(new RecommendationType(recommendationAddRequestDto.getTypeId()));
 					recommendation.setRecommendationStatus(new RecommendationStatus(1L));
+					recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
 					List<Recommendation> recommendList = recommendationRepository.findAll();
 					String refId = generateReferenceId(recommendList.size());
 					recommendation.setReferenceId(refId);
