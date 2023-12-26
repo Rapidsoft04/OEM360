@@ -8,6 +8,7 @@ import javax.persistence.Column;
 
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.Department;
+import com.sbi.oem.model.RecommendationDeplyomentDetails;
 import com.sbi.oem.model.RecommendationMessages;
 import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.RecommendationTrail;
@@ -65,6 +66,8 @@ public class RecommendationResponseDto {
 	List<RecommendationResponseDto> approvedRecommendation;
 
 	List<RecommendationResponseDto> recommendations;
+
+	private RecommendationDeplyomentDetails recommendationDeploymentDetails;
 
 	public Long getId() {
 		return id;
@@ -264,6 +267,14 @@ public class RecommendationResponseDto {
 
 	public void setRecommendations(List<RecommendationResponseDto> recommendations) {
 		this.recommendations = recommendations;
+	}
+
+	public RecommendationDeplyomentDetails getRecommendationDeploymentDetails() {
+		return recommendationDeploymentDetails;
+	}
+
+	public void setRecommendationDeploymentDetails(RecommendationDeplyomentDetails recommendationDeploymentDetails) {
+		this.recommendationDeploymentDetails = recommendationDeploymentDetails;
 	}
 
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,

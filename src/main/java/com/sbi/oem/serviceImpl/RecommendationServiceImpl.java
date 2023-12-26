@@ -285,6 +285,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 						List<RecommendationMessages> messageList = recommendationMessagesRepository
 								.findAllByReferenceId(responseDto.getReferenceId());
 						responseDto.setMessageList(messageList);
+						Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+								.findByRecommendRefId(rcmnd.getReferenceId());
+						if (deploymentDetails != null && deploymentDetails.isPresent()) {
+							responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+						} else {
+							responseDto.setRecommendationDeploymentDetails(null);
+						}
 						if (rcmnd.getIsAppOwnerApproved() != null
 								&& rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
 							approvedRecommendation.add(responseDto);
@@ -294,6 +301,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendations.add(responseDtos);
 						}
 //						responseDtos.add(responseDto);
+
 					}
 					responseDtos.setApprovedRecommendation(approvedRecommendation);
 					responseDtos.setPendingRecommendation(pendingRecommendation);
@@ -305,7 +313,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				}
 			} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
 				RecommendationResponseDto responseDtos = new RecommendationResponseDto();
-				List<RecommendationResponseDto> recommendations=new ArrayList<>();
+				List<RecommendationResponseDto> recommendations = new ArrayList<>();
 				List<Recommendation> recommendationList = recommendationRepository
 						.findAllByUserId(master.get().getUserId().getId());
 				for (Recommendation rcmnd : recommendationList) {
@@ -340,16 +348,24 @@ public class RecommendationServiceImpl implements RecommendationService {
 					List<RecommendationMessages> messageList = recommendationMessagesRepository
 							.findAllByReferenceId(responseDto.getReferenceId());
 					responseDto.setMessageList(messageList);
-					recommendations.add(responseDtos);
+					Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+							.findByRecommendRefId(rcmnd.getReferenceId());
+					if (deploymentDetails != null && deploymentDetails.isPresent()) {
+						responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+					} else {
+						responseDto.setRecommendationDeploymentDetails(null);
+					}
+					recommendations.add(responseDto);
 //					responseDtos.add(responseDto);
 				}
 				responseDtos.setRecommendations(recommendations);
 				return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
 			} else if (master.get().getUserTypeId().name().equals(UserType.SENIOR_MANAGEMENT.name())) {
 				RecommendationResponseDto responseDtos = new RecommendationResponseDto();
-				List<RecommendationResponseDto> recommendations=new ArrayList<>();
+				List<RecommendationResponseDto> recommendations = new ArrayList<>();
 				List<Recommendation> recommendationList = recommendationRepository
 						.findAllByUserId(master.get().getUserId().getId());
+
 				for (Recommendation rcmnd : recommendationList) {
 					RecommendationResponseDto responseDto = rcmnd.convertToDto();
 					if (rcmnd.getPriorityId() != null) {
@@ -362,6 +378,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 							priority = PriorityEnum.Low.getName();
 						}
 						responseDto.setPriority(priority);
+						Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+								.findByRecommendRefId(rcmnd.getReferenceId());
+						if (deploymentDetails != null && deploymentDetails.isPresent()) {
+							responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+						} else {
+							responseDto.setRecommendationDeploymentDetails(null);
+						}
 					}
 					Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 							.findAllByDepartmentId(rcmnd.getDepartment().getId());
@@ -373,7 +396,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 					List<RecommendationMessages> messageList = recommendationMessagesRepository
 							.findAllByReferenceId(responseDto.getReferenceId());
 					responseDto.setMessageList(messageList);
-					recommendations.add(responseDtos);
+					Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+							.findByRecommendRefId(rcmnd.getReferenceId());
+					if (deploymentDetails != null && deploymentDetails.isPresent()) {
+						responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+					} else {
+						responseDto.setRecommendationDeploymentDetails(null);
+					}
+					recommendations.add(responseDto);
 //					responseDtos.add(responseDto);
 
 				}
@@ -382,7 +412,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 			} else {
 				RecommendationResponseDto responseDtos = new RecommendationResponseDto();
-				List<RecommendationResponseDto> recommendations=new ArrayList<>();
+				List<RecommendationResponseDto> recommendations = new ArrayList<>();
 				List<Recommendation> recommendationList = recommendationRepository
 						.findAllByUserId(master.get().getUserId().getId());
 				for (Recommendation rcmnd : recommendationList) {
@@ -408,6 +438,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 //					List<RecommendationMessages> messageList = recommendationMessagesRepository
 //							.findAllByReferenceId(responseDto.getReferenceId());
 //					responseDto.setMessageList(messageList);
+					Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+							.findByRecommendRefId(rcmnd.getReferenceId());
+					if (deploymentDetails != null && deploymentDetails.isPresent()) {
+						responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+					} else {
+						responseDto.setRecommendationDeploymentDetails(null);
+					}
 					recommendations.add(responseDto);
 //					responseDtos.add(responseDto);
 
