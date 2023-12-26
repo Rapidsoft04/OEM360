@@ -40,7 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
 				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 						.findAllByDepartmentId(recommendation.getDepartment().getId());
 				// Notification to AGM & APP OWNER
-				if (departmentApprover.get() != null && !departmentApprover.isEmpty()) {
+				if (departmentApprover != null && !departmentApprover.isEmpty()) {
 					if (status.equals(RecommendationStatusEnum.CREATED)) {
 						List<User> userList = Arrays.asList(departmentApprover.get().getAgm(),
 								departmentApprover.get().getApplicationOwner());
@@ -96,14 +96,18 @@ public class NotificationServiceImpl implements NotificationService {
 	}
 
 	public void createNotification(String referenceId, String notificationText, User user) {
-		Notification notification = new Notification();
-		notification.setReferenceId(referenceId);
-		notification.setMessage(notificationText);
-		notification.setUser(user);
-		notification.setIsSeen(false);
-		notification.setCreatedAt(new Date());
-		notification.setUpdatedAt(new Date());
-		notificationRepository.save(notification);
+		try {			
+			Notification notification = new Notification();
+			notification.setReferenceId(referenceId);
+			notification.setMessage(notificationText);
+			notification.setUser(user);
+			notification.setIsSeen(false);
+			notification.setCreatedAt(new Date());
+			notification.setUpdatedAt(new Date());
+			notificationRepository.save(notification);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -116,7 +120,7 @@ public class NotificationServiceImpl implements NotificationService {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 	}
-
+	
 	@Override
 	public void markAsSeen(Long userId) {
 		try {
@@ -150,6 +154,6 @@ public class NotificationServiceImpl implements NotificationService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
+	
 }
