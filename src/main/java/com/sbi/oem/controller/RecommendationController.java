@@ -130,37 +130,35 @@ public class RecommendationController {
 			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
 		}
 	}
-	
+
 	public ResponseEntity<?> pendingRecommendationRequestForAppOwner(@RequestBody SearchDto searchDto) {
 		return null;
 	}
 
 	@PostMapping("/add/through/excel")
-	public ResponseEntity<?> addRecommendationThroughExcel(@ModelAttribute MultipartFile file){
-		Response<?> response=recommendationService.addRecommendationThroughExcel(file);
-		return new ResponseEntity<>(response,HttpStatus.valueOf(response.getResponseCode()));
-	}
-	
-	@PostMapping("/pending/details")
-	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
-		Response<?> response=recommendationService.pendingRecommendationRequestForAppOwner(searchDto);
+	public ResponseEntity<?> addRecommendationThroughExcel(@ModelAttribute MultipartFile file) {
+		Response<?> response = recommendationService.addRecommendationThroughExcel(file);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
-	
+
+	@PostMapping("/pending/details")
+	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
+		Response<?> response = recommendationService.pendingRecommendationRequestForAppOwner(searchDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
 
 	@PostMapping("/approved/details")
 	public ResponseEntity<?> approvedRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
-		Response<?> response=recommendationService.approvedRecommendationRequestForAppOwner(searchDto);
+		Response<?> response = recommendationService.approvedRecommendationRequestForAppOwner(searchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
-	
+
 	@PostMapping("/view/details/oemandagm")
-	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(@RequestBody SearchDto searchDto){
-		
+	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(@RequestBody SearchDto searchDto) {
+
 		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGm(searchDto);
-		
+
 		return new ResponseEntity<>(response, HttpStatus.OK);
-		
-		
+
 	}
 }
