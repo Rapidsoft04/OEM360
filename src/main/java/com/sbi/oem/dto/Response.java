@@ -15,7 +15,6 @@ public class Response<T> {
 	private String message;
 	private String requestedURI;
 	private T data;
-//	private com.sfa.stock_management.util.Pagination<List<?>> paginationData;
 
 	public int getResponseCode() {
 		return responseCode;

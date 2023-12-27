@@ -50,9 +50,6 @@ public class JwtUserDetailsService implements UserDetailsService {
                 = new ArrayList<>();
         for (UserType role : roles) {
             authorities.add(new SimpleGrantedAuthority(role.name()));
-//    		        role.stream()
-//    		         .map(p -> new SimpleGrantedAuthority(p.getName()))
-//    		         .forEach(authorities::add);
         }
 
         return authorities;

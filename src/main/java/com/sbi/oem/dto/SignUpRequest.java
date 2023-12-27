@@ -41,7 +41,6 @@ public class SignUpRequest {
 
 	public SignUpRequest() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public SignUpRequest(String email, String password, String userName, String phoneNo) {

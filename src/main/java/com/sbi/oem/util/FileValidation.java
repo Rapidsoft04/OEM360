@@ -8,7 +8,6 @@ public class FileValidation {
 
     public static boolean checkExcelFormat(MultipartFile file) {
 
-        // to check whether file is excel or not
         String contentType = file.getContentType();
         if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
             return true;
@@ -17,7 +16,6 @@ public class FileValidation {
         }
     }
 
-    // Check Whether the file is image(i.e. in jpeg or png) or not
     public static boolean checkImageFormat(MultipartFile file) {
         String contentType = file.getContentType();
         if (contentType.equalsIgnoreCase("image/jpeg") || contentType.equalsIgnoreCase("image/png")) {
@@ -27,7 +25,6 @@ public class FileValidation {
         }
     }
 
-    // Check whether the file is document(i.e. in jpeg or png or pdf) or not
     public static boolean checkPdfFormat(MultipartFile file) {
         String contentType = file.getContentType();
 

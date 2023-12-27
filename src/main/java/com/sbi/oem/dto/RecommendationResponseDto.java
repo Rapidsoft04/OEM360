@@ -311,7 +311,6 @@ public class RecommendationResponseDto {
 
 	public RecommendationResponseDto() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 }

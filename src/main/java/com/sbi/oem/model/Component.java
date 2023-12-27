@@ -61,7 +61,6 @@ public class Component {
 
 	public Component() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Component(Long id) {

@@ -43,7 +43,6 @@ public class RecommendationRejectionRequestDto {
 	}
 
 	public RecommendationMessages convertToEntity() {
-		// TODO Auto-generated method stub
 		return new RecommendationMessages(this.referenceId != null ? this.referenceId : null,
 				this.createdBy != null ? this.createdBy : null,
 				this.rejectionMessage != null ? this.rejectionMessage : null,

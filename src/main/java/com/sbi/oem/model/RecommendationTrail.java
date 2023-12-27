@@ -65,7 +65,6 @@ public class RecommendationTrail {
 
 	public RecommendationTrail() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public RecommendationTrail(Long id, String referenceId, RecommendationStatus recommendationStatus, Date createdAt) {

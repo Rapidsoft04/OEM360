@@ -11,7 +11,6 @@ public class FileUrlResponseDetails {
 
 	public FileUrlResponseDetails() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public FileUrlResponseDetails(String token, ArrayList<String> fileUrls) {

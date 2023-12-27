@@ -15,7 +15,6 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.mail.MessagingException;
 
-import org.hibernate.internal.build.AllowSysOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.model.RecommendationDeplyomentDetails;
 import com.sbi.oem.model.RecommendationMessages;
-import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.RecommendationType;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.ComponentRepository;
@@ -37,7 +35,6 @@ import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
 import com.sbi.oem.repository.UserRepository;
 import com.sbi.oem.service.EmailTemplateService;
-import com.sbi.oem.service.RecommendationService;
 import com.sbi.oem.util.EmailService;
 
 @Service

@@ -10,7 +10,6 @@ public class FileUrlResponse {
 
 	public FileUrlResponse() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public FileUrlResponse(Integer responseCode, String message, FileUrlResponseDetails data) {
