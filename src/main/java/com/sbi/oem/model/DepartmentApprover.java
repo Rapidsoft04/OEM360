@@ -74,7 +74,6 @@ public class DepartmentApprover {
 
 	public DepartmentApprover() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public DepartmentApprover(Long id, User agm, User applicationOwner, Boolean isActive) {

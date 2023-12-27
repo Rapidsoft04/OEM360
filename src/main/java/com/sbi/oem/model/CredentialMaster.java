@@ -117,7 +117,6 @@ public class CredentialMaster {
 
 	public CredentialMaster() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public boolean passwordMatches(String password) {

@@ -21,6 +21,8 @@ public class LoginResponse {
 
 	private Company company;
 
+	private String imageUrl;
+
 	public String getEmail() {
 		return email;
 	}
@@ -67,6 +69,14 @@ public class LoginResponse {
 
 	public void setCompany(Company company) {
 		this.company = company;
+	}
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 
 }

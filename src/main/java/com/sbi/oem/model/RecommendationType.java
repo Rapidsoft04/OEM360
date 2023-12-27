@@ -66,7 +66,6 @@ public class RecommendationType {
 
 	public RecommendationType() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public RecommendationType(Long id) {

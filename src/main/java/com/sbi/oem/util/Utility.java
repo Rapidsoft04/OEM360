@@ -57,23 +57,8 @@ public class Utility {
 						return true;
 					} else {
 						if (userType.equalsIgnoreCase(UserType.AGM.name())) {
-//							List<Long> permissionIdList = userSiteRoleRepository
-//									.findPermissionByUser(credentialMasterOptional.get().getUserId());
-//							List<Permission> permissionList = permissionRepository.findAllById(permissionIdList);
-//							for (Permission permission : permissionList) {
-//								if (permission.isActive() && permission.getUrl() != null
-//										&& permission.getUrl().equalsIgnoreCase(url)
-//										&& permission.getMethodType() != null
-//										&& permission.getMethodType().equalsIgnoreCase(methodType)) {
-//									hasPermission = true;
-//									break;
-//								}
-//							}
 							return true;
 						}
-//						else if (userType.equalsIgnoreCase(UserType.DGM.name())) {
-//							return true;
-//						} 
 						else if (userType.equalsIgnoreCase(UserType.SENIOR_MANAGEMENT.name())) {
 							return true;
 						}

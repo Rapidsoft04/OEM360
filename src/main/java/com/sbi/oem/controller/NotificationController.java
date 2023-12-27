@@ -11,11 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbi.oem.dto.Response;
-import com.sbi.oem.model.Notification;
-<<<<<<< Updated upstream
-=======
+import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.model.Recommendation;
->>>>>>> Stashed changes
 import com.sbi.oem.service.NotificationService;
 
 @RestController
@@ -25,20 +22,27 @@ public class NotificationController {
 	@Autowired
 	private NotificationService notificationService;
 
-	@PostMapping("/v1/save")
-<<<<<<< Updated upstream
-	public ResponseEntity<?> save(@RequestBody Notification notification) {
-		Response<?> response = notificationService.save(notification);
-=======
+	@PostMapping("/save")
 	public ResponseEntity<?> save(@RequestBody Recommendation recommendation) {
-		Response<?> response = notificationService.save(recommendation);
->>>>>>> Stashed changes
-		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+		notificationService.save(recommendation, RecommendationStatusEnum.CREATED);
+		return new ResponseEntity<>("success", HttpStatus.OK);
 	}
 
-	@GetMapping("/v1/userId")
+	@GetMapping("/pending/request")
 	public ResponseEntity<?> getByUserId(@RequestParam("userId") Long userId) {
 		Response<?> response = notificationService.getNotificationByUserId(userId);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+	
+	@PostMapping("/mark-seen")
+	public ResponseEntity<?> markAsSeen(@RequestParam("userId") Long userId) {
+		notificationService.markAsSeen(userId);
+		return new ResponseEntity<>("success", HttpStatus.OK);
+	}
+	
+	@PostMapping("/mark/seen")
+	public ResponseEntity<?> markAsSeenV2(@RequestBody Long id) {
+		notificationService.markAsSeenV2(id);
+		return new ResponseEntity<>("success", HttpStatus.OK);
 	}
 }

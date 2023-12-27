@@ -47,6 +47,9 @@ public class User {
 	@JoinColumn(name = "company_id")
 	private Company company;
 
+	@Column(name = "image_url")
+	private String userLogoUrl;
+
 	public User() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -135,6 +138,14 @@ public class User {
 
 	public void setCompany(Company company) {
 		this.company = company;
+	}
+
+	public String getUserLogoUrl() {
+		return userLogoUrl;
+	}
+
+	public void setUserLogoUrl(String userLogoUrl) {
+		this.userLogoUrl = userLogoUrl;
 	}
 
 	public User(Long id, String userName, String email, String phoneNumber, Boolean isActive) {

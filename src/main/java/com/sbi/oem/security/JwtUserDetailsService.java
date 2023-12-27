@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -48,12 +50,21 @@ public class JwtUserDetailsService implements UserDetailsService {
                 = new ArrayList<>();
         for (UserType role : roles) {
             authorities.add(new SimpleGrantedAuthority(role.name()));
-//    		        role.stream()
-//    		         .map(p -> new SimpleGrantedAuthority(p.getName()))
-//    		         .forEach(authorities::add);
         }
 
         return authorities;
+    }
+    
+    public Optional<CredentialMaster> getUserDetails() {
+    	try {
+    		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    		Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+    		return master;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+    	
     }
 
 }

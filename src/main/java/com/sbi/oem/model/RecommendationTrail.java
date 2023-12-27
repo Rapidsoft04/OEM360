@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.sbi.oem.dto.RecommendationTrailResponseDto;
+
 @Entity
 @Table(name = "recommendation_trail")
 public class RecommendationTrail {
@@ -63,7 +65,6 @@ public class RecommendationTrail {
 
 	public RecommendationTrail() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public RecommendationTrail(Long id, String referenceId, RecommendationStatus recommendationStatus, Date createdAt) {
@@ -72,6 +73,13 @@ public class RecommendationTrail {
 		this.referenceId = referenceId;
 		this.recommendationStatus = recommendationStatus;
 		this.createdAt = createdAt;
+	}
+
+	public RecommendationTrailResponseDto convertToDto() {
+		return new RecommendationTrailResponseDto(this.id != null ? this.id : null,
+				this.referenceId != null ? this.referenceId : null,
+				this.recommendationStatus != null ? this.recommendationStatus : null,
+				this.createdAt != null ? this.createdAt : null);
 	}
 
 }

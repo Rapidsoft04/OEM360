@@ -1,22 +1,23 @@
 package com.sbi.oem.serviceImpl;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.sbi.oem.dto.Response;
-<<<<<<< Updated upstream
-import com.sbi.oem.model.Notification;
-=======
+import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Notification;
 import com.sbi.oem.model.Recommendation;
+import com.sbi.oem.model.User;
 import com.sbi.oem.repository.DepartmentApproverRepository;
->>>>>>> Stashed changes
 import com.sbi.oem.repository.NotificationRepository;
+import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.service.NotificationService;
 
 @Service
@@ -24,42 +25,81 @@ public class NotificationServiceImpl implements NotificationService {
 
 	@Autowired
 	private NotificationRepository notificationRepository;
-<<<<<<< Updated upstream
 
-	@Override
-	public Response<?> save(Notification notification) {
-		try {
-			if (notification.getMessage() == null || notification.getReferenceId() == null
-					|| notification.getUser() == null) {
-				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Message, ReferenceId and User ID are compulsory",
-						null);
-			}
-			notification.setIsSeen(false);
-			notification.setCreatedAt(new Date());
-			notification.setUpdatedAt(new Date());
-			Notification savedNotification = notificationRepository.save(notification);
-			return new Response<>(HttpStatus.CREATED.value(), "Success", savedNotification);
-=======
-	
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
 
+	@Autowired
+	private RecommendationRepository recommendationRepository;
+
 	@Override
-	public Response<?> save(Recommendation recommendation) {
+	public void save(Recommendation recommendation, RecommendationStatusEnum status) {
 		try {
-			DepartmentApprover departmentApprover = departmentApproverRepository.getByDepartmentId(recommendation.getDepartment().getId());
-			Notification newNotification = new Notification();
-			newNotification.setMessage(recommendation.getDescriptions());
-			newNotification.setReferenceId(recommendation.getReferenceId());
-			
-			
-			return new Response<>(HttpStatus.CREATED.value(), "Success", null);
->>>>>>> Stashed changes
+
+			if (recommendation != null && status != null) {
+				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+						.findAllByDepartmentId(recommendation.getDepartment().getId());
+				if (departmentApprover != null && !departmentApprover.isEmpty()) {
+					if (status.equals(RecommendationStatusEnum.CREATED)) {
+						List<User> userList = Arrays.asList(departmentApprover.get().getAgm(),
+								departmentApprover.get().getApplicationOwner());
+						String text = "New recommendation request has been created.";
+						for (User user : userList) {
+							createNotification(recommendation.getReferenceId(), text, user);
+						}
+					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {
+						User agm = departmentApprover.get().getAgm();
+						String text = "App owner has accepted a new recommendation.";
+						createNotification(recommendation.getReferenceId(), text, agm);
+					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
+						User agm = departmentApprover.get().getAgm();
+						String text = "App owner has rejected a recommendation.";
+						createNotification(recommendation.getReferenceId(), text, agm);
+					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
+						List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
+								departmentApprover.get().getApplicationOwner());
+						String text = "Your recommendation request has been approved by AGM.";
+						for (User user : userList) {
+							createNotification(recommendation.getReferenceId(), text, user);
+						}
+					} else if (status.equals(RecommendationStatusEnum.REVERTED_BY_AGM)) {
+						User appOwner = departmentApprover.get().getApplicationOwner();
+						String text = "AGM has commented on your recommendation";
+						createNotification(recommendation.getReferenceId(), text, appOwner);
+					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_AGM)) {
+						User appOwner = departmentApprover.get().getApplicationOwner();
+						String text = "Your recommendation request has been rejected by AGM.";
+						createNotification(recommendation.getReferenceId(), text, appOwner);
+					} else if (status.equals(RecommendationStatusEnum.RECCOMENDATION_REJECTED)) {
+						User oem = recommendation.getCreatedBy();
+						String text = "AGM has Rejected the recommendation";
+						createNotification(recommendation.getReferenceId(), text, oem);
+					} else if (status.equals(RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS)) {
+						User agm = departmentApprover.get().getAgm();
+						String text = "Deployment Details have been updated";
+						createNotification(recommendation.getReferenceId(), text, agm);
+					}
+				}
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
 		}
+	}
 
+	public void createNotification(String referenceId, String notificationText, User user) {
+		try {			
+			Notification notification = new Notification();
+			notification.setReferenceId(referenceId);
+			notification.setMessage(notificationText);
+			notification.setUser(user);
+			notification.setIsSeen(false);
+			notification.setCreatedAt(new Date());
+			notification.setUpdatedAt(new Date());
+			notificationRepository.save(notification);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -69,19 +109,43 @@ public class NotificationServiceImpl implements NotificationService {
 			return new Response<>(HttpStatus.OK.value(), "success", list);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+	
+	@Override
+	public void markAsSeen(Long userId) {
+		try {
+			notificationRepository.markAsSeen(userId);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public Response<?> markAsSeen(Long userId) {
+	public void markAsSeenV2(Long id) {
 		try {
-			notificationRepository.markAsSeen(userId);
-			return new Response<>(HttpStatus.OK.value(), "success", null);
+			Optional<Notification> notification = notificationRepository.findById(id);
+			if (notification != null && notification.isPresent()) {
+				notification.get().setIsSeen(true);
+				notification.get().setUpdatedAt(new Date());
+				notificationRepository.save(notification.get());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
 		}
 	}
 
+	@Override
+	public void getRecommendationByReferenceId(String referenceId, RecommendationStatusEnum status) {
+		try {
+			Optional<Recommendation> recommendation = recommendationRepository.findByReferenceId(referenceId);
+			if (recommendation != null && recommendation.isPresent()) {
+				save(recommendation.get(), status);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

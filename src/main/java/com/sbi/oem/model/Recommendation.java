@@ -51,6 +51,9 @@ public class Recommendation {
 	@Column(name = "expected_impact")
 	private String expectedImpact;
 
+	@Column(name = "impacted_department")
+	private String impactedDepartment;
+
 	@Column(name = "document_url")
 	private String documentUrl;
 
@@ -63,6 +66,22 @@ public class Recommendation {
 	@OneToOne
 	@JoinColumn(name = "created_by")
 	private User createdBy;
+
+	@OneToOne
+	@JoinColumn(name = "status_id")
+	private RecommendationStatus recommendationStatus;
+
+	@Column(name = "is_app_owner_approve")
+	private Boolean isAppOwnerApproved;
+
+	@Column(name = "is_agm_approve")
+	private Boolean isAgmApproved;
+
+	@Column(name = "is_app_owner_rejected")
+	private Boolean isAppOwnerRejected;
+
+	@Column(name = "updated_at")
+	private Date updatedAt;
 
 	public Long getId() {
 		return id;
@@ -168,6 +187,54 @@ public class Recommendation {
 		this.fileUrl = fileUrl;
 	}
 
+	public RecommendationStatus getRecommendationStatus() {
+		return recommendationStatus;
+	}
+
+	public void setRecommendationStatus(RecommendationStatus recommendationStatus) {
+		this.recommendationStatus = recommendationStatus;
+	}
+
+	public Boolean getIsAppOwnerApproved() {
+		return isAppOwnerApproved;
+	}
+
+	public void setIsAppOwnerApproved(Boolean isAppOwnerApproved) {
+		this.isAppOwnerApproved = isAppOwnerApproved;
+	}
+
+	public Boolean getIsAgmApproved() {
+		return isAgmApproved;
+	}
+
+	public void setIsAgmApproved(Boolean isAgmApproved) {
+		this.isAgmApproved = isAgmApproved;
+	}
+
+	public Boolean getIsAppOwnerRejected() {
+		return isAppOwnerRejected;
+	}
+
+	public void setIsAppOwnerRejected(Boolean isAppOwnerRejected) {
+		this.isAppOwnerRejected = isAppOwnerRejected;
+	}
+
+	public Date getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Date updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public String getImpactedDepartment() {
+		return impactedDepartment;
+	}
+
+	public void setImpactedDepartment(String impactedDepartment) {
+		this.impactedDepartment = impactedDepartment;
+	}
+
 	public Recommendation() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -218,8 +285,13 @@ public class Recommendation {
 				this.recommendDate != null ? this.recommendDate : null,
 				this.department != null ? this.department : null, this.component != null ? this.component : null,
 				this.expectedImpact != null ? this.expectedImpact : null,
+				this.impactedDepartment != null ? this.impactedDepartment : null,
 				this.documentUrl != null ? this.documentUrl : null, this.fileUrl != null ? this.fileUrl : null,
-				this.createdAt != null ? this.createdAt : null, this.createdBy != null ? this.createdBy : null);
+				this.createdAt != null ? this.createdAt : null, this.createdBy != null ? this.createdBy : null,
+				this.recommendationStatus != null ? this.recommendationStatus : null,
+				this.isAppOwnerApproved != null ? this.isAppOwnerApproved : null,
+				this.isAgmApproved != null ? this.isAgmApproved : null,
+				this.isAppOwnerRejected != null ? this.isAppOwnerRejected : null);
 	}
 
 }

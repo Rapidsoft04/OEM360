@@ -33,9 +33,6 @@ import com.sbi.oem.dto.Response;
 @Service
 public class FileSystemStorageService {
 
-//	@Autowired
-//	private FileUploadProperties fileUploadProperties;
-
 	private Path dirLocation;
 
 	@Value("${fileAccessUrl}")
@@ -106,17 +103,11 @@ public class FileSystemStorageService {
 		String fileUrl = null;
 		try {
 			String url = fileAccessUrl;
-			// create an instance of RestTemplate
 			RestTemplate restTemplate = new RestTemplate(); // create headers
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-			// headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-			// headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-			// request body parameters
 			LinkedMultiValueMap<Object, Object> map = new LinkedMultiValueMap<>();
 			map.add("files", new MultipartInputStreamFileResources(file.getInputStream(), file.getOriginalFilename()));
-
-			// send POST request
 			ResponseEntity<String> response = null;
 			String responseBody = null;
 			FileUrlResponse responseBodyDto = new FileUrlResponse();

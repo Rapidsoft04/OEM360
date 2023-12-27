@@ -1,21 +1,18 @@
 package com.sbi.oem.service;
 
 import com.sbi.oem.dto.Response;
-import com.sbi.oem.model.Notification;
-<<<<<<< Updated upstream
-
-public interface NotificationService {
-
-	public Response<?> save(Notification notification);
-=======
+import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.model.Recommendation;
 
 public interface NotificationService {
 
-	public Response<?> save(Recommendation recommendation);
->>>>>>> Stashed changes
-	
+	public void save(Recommendation recommendation, RecommendationStatusEnum status);
+
 	public Response<?> getNotificationByUserId(Long userId);
-	
-	public Response<?> markAsSeen(Long userId);
+
+	public void markAsSeen(Long userId);
+
+	public void markAsSeenV2(Long notificationId);
+
+	public void getRecommendationByReferenceId(String referenceId, RecommendationStatusEnum status);
 }

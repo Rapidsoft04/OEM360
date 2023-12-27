@@ -10,7 +10,7 @@ public class RecommendationAddRequestDto {
 	private String description;
 	private Long typeId;
 	private Long priorityId;
-	
+
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private Date recommendDate;
 	private Long departmentId;
@@ -18,6 +18,7 @@ public class RecommendationAddRequestDto {
 	private MultipartFile file;
 	private String urlLink;
 	private Long createdBy;
+	private String expectedImpact;
 
 	public String getDescription() {
 		return description;
@@ -89,6 +90,14 @@ public class RecommendationAddRequestDto {
 
 	public void setCreatedBy(Long createdBy) {
 		this.createdBy = createdBy;
+	}
+
+	public String getExpectedImpact() {
+		return expectedImpact;
+	}
+
+	public void setExpectedImpact(String expectedImpact) {
+		this.expectedImpact = expectedImpact;
 	}
 
 }
