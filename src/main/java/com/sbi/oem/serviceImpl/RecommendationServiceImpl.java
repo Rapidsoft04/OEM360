@@ -948,6 +948,97 @@ public class RecommendationServiceImpl implements RecommendationService {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 	}
+	
+	@Override
+	public Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto) {
+		
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
+				
+				RecommendationResponseDto responseDtos = new RecommendationResponseDto();
+				
+				List<RecommendationResponseDto> recommendations = new ArrayList<>();
+				
+				Long OemId = master.get().getUserId().getId();
+			
+				List<Recommendation> RecomendationListOem = recommendationRepository.findAllByUserIdFilter(OemId, searchDto);
+				
+				
+				for (Recommendation rcmnd : RecomendationListOem) {
+					System.out.println(rcmnd.getDepartment().getId());
+					RecommendationResponseDto responseDto = rcmnd.convertToDto();
+					responseDto.setTrailResponse(null);
+					responseDto.setStatus(null);
+					recommendations.add(responseDto);
+				 }
+				
+				return new Response<>(HttpStatus.OK.value(), "Recomendation List OEM_SI", recommendations);
+	
+			} else if(master.get().getUserTypeId().name().equals(UserType.AGM.name())){
+				
+				RecommendationResponseDto responseDtos = new RecommendationResponseDto();
+				
+				List<RecommendationResponseDto> recommendations = new ArrayList<>();
+				
+				List<DepartmentApprover> departmentList = departmentApproverRepository
+						.findAllByUserId(master.get().getUserId().getId());
+				
+				List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+						.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
+
+				if (departmentIds != null && departmentIds.size() > 0) {
+					for (Long departmentId : departmentIds) {
+						searchDto.setDepartmentId(departmentId);
+						List<Recommendation> recommendationListAgm = recommendationRepository
+								.findAllByUserIdFilter(null, searchDto);
+						
+						System.out.println(recommendationListAgm.size());
+						
+						for (Recommendation rcmnd : recommendationListAgm) {
+							
+							RecommendationResponseDto responseDto = rcmnd.convertToDto();
+							responseDto.setTrailResponse(null);
+							responseDto.setStatus(null);
+							recommendations.add(responseDto);
+						}
+					}
+				}
+
+
+				return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", recommendations);
+				
+				
+			}else if (master.get().getUserTypeId().name().equals(UserType.SENIOR_MANAGEMENT.name())) {
+				
+				RecommendationResponseDto responseDtos = new RecommendationResponseDto();
+				
+				List<RecommendationResponseDto> recommendations = new ArrayList<>();
+				
+				List<Recommendation> RecomendationListGm = recommendationRepository
+						.findAll();
+		
+				for (Recommendation rcmnd : RecomendationListGm) {
+					System.out.println(rcmnd.getDepartment().getId());
+					RecommendationResponseDto responseDto = rcmnd.convertToDto();
+					responseDto.setTrailResponse(null);
+					responseDto.setStatus(null);
+					recommendations.add(responseDto);
+				 }
+				
+				return new Response<>(HttpStatus.OK.value(), "Recommendation List GM.", recommendations);
+				
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+			
+		}
+		
+		return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+	}
 
 	@Override
 	public Response<?> addRecommendationThroughExcel(MultipartFile file) {

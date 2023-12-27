@@ -153,4 +153,14 @@ public class RecommendationController {
 		Response<?> response=recommendationService.approvedRecommendationRequestForAppOwner(searchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
+	
+	@PostMapping("/view/oemsearch")
+	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(@RequestBody SearchDto searchDto){
+		
+		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGm(searchDto);
+		
+		return new ResponseEntity<>(response, HttpStatus.OK);
+		
+		
+	}
 }
