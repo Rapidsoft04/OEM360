@@ -107,6 +107,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private RecommendationMessagesRepository recommendationMessagesRepository;
+	
+	@Autowired
+	private JwtUserDetailsService userDetailsService;
 
 	@SuppressWarnings("rawtypes")
 	@Lookup
@@ -874,8 +877,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Override
 	public Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto) {
 		try {
-			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+//			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 				List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
 				List<DepartmentApprover> departmentList = departmentApproverRepository
@@ -883,14 +887,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 				List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 						.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
-				System.out.println(departmentIds.size());
+		
 				if (departmentIds != null && departmentIds.size() > 0) {
 					for (Long departmentId : departmentIds) {
 						searchDto.setDepartmentId(departmentId);
 						// Get Pending recommendations by filtering
 						List<Recommendation> recommendationList = recommendationRepository
 								.findAllPendingRecommendationsBySearchDto(searchDto);
-						System.out.println(recommendationList.size());
+						
 						// Converting each response to dto and setting trial response and status to false
 						for (Recommendation rcmnd : recommendationList) {
 							RecommendationResponseDto responseDto = rcmnd.convertToDto();
@@ -914,8 +918,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Override
 	public Response<?> approvedRecommendationRequestForAppOwner(SearchDto searchDto) {
 		try {
-			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+//			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 				List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
 				List<DepartmentApprover> departmentList = departmentApproverRepository
@@ -923,14 +928,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 				List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 						.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
-				System.out.println(departmentIds.size());
+				
 				if (departmentIds != null && departmentIds.size() > 0) {
 					for (Long departmentId : departmentIds) {
 						searchDto.setDepartmentId(departmentId);
 						// Get Approved recommendations by filtering
 						List<Recommendation> recommendationList = recommendationRepository
 								.findAllApprovedRecommendationsBySearchDto(searchDto);
-						System.out.println(recommendationList.size());
+						
 						// Converting each response to dto
 						for (Recommendation rcmnd : recommendationList) {
 							RecommendationResponseDto responseDto = rcmnd.convertToDto();
