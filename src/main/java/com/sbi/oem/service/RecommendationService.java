@@ -1,5 +1,7 @@
 package com.sbi.oem.service;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.RecommendationRejectionRequestDto;
@@ -29,5 +31,7 @@ public interface RecommendationService {
 	Response<?> acceptRecommendationRequestByAgm(RecommendationRejectionRequestDto recommendationRejectionRequestDto);
 
 	Response<?> updateDeploymentDetails(RecommendationDetailsRequestDto recommendationDetailsRequestDto);
+
+	Response<?> addRecommendationThroughExcel(MultipartFile file);
 
 }

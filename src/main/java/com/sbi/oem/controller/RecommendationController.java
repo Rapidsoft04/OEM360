@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
@@ -127,5 +128,11 @@ public class RecommendationController {
 		} else {
 			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
 		}
+	}
+	
+	@PostMapping("/add/through/excel")
+	public ResponseEntity<?> addRecommendationThroughExcel(@ModelAttribute MultipartFile file){
+		Response<?> response=recommendationService.addRecommendationThroughExcel(file);
+		return null;
 	}
 }
