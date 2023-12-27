@@ -64,6 +64,7 @@ import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.repository.RecommendationStatusRepository;
 import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
+import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
@@ -878,22 +879,73 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
 			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+				List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
 
 				List<DepartmentApprover> departmentList = departmentApproverRepository
 						.findAllByUserId(master.get().getUserId().getId());
 
 				List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 						.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
-
+				System.out.println(departmentIds.size());
 				if (departmentIds != null && departmentIds.size() > 0) {
-//					List<Recommendation> recommendationList = recommendationRepository
-//							.findAllByDepartmentIdIn(departmentIds, searchDto);
-
+					for (Long departmentId : departmentIds) {
+						searchDto.setDepartmentId(departmentId);
+						// Get Pending recommendations by filtering
+						List<Recommendation> recommendationList = recommendationRepository
+								.findAllPendingRecommendationsBySearchDto(searchDto);
+						System.out.println(recommendationList.size());
+						// Converting each response to dto and setting trial response and status to false
+						for (Recommendation rcmnd : recommendationList) {
+							RecommendationResponseDto responseDto = rcmnd.convertToDto();
+							responseDto.setTrailResponse(null);
+							responseDto.setStatus(null);
+							pendingRecommendation.add(responseDto);
+						}
+					}
 				}
+				return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner",
+						pendingRecommendation);
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
 			}
-			return null;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+	
+	@Override
+	public Response<?> approvedRecommendationRequestForAppOwner(SearchDto searchDto) {
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+				List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
+				List<DepartmentApprover> departmentList = departmentApproverRepository
+						.findAllByUserId(master.get().getUserId().getId());
+
+				List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+						.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
+				System.out.println(departmentIds.size());
+				if (departmentIds != null && departmentIds.size() > 0) {
+					for (Long departmentId : departmentIds) {
+						searchDto.setDepartmentId(departmentId);
+						// Get Approved recommendations by filtering
+						List<Recommendation> recommendationList = recommendationRepository
+								.findAllApprovedRecommendationsBySearchDto(searchDto);
+						System.out.println(recommendationList.size());
+						// Converting each response to dto
+						for (Recommendation rcmnd : recommendationList) {
+							RecommendationResponseDto responseDto = rcmnd.convertToDto();
+							pendingRecommendation.add(responseDto);
+						}
+					}
+				}
+				return new Response<>(HttpStatus.OK.value(), "Approved Recommendation of App Owner",
+						pendingRecommendation);
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);

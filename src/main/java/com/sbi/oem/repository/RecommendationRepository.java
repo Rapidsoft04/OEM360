@@ -1,11 +1,17 @@
 package com.sbi.oem.repository;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,10 +25,10 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 	Optional<Recommendation> findByReferenceId(String refId);
 
-	@Query(value = "SELECT * FROM recommendation where department_id in (?1) order by updated_at desc",nativeQuery = true)
+	@Query(value = "SELECT * FROM recommendation where department_id in (?1) order by updated_at desc", nativeQuery = true)
 	List<Recommendation> findAllByDepartmentIdIn(List<Long> departmentIds);
 
-	@Query(value = "SELECT * FROM recommendation where created_by=?1 order by updated_at desc",nativeQuery = true)
+	@Query(value = "SELECT * FROM recommendation where created_by=?1 order by updated_at desc", nativeQuery = true)
 	List<Recommendation> findAllByUserId(Long id);
 
 	List<Recommendation> findAll(Specification<Recommendation> specification);
