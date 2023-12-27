@@ -526,7 +526,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 						for (RecommendationTrail trail : trailList) {
 							recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
 						}
-						// Sort the map by key
 						Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
 								.sorted(Map.Entry.comparingByKey())
 								.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
@@ -678,8 +677,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 	public Response<?> revertApprovalRequestToAppOwnerForApproval(
 			RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
 		try {
-//			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
