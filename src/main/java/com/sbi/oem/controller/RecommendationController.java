@@ -131,20 +131,14 @@ public class RecommendationController {
 		}
 	}
 	
-	@PostMapping("/view/details/oemandagm")
-	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(@RequestBody SearchDto searchDto){
-		
-		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGm(searchDto);
-		
-		return new ResponseEntity<>(response, HttpStatus.OK);
-		
-		
+	public ResponseEntity<?> pendingRecommendationRequestForAppOwner(@RequestBody SearchDto searchDto) {
+		return null;
 	}
 
 	@PostMapping("/add/through/excel")
 	public ResponseEntity<?> addRecommendationThroughExcel(@ModelAttribute MultipartFile file){
 		Response<?> response=recommendationService.addRecommendationThroughExcel(file);
-		return new ResponseEntity<>(response,HttpStatus.valueOf(response.getResponseCode()));
+		return null;
 	}
 	
 	@PostMapping("/pending/details")
