@@ -154,7 +154,7 @@ public class RecommendationController {
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 	
-	@PostMapping("/view/oemsearch")
+	@PostMapping("/view/details/oemandagm")
 	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(@RequestBody SearchDto searchDto){
 		
 		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGm(searchDto);
