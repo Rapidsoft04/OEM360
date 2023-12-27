@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.gson.JsonObject;
+import com.sbi.oem.constant.Constant;
 import com.sbi.oem.dto.PriorityResponseDto;
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
@@ -390,12 +391,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 						if (rcmnd.getIsAppOwnerApproved() != null
 								&& rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
 							responseDto.setStatus(
-									new RecommendationStatus(RecommendationStatusEnum.RECOMMENDATION_APPROVED.name()));
+									new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
 						}
-						if (rcmnd.getIsAppOwnerApproved() != null
-								&& rcmnd.getIsAppOwnerApproved().booleanValue() == false) {
+						if (rcmnd.getIsAppOwnerRejected() != null
+								&& rcmnd.getIsAppOwnerRejected().booleanValue() == true) {
 							responseDto.setStatus(
-									new RecommendationStatus(RecommendationStatusEnum.RECCOMENDATION_REJECTED.name()));
+									new RecommendationStatus(Constant.APPLICATION_REJECTED));
 						}
 						Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 								.findAllByDepartmentId(rcmnd.getDepartment().getId());
