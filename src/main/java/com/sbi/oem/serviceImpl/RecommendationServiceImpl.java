@@ -396,9 +396,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findAllByDepartmentId(rcmnd.getDepartment().getId());
 					responseDto.setApprover(departmentApprover.get().getAgm());
 					responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
-					List<RecommendationTrail> trailList = recommendationTrailRepository
-							.findAllByReferenceId(responseDto.getReferenceId());
-					responseDto.setTrailData(trailList);
+//					List<RecommendationTrail> trailList = recommendationTrailRepository
+//							.findAllByReferenceId(responseDto.getReferenceId());
+//					responseDto.setTrailData(trailList);
 					List<RecommendationMessages> messageList = recommendationMessagesRepository
 							.findAllByReferenceId(responseDto.getReferenceId());
 					responseDto.setMessageList(messageList);
@@ -409,41 +409,41 @@ public class RecommendationServiceImpl implements RecommendationService {
 					} else {
 						responseDto.setRecommendationDeploymentDetails(null);
 					}
-					Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
-					for (RecommendationTrail trail : trailList) {
-						recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
-					}
-					// Sort the map by key
-					Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
-							.sorted(Map.Entry.comparingByKey())
-							.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
-									LinkedHashMap<Long, RecommendationTrail>::new));
-
-					List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-					if (sortedMap.containsKey(4L)) {
-						for (Long key : sortedMap.keySet()) {
-							RecommendationTrail trail = sortedMap.get(key);
-							RecommendationTrailResponseDto response = trail.convertToDto();
-							response.setIsStatusDone(true);
-							trailResponseList.add(response);
-						}
-					} else {
-						for (RecommendationStatus status : statusList) {
-							if (sortedMap.containsKey(status.getId().longValue())) {
-								RecommendationTrail trail = sortedMap.get(status.getId().longValue());
-								RecommendationTrailResponseDto response = trail.convertToDto();
-								response.setIsStatusDone(true);
-								trailResponseList.add(response);
-							} else {
-								RecommendationTrail trail = new RecommendationTrail();
-								trail.setRecommendationStatus(status);
-								RecommendationTrailResponseDto response = trail.convertToDto();
-								response.setIsStatusDone(false);
-								trailResponseList.add(response);
-							}
-						}
-					}
-					responseDto.setTrailResponse(trailResponseList);
+//					Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+//					for (RecommendationTrail trail : trailList) {
+//						recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+//					}
+//					// Sort the map by key
+//					Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+//							.sorted(Map.Entry.comparingByKey())
+//							.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+//									LinkedHashMap<Long, RecommendationTrail>::new));
+//
+//					List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+//					if (sortedMap.containsKey(4L)) {
+//						for (Long key : sortedMap.keySet()) {
+//							RecommendationTrail trail = sortedMap.get(key);
+//							RecommendationTrailResponseDto response = trail.convertToDto();
+//							response.setIsStatusDone(true);
+//							trailResponseList.add(response);
+//						}
+//					} else {
+//						for (RecommendationStatus status : statusList) {
+//							if (sortedMap.containsKey(status.getId().longValue())) {
+//								RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+//								RecommendationTrailResponseDto response = trail.convertToDto();
+//								response.setIsStatusDone(true);
+//								trailResponseList.add(response);
+//							} else {
+//								RecommendationTrail trail = new RecommendationTrail();
+//								trail.setRecommendationStatus(status);
+//								RecommendationTrailResponseDto response = trail.convertToDto();
+//								response.setIsStatusDone(false);
+//								trailResponseList.add(response);
+//							}
+//						}
+//					}
+//					responseDto.setTrailResponse(trailResponseList);
 					recommendations.add(responseDto);
 //					responseDtos.add(responseDto);
 				}
