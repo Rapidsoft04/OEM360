@@ -349,6 +349,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 							approvedRecommendation.add(responseDto);
 							recommendations.add(responseDtos);
 						} else {
+							responseDto.setTrailResponse(null);
+							responseDto.setStatus(null);
 							pendingRecommendation.add(responseDto);
 							recommendations.add(responseDtos);
 						}
