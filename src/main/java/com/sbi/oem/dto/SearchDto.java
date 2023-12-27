@@ -9,6 +9,8 @@ public class SearchDto {
 	private Long priorityId;
 
 	private String referenceId;
+	
+	private Long departmentId;
 
 	private Long statusId;
 
@@ -42,6 +44,14 @@ public class SearchDto {
 
 	public void setReferenceId(String referenceId) {
 		this.referenceId = referenceId;
+	}
+
+	public Long getDepartmentId() {
+		return departmentId;
+	}
+
+	public void setDepartmentId(Long departmentId) {
+		this.departmentId = departmentId;
 	}
 
 	public Long getStatusId() {
@@ -84,4 +94,5 @@ public class SearchDto {
 		this.updatedAt = updatedAt;
 	}
 
+	
 }

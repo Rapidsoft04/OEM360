@@ -22,6 +22,7 @@ import com.sbi.oem.dto.RecommendationPageDto;
 import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.RecommendationResponseDto;
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.dto.SearchDto;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.enums.UserType;
@@ -706,6 +707,34 @@ public class RecommendationServiceImpl implements RecommendationService {
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
+	@Override
+	public Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto) {
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+				
+				List<DepartmentApprover> departmentList = departmentApproverRepository
+						.findAllByUserId(master.get().getUserId().getId());
+				
+				List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+						.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
+				
+				if (departmentIds != null && departmentIds.size() > 0) {
+//					List<Recommendation> recommendationList = recommendationRepository
+//							.findAllByDepartmentIdIn(departmentIds, searchDto);
+					
+				}
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+			}
+			return null;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);

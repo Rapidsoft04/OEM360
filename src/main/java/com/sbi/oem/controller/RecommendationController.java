@@ -15,6 +15,7 @@ import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.dto.SearchDto;
 import com.sbi.oem.service.RecommendationService;
 import com.sbi.oem.service.ValidationService;
 
@@ -128,4 +129,9 @@ public class RecommendationController {
 			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
 		}
 	}
+	
+	public ResponseEntity<?> pendingRecommendationRequestForAppOwner(@RequestBody SearchDto searchDto) {
+		return null;
+	}
+
 }

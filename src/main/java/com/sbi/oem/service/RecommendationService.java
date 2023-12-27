@@ -4,6 +4,7 @@ import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.dto.SearchDto;
 
 public interface RecommendationService {
 
@@ -30,4 +31,5 @@ public interface RecommendationService {
 
 	Response<?> updateDeploymentDetails(RecommendationDetailsRequestDto recommendationDetailsRequestDto);
 
+	Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto);
 }
