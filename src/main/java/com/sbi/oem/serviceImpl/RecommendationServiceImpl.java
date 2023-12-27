@@ -1,6 +1,8 @@
 package com.sbi.oem.serviceImpl;
 
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -876,17 +877,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
 			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
-				
+
 				List<DepartmentApprover> departmentList = departmentApproverRepository
 						.findAllByUserId(master.get().getUserId().getId());
-				
+
 				List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 						.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
-				
+
 				if (departmentIds != null && departmentIds.size() > 0) {
 //					List<Recommendation> recommendationList = recommendationRepository
 //							.findAllByDepartmentIdIn(departmentIds, searchDto);
-					
+
 				}
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
@@ -898,11 +899,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 	}
 
-    @Override
+	@Override
 	public Response<?> addRecommendationThroughExcel(MultipartFile file) {
 		try {
 			Workbook workbook = WorkbookFactory.create(file.getInputStream());
-			String duplicateProductName = "";
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
 			int numberOfSheets = workbook.getNumberOfSheets();
 			List<String> headerList = new ArrayList<>();
 			List<String> cellValueString = new ArrayList<>();
@@ -910,9 +912,21 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Boolean isValidFile = false;
 			String[] expectedColumnNames = { "Descriptions", "Type", "Priority", "Recommend end date", "Department",
 					"Component name", "Expected Impact", "Document link" };
-			boolean isMismatchedData = false;
-			String misMatchedColumnName = "";
-			String misMatchedProductName = "";
+			List<RecommendationType> recommendationTypeList = recommendationTypeRepository.findAll();
+			List<Department> departmentList = departmentRepository.findAll();
+			List<Component> componentList = componentRepository.findAll();
+			Map<String, RecommendationType> recommendationTypeMap = new HashMap<>();
+			for (RecommendationType type : recommendationTypeList) {
+				recommendationTypeMap.put(type.getName().trim().toUpperCase(), type);
+			}
+			Map<String, Department> departmentMap = new HashMap<>();
+			for (Department department : departmentList) {
+				departmentMap.put(department.getName().trim().toUpperCase(), department);
+			}
+			Map<String, Component> componentMap = new HashMap<>();
+			for (Component component : componentList) {
+				componentMap.put(component.getName().trim().toUpperCase(), component);
+			}
 			List<String> stringList = Arrays.asList(expectedColumnNames);
 			Boolean isBlankSheet = false;
 			for (int i = 0; i < numberOfSheets; i++) {
@@ -1014,22 +1028,159 @@ public class RecommendationServiceImpl implements RecommendationService {
 								recommendation.setDescriptions(object.getString("Descriptions").trim());
 							}
 						}
+						if (object.has("Type")) {
+							if (object.get("Type") == null || object.get("Type").equals(" ")
+									|| object.get("Type").equals("")) {
+								recommendation.setDescriptions(null);
+							} else {
+								if (recommendationTypeMap
+										.containsKey(object.get("Type").toString().trim().toUpperCase())) {
+									recommendation.setRecommendationType(recommendationTypeMap
+											.get(object.get("Type").toString().trim().toUpperCase()));
+								} else {
+									recommendation.setRecommendationType(null);
+								}
+							}
+						}
+						if (object.has("Priority")) {
+							if (object.get("Priority") == null || object.get("Priority").equals(" ")
+									|| object.get("Priority").equals("")) {
+								recommendation.setPriorityId(null);
+							} else {
+								if (object.get("Priority").toString().trim().toUpperCase().equals("HIGH")) {
+									recommendation.setPriorityId(1L);
+								} else if (object.get("Priority").toString().trim().toUpperCase().equals("MEDIUM")) {
+									recommendation.setPriorityId(2L);
+								} else if (object.get("Priority").toString().trim().toUpperCase().equals("LOW")) {
+									recommendation.setPriorityId(3L);
+								} else {
+									recommendation.setPriorityId(null);
+								}
+							}
+						}
+						if (object.has("Recommend end date")) {
+							if (object.get("Recommend end date") == null || object.get("Recommend end date").equals(" ")
+									|| object.get("Recommend end date").equals("")) {
+								recommendation.setRecommendDate(null);
+							} else {
+								DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+								Date date = formatter.parse(object.get("Recommend end date").toString().trim());
+								recommendation.setRecommendDate(date);
+							}
+						}
+						if (object.has("Department")) {
+							if (object.get("Department") == null || object.get("Department").equals(" ")
+									|| object.get("Department").equals("")) {
+								recommendation.setDepartment(null);
+							} else {
+								if (departmentMap
+										.containsKey(object.get("Department").toString().trim().toUpperCase())) {
+									recommendation.setDepartment(departmentMap
+											.get(object.get("Department").toString().trim().toUpperCase()));
+								} else {
+									recommendation.setDepartment(null);
+								}
+							}
+						}
+						if (object.has("Component name")) {
+							if (object.get("Component name") == null || object.get("Component name").equals(" ")
+									|| object.get("Component name").equals("")) {
+								recommendation.setComponent(null);
+							} else {
+								if (componentMap
+										.containsKey(object.get("Component name").toString().trim().toUpperCase())) {
+									recommendation.setComponent(componentMap
+											.get(object.get("Component name").toString().trim().toUpperCase()));
+								} else {
+									recommendation.setComponent(null);
+								}
+							}
+						}
+						if (object.has("Expected Impact")) {
+							if (object.get("Expected Impact") == null || object.get("Expected Impact").equals(" ")
+									|| object.get("Expected Impact").equals("")) {
+								recommendation.setExpectedImpact(null);
+							} else {
+								recommendation.setExpectedImpact(object.get("Expected Impact").toString().trim());
+							}
+						}
+						if (object.has("Document link")) {
+							if (object.get("Document link") == null || object.get("Document link").equals(" ")
+									|| object.get("Document link").equals("")) {
+								recommendation.setDocumentUrl(null);
+							} else {
+								recommendation.setDocumentUrl(object.get("Document link").toString().trim());
+							}
+						}
+						recommendation.setCreatedAt(new Date());
+						recommendation.setCreatedBy(master.get().getUserId());
+						recommendationList.add(recommendation);
 					}
+					Response<List<String>> response = new Response<>();
+					if (recommendationList != null && recommendationList.size() > 0) {
+						for (Recommendation recommendation : recommendationList) {
+							if (recommendation.getDescriptions() == null
+									|| recommendation.getDescriptions().equals("")) {
+								response.setMessage("Descriptions  can't be blank.");
+								response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+								response.setData(null);
+								break;
+							} else if (recommendation.getRecommendationType() == null) {
+								response.setMessage("Type can't be blank.");
+								response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+								response.setData(null);
+								break;
+							} else if (recommendation.getPriorityId() == null) {
+								response.setMessage("Priority can't be blank.");
+								response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+								response.setData(null);
+								break;
+							} else if (recommendation.getRecommendDate() == null) {
+								response.setMessage("Recommended end date can't be blank.");
+								response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+								response.setData(null);
+								break;
+							} else if (recommendation.getDepartment() == null) {
+								response.setMessage("Department can't be blank.");
+								response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+								response.setData(null);
+								break;
+							} else if (recommendation.getComponent() == null) {
+								response.setMessage("Component name can't be blank.");
+								response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+								response.setData(null);
+								break;
+							} else {
+								response.setMessage("OK");
+								response.setResponseCode(HttpStatus.OK.value());
+							}
+						}
+					}
+					if (response.getResponseCode() == HttpStatus.OK.value()) {
+						recommendationRepository.saveAll(recommendationList);
+						return new Response<>(HttpStatus.OK.value(), "Recommendation list added successfully.", null);
+					} else {
+						return response;
+					}
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid file.", null);
 				}
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Wrong File.", null);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid file.", null);
 		}
-		return null;
 	}
 
 	// Function to check if a row is empty (contains only blank cells)
 	private static boolean isRowEmpty(Row row) {
 		for (Cell cell : row) {
 			if (cell.getCellType() != CellType.BLANK) {
-				return false; // Row is not empty
+				return false;
 			}
 		}
-		return true; // Row is empty
+		return true;
 	}
 }
