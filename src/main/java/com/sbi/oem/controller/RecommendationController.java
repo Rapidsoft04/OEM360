@@ -138,6 +138,6 @@ public class RecommendationController {
 	@PostMapping("/add/through/excel")
 	public ResponseEntity<?> addRecommendationThroughExcel(@ModelAttribute MultipartFile file){
 		Response<?> response=recommendationService.addRecommendationThroughExcel(file);
-		return null;
+		return new ResponseEntity<>(response,HttpStatus.valueOf(response.getResponseCode()));
 	}
 }
