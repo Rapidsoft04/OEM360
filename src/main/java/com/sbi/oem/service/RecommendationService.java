@@ -33,7 +33,10 @@ public interface RecommendationService {
 
 	Response<?> updateDeploymentDetails(RecommendationDetailsRequestDto recommendationDetailsRequestDto);
 
-	Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto);
 	Response<?> addRecommendationThroughExcel(MultipartFile file);
+	
+	Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto);
+	
+	Response<?> approvedRecommendationRequestForAppOwner(SearchDto searchDto);
 
 }
