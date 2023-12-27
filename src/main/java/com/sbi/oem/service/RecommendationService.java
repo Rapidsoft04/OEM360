@@ -36,4 +36,6 @@ public interface RecommendationService {
 	Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto);
 	Response<?> addRecommendationThroughExcel(MultipartFile file);
 
+	Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto);
+
 }

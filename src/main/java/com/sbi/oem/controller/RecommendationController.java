@@ -131,8 +131,14 @@ public class RecommendationController {
 		}
 	}
 	
-	public ResponseEntity<?> pendingRecommendationRequestForAppOwner(@RequestBody SearchDto searchDto) {
-		return null;
+	@PostMapping("/view/details/oemandagm")
+	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(@RequestBody SearchDto searchDto){
+		
+		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGm(searchDto);
+		
+		return new ResponseEntity<>(response, HttpStatus.OK);
+		
+		
 	}
 
 	@PostMapping("/add/through/excel")
