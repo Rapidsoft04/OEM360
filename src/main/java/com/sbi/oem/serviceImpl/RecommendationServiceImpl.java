@@ -954,7 +954,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 							searchDto);
 
 					for (Recommendation rcmnd : RecomendationListOem) {
-						System.out.println(rcmnd.getDepartment().getId());
 						RecommendationResponseDto responseDto = rcmnd.convertToDto();
 						responseDto.setTrailResponse(null);
 						responseDto.setStatus(null);
@@ -981,8 +980,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 							List<Recommendation> recommendationListAgm = recommendationRepository
 									.findAllByUserIdFilter(null, searchDto);
 
-							System.out.println(recommendationListAgm.size());
-
 							for (Recommendation rcmnd : recommendationListAgm) {
 
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
@@ -1004,7 +1001,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 					List<Recommendation> RecomendationListGm = recommendationRepository.findAll();
 
 					for (Recommendation rcmnd : RecomendationListGm) {
-						System.out.println(rcmnd.getDepartment().getId());
 						RecommendationResponseDto responseDto = rcmnd.convertToDto();
 						responseDto.setTrailResponse(null);
 						responseDto.setStatus(null);

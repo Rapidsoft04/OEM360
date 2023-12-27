@@ -21,6 +21,6 @@ class MultipartInputStreamFileResources extends InputStreamResource {
 
 	@Override
 	public long contentLength() throws IOException {
-		return -1; // we do not want to generally read the whole stream into memory ...
+		return -1;
 	}
 }

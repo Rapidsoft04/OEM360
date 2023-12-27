@@ -152,10 +152,6 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 					emailService.sendMailAndFile(sendMail, ccEmails, mailSubject, content, userRecommendationfile,
 							fileName);
-
-//	                    emailService.sendMail(applicationOwnerEmail, mailSubject, content);
-//	                    System.out.println("Mail sent to Application Owner successfully!!");
-
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
