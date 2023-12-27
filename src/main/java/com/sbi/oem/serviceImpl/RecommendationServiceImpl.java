@@ -944,8 +944,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 
-					RecommendationResponseDto responseDtos = new RecommendationResponseDto();
-
 					List<RecommendationResponseDto> recommendations = new ArrayList<>();
 
 					Long OemId = master.get().getUserId().getId();
@@ -963,8 +961,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 					return new Response<>(HttpStatus.OK.value(), "Recomendation List OEM_SI", recommendations);
 
 				} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
-
-					RecommendationResponseDto responseDtos = new RecommendationResponseDto();
 
 					List<RecommendationResponseDto> recommendations = new ArrayList<>();
 
@@ -993,8 +989,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", recommendations);
 
 				} else if (master.get().getUserTypeId().name().equals(UserType.SENIOR_MANAGEMENT.name())) {
-
-					RecommendationResponseDto responseDtos = new RecommendationResponseDto();
 
 					List<RecommendationResponseDto> recommendations = new ArrayList<>();
 
