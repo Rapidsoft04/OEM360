@@ -1,26 +1,41 @@
 package com.sbi.oem.serviceImpl;
 
+import java.text.DecimalFormat;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.google.gson.JsonObject;
 import com.sbi.oem.dto.PriorityResponseDto;
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.RecommendationPageDto;
 import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.RecommendationResponseDto;
+import com.sbi.oem.dto.RecommendationTrailResponseDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.dto.SearchDto;
 import com.sbi.oem.enums.PriorityEnum;
@@ -248,6 +263,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			Optional<CredentialMaster> master = credentialMasterRepository.findByEmail(auth.getName());
+			List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
 			if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 				RecommendationResponseDto responseDtos = new RecommendationResponseDto();
 				List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
@@ -293,6 +309,41 @@ public class RecommendationServiceImpl implements RecommendationService {
 						} else {
 							responseDto.setRecommendationDeploymentDetails(null);
 						}
+						Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+						for (RecommendationTrail trail : trailList) {
+							recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+						}
+						// Sort the map by key
+						Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+								.sorted(Map.Entry.comparingByKey())
+								.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+										LinkedHashMap<Long, RecommendationTrail>::new));
+
+						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+						if (sortedMap.containsKey(4L)) {
+							for (Long key : sortedMap.keySet()) {
+								RecommendationTrail trail = sortedMap.get(key);
+								RecommendationTrailResponseDto response = trail.convertToDto();
+								response.setIsStatusDone(true);
+								trailResponseList.add(response);
+							}
+						} else {
+							for (RecommendationStatus status : statusList) {
+								if (sortedMap.containsKey(status.getId().longValue())) {
+									RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+									RecommendationTrailResponseDto response = trail.convertToDto();
+									response.setIsStatusDone(true);
+									trailResponseList.add(response);
+								} else {
+									RecommendationTrail trail = new RecommendationTrail();
+									trail.setRecommendationStatus(status);
+									RecommendationTrailResponseDto response = trail.convertToDto();
+									response.setIsStatusDone(false);
+									trailResponseList.add(response);
+								}
+							}
+						}
+						responseDto.setTrailResponse(trailResponseList);
 						if (rcmnd.getIsAppOwnerApproved() != null
 								&& rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
 							approvedRecommendation.add(responseDto);
@@ -356,6 +407,41 @@ public class RecommendationServiceImpl implements RecommendationService {
 					} else {
 						responseDto.setRecommendationDeploymentDetails(null);
 					}
+					Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+					for (RecommendationTrail trail : trailList) {
+						recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+					}
+					// Sort the map by key
+					Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+							.sorted(Map.Entry.comparingByKey())
+							.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+									LinkedHashMap<Long, RecommendationTrail>::new));
+
+					List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+					if (sortedMap.containsKey(4L)) {
+						for (Long key : sortedMap.keySet()) {
+							RecommendationTrail trail = sortedMap.get(key);
+							RecommendationTrailResponseDto response = trail.convertToDto();
+							response.setIsStatusDone(true);
+							trailResponseList.add(response);
+						}
+					} else {
+						for (RecommendationStatus status : statusList) {
+							if (sortedMap.containsKey(status.getId().longValue())) {
+								RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+								RecommendationTrailResponseDto response = trail.convertToDto();
+								response.setIsStatusDone(true);
+								trailResponseList.add(response);
+							} else {
+								RecommendationTrail trail = new RecommendationTrail();
+								trail.setRecommendationStatus(status);
+								RecommendationTrailResponseDto response = trail.convertToDto();
+								response.setIsStatusDone(false);
+								trailResponseList.add(response);
+							}
+						}
+					}
+					responseDto.setTrailResponse(trailResponseList);
 					recommendations.add(responseDto);
 //					responseDtos.add(responseDto);
 				}
@@ -404,6 +490,41 @@ public class RecommendationServiceImpl implements RecommendationService {
 					} else {
 						responseDto.setRecommendationDeploymentDetails(null);
 					}
+					Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+					for (RecommendationTrail trail : trailList) {
+						recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+					}
+					// Sort the map by key
+					Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+							.sorted(Map.Entry.comparingByKey())
+							.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+									LinkedHashMap<Long, RecommendationTrail>::new));
+
+					List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+					if (sortedMap.containsKey(4L)) {
+						for (Long key : sortedMap.keySet()) {
+							RecommendationTrail trail = sortedMap.get(key);
+							RecommendationTrailResponseDto response = trail.convertToDto();
+							response.setIsStatusDone(true);
+							trailResponseList.add(response);
+						}
+					} else {
+						for (RecommendationStatus status : statusList) {
+							if (sortedMap.containsKey(status.getId().longValue())) {
+								RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+								RecommendationTrailResponseDto response = trail.convertToDto();
+								response.setIsStatusDone(true);
+								trailResponseList.add(response);
+							} else {
+								RecommendationTrail trail = new RecommendationTrail();
+								trail.setRecommendationStatus(status);
+								RecommendationTrailResponseDto response = trail.convertToDto();
+								response.setIsStatusDone(false);
+								trailResponseList.add(response);
+							}
+						}
+					}
+					responseDto.setTrailResponse(trailResponseList);
 					recommendations.add(responseDto);
 //					responseDtos.add(responseDto);
 
@@ -435,7 +556,41 @@ public class RecommendationServiceImpl implements RecommendationService {
 					responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
 					List<RecommendationTrail> trailList = recommendationTrailRepository
 							.findAllByReferenceId(responseDto.getReferenceId());
-					responseDto.setTrailData(trailList);
+					Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+					for (RecommendationTrail trail : trailList) {
+						recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+					}
+					// Sort the map by key
+					Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+							.sorted(Map.Entry.comparingByKey())
+							.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+									LinkedHashMap<Long, RecommendationTrail>::new));
+
+					List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+					if (sortedMap.containsKey(4L)) {
+						for (Long key : sortedMap.keySet()) {
+							RecommendationTrail trail = sortedMap.get(key);
+							RecommendationTrailResponseDto response = trail.convertToDto();
+							response.setIsStatusDone(true);
+							trailResponseList.add(response);
+						}
+					} else {
+						for (RecommendationStatus status : statusList) {
+							if (sortedMap.containsKey(status.getId().longValue())) {
+								RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+								RecommendationTrailResponseDto response = trail.convertToDto();
+								response.setIsStatusDone(true);
+								trailResponseList.add(response);
+							} else {
+								RecommendationTrail trail = new RecommendationTrail();
+								trail.setRecommendationStatus(status);
+								RecommendationTrailResponseDto response = trail.convertToDto();
+								response.setIsStatusDone(false);
+								trailResponseList.add(response);
+							}
+						}
+					}
+					responseDto.setTrailResponse(trailResponseList);
 //					List<RecommendationMessages> messageList = recommendationMessagesRepository
 //							.findAllByReferenceId(responseDto.getReferenceId());
 //					responseDto.setMessageList(messageList);
@@ -741,4 +896,138 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 	}
 
+	@Override
+	public Response<?> addRecommendationThroughExcel(MultipartFile file) {
+		try {
+			Workbook workbook = WorkbookFactory.create(file.getInputStream());
+			String duplicateProductName = "";
+			int numberOfSheets = workbook.getNumberOfSheets();
+			List<String> headerList = new ArrayList<>();
+			List<String> cellValueString = new ArrayList<>();
+			List<JsonObject> objectList = new ArrayList<>();
+			Boolean isValidFile = false;
+			String[] expectedColumnNames = { "Descriptions", "Type", "Priority", "Recommend end date", "Department",
+					"Component name", "Expected Impact", "Document link" };
+			boolean isMismatchedData = false;
+			String misMatchedColumnName = "";
+			String misMatchedProductName = "";
+			List<String> stringList = Arrays.asList(expectedColumnNames);
+			Boolean isBlankSheet = false;
+			for (int i = 0; i < numberOfSheets; i++) {
+				Sheet sheet = workbook.getSheetAt(i);
+				Row topRowData = sheet.getRow(0);
+				int noOfTopData = 0;
+				for (Cell topCell : topRowData) {
+					headerList.add(topCell.toString().trim());
+					noOfTopData += 1;
+				}
+
+				if (headerList.equals(stringList)) {
+					isValidFile = true;
+				}
+				if (isValidFile) {
+					if (!(sheet.getPhysicalNumberOfRows() > 1)) {
+						isBlankSheet = true;
+					} else {
+						for (Row row : sheet) {
+
+							String str = "";
+							if (row != null && !isRowEmpty(row)) {
+								for (int j = 0; j < noOfTopData; j++) {
+									Cell cel = row.getCell(j);
+
+									String cellName = "";
+									if (cel == null) {
+										if (str == "") {
+											str = str + "" + "/n";
+										} else {
+											str = str + " " + "/n";
+										}
+									} else {
+										cellName = cel.toString();
+										if (cel.toString().contains(".") && cel.toString().contains("E")) {
+											String[] stringArray = cel.toString().split("E");
+											List<String> wordList = Arrays.asList(stringArray);
+											String firstString = wordList.get(0);
+											String lastString = wordList.get(1);
+											if (firstString != null && !firstString.isEmpty() && lastString != null
+													&& !lastString.isEmpty()) {
+												try {
+													cellName = new DecimalFormat("#.##")
+															.format(Double.parseDouble(firstString)
+																	* Math.pow(10, Double.parseDouble(lastString)));
+												} catch (Exception e) {
+													// TODO: handle exception
+												}
+											}
+										}
+										if (str == "") {
+											str = str + cellName + " " + "/n";
+										} else {
+											str = str + cellName + " " + "/n";
+										}
+
+									}
+
+								}
+								if (!str.isEmpty() && str != "") {
+									cellValueString.add(str);
+									str = "";
+								} else {
+									str = "";
+								}
+							}
+
+						}
+					}
+				}
+
+			}
+			if (isValidFile) {
+				if (!isBlankSheet) {
+					List<String> updatedList = new ArrayList<>();
+					for (int i = 1; i < cellValueString.size(); i++) {
+						updatedList.add(cellValueString.get(i));
+					}
+					for (String str : updatedList) {
+						String[] commaSeparatedArray = str.split("/n");
+						List<String> wordList = Arrays.asList(commaSeparatedArray);
+						JsonObject obj = new JsonObject();
+
+						for (int i = 0; i < headerList.size(); i++) {
+							obj.addProperty(headerList.get(i), wordList.get(i));
+						}
+						objectList.add(obj);
+
+					}
+					List<Recommendation> recommendationList = new ArrayList<>();
+					for (Object obj : objectList) {
+						Recommendation recommendation = new Recommendation();
+						JSONObject object = new JSONObject(obj.toString());
+						if (object.has("Descriptions")) {
+							if (object.get("Descriptions") == null || object.get("Descriptions").equals(" ")
+									|| object.get("Descriptions").equals("")) {
+								recommendation.setDescriptions(null);
+							} else {
+								recommendation.setDescriptions(object.getString("Descriptions").trim());
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return null;
+	}
+
+	// Function to check if a row is empty (contains only blank cells)
+	private static boolean isRowEmpty(Row row) {
+		for (Cell cell : row) {
+			if (cell.getCellType() != CellType.BLANK) {
+				return false; // Row is not empty
+			}
+		}
+		return true; // Row is empty
+	}
 }

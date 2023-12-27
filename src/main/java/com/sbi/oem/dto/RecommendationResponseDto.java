@@ -1,10 +1,7 @@
 package com.sbi.oem.dto;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.persistence.Column;
 
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.Department;
@@ -68,6 +65,8 @@ public class RecommendationResponseDto {
 	List<RecommendationResponseDto> recommendations;
 
 	private RecommendationDeplyomentDetails recommendationDeploymentDetails;
+
+	private List<RecommendationTrailResponseDto> trailResponse;
 
 	public Long getId() {
 		return id;
@@ -275,6 +274,14 @@ public class RecommendationResponseDto {
 
 	public void setRecommendationDeploymentDetails(RecommendationDeplyomentDetails recommendationDeploymentDetails) {
 		this.recommendationDeploymentDetails = recommendationDeploymentDetails;
+	}
+
+	public List<RecommendationTrailResponseDto> getTrailResponse() {
+		return trailResponse;
+	}
+
+	public void setTrailResponse(List<RecommendationTrailResponseDto> trailResponse) {
+		this.trailResponse = trailResponse;
 	}
 
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,
