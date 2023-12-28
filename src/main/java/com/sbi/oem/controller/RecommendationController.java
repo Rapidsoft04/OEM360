@@ -250,10 +250,20 @@ public class RecommendationController {
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
+	@PostMapping("/pending/details")
+	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
+		Response<?> response = recommendationService.pendingRecommendationRequestForAppOwner(searchDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
+	@PostMapping("/approved/details")
+	public ResponseEntity<?> approvedRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
+		Response<?> response = recommendationService.approvedRecommendationRequestForAppOwner(searchDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
 	@GetMapping("/view/details/agmAndoem")
 	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(
-			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") long pageNumber,
-			@RequestParam(name = "pageSize", required = false, defaultValue = "0") long pageSize,
 			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
 			@RequestParam(name = "priorityId", required = false) Long priorityId,
 			@RequestParam(name = "referenceId", required = false) String referenceId,
@@ -276,7 +286,40 @@ public class RecommendationController {
 		searchDto.setUpdatedAt(updatedAt);
 
 		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGm(searchDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+
+	}
+
+	// paginate
+
+	@GetMapping("/view/all/recommendationsforagmoemandgm")
+	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(
+			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") int pageNumber,
+			@RequestParam(name = "pageSize", required = false, defaultValue = "0") int pageSize,
+			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
+			@RequestParam(name = "priorityId", required = false) Long priorityId,
+			@RequestParam(name = "referenceId", required = false) String referenceId,
+			@RequestParam(name = "departmentId", required = false) Long departmentId,
+			@RequestParam(name = "statusId", required = false) Long statusId,
+			@RequestParam(name = "fromDate", required = false) Date fromDate,
+			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "createdBy", required = false) Long createdBy,
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
+
+		SearchDto searchDto = new SearchDto();
+		searchDto.setRecommendationType(recommendationType);
+		searchDto.setPriorityId(priorityId);
+		searchDto.setReferenceId(referenceId);
+		searchDto.setDepartmentId(departmentId);
+		searchDto.setStatusId(statusId);
+		searchDto.setFromDate(fromDate);
+		searchDto.setToDate(toDate);
+		searchDto.setCreatedBy(createdBy);
+		searchDto.setUpdatedAt(updatedAt);
+
+		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGmPagination(searchDto,
+				pageNumber, pageSize);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 
 	}
 }
