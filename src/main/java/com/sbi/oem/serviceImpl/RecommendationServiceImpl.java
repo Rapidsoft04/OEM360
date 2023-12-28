@@ -903,6 +903,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
+				List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();
 					List<RecommendationResponseDto> approvedRecommendations = new ArrayList<>();
@@ -922,6 +923,42 @@ public class RecommendationServiceImpl implements RecommendationService {
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
 								responseDto.setMessageList(messageList);
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(responseDto.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+												LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(4L)) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(trailResponseList);
 								approvedRecommendations.add(responseDto);
 							}
 						}
@@ -952,6 +989,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			List<RecommendationResponseDto> recommendations = new ArrayList<>();
 
 			if (master != null && master.isPresent()) {
+				List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 
 					Long OemId = master.get().getUserId().getId();
@@ -963,7 +1001,40 @@ public class RecommendationServiceImpl implements RecommendationService {
 						RecommendationResponseDto responseDto = rcmnd.convertToDto();
 						List<RecommendationTrail> trailList = recommendationTrailRepository
 								.findAllByReferenceId(rcmnd.getReferenceId());
-						responseDto.setTrailData(trailList);
+						Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+						for (RecommendationTrail trail : trailList) {
+							recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+						}
+						Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+								.sorted(Map.Entry.comparingByKey())
+								.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+										LinkedHashMap<Long, RecommendationTrail>::new));
+
+						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+						if (sortedMap.containsKey(4L)) {
+							for (Long key : sortedMap.keySet()) {
+								RecommendationTrail trail = sortedMap.get(key);
+								RecommendationTrailResponseDto response = trail.convertToDto();
+								response.setIsStatusDone(true);
+								trailResponseList.add(response);
+							}
+						} else {
+							for (RecommendationStatus status : statusList) {
+								if (sortedMap.containsKey(status.getId().longValue())) {
+									RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+									RecommendationTrailResponseDto response = trail.convertToDto();
+									response.setIsStatusDone(true);
+									trailResponseList.add(response);
+								} else {
+									RecommendationTrail trail = new RecommendationTrail();
+									trail.setRecommendationStatus(status);
+									RecommendationTrailResponseDto response = trail.convertToDto();
+									response.setIsStatusDone(false);
+									trailResponseList.add(response);
+								}
+							}
+						}
+						responseDto.setTrailResponse(trailResponseList);
 						recommendations.add(responseDto);
 					}
 					responseDtos.setRecommendations(recommendations);
@@ -1035,7 +1106,43 @@ public class RecommendationServiceImpl implements RecommendationService {
 						List<RecommendationMessages> messageList = recommendationMessagesRepository
 								.findAllByReferenceId(rcmnd.getReferenceId());
 						responseDto.setMessageList(messageList);
-						recommendations.add(responseDto);	
+						List<RecommendationTrail> trailList = recommendationTrailRepository
+								.findAllByReferenceId(rcmnd.getReferenceId());
+						Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+						for (RecommendationTrail trail : trailList) {
+							recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+						}
+						Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+								.sorted(Map.Entry.comparingByKey())
+								.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+										LinkedHashMap<Long, RecommendationTrail>::new));
+
+						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+						if (sortedMap.containsKey(4L)) {
+							for (Long key : sortedMap.keySet()) {
+								RecommendationTrail trail = sortedMap.get(key);
+								RecommendationTrailResponseDto response = trail.convertToDto();
+								response.setIsStatusDone(true);
+								trailResponseList.add(response);
+							}
+						} else {
+							for (RecommendationStatus status : statusList) {
+								if (sortedMap.containsKey(status.getId().longValue())) {
+									RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+									RecommendationTrailResponseDto response = trail.convertToDto();
+									response.setIsStatusDone(true);
+									trailResponseList.add(response);
+								} else {
+									RecommendationTrail trail = new RecommendationTrail();
+									trail.setRecommendationStatus(status);
+									RecommendationTrailResponseDto response = trail.convertToDto();
+									response.setIsStatusDone(false);
+									trailResponseList.add(response);
+								}
+							}
+						}
+						responseDto.setTrailResponse(trailResponseList);
+						recommendations.add(responseDto);
 					}
 					responseDtos.setRecommendations(recommendations);
 
