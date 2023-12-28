@@ -760,7 +760,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							return new Response<>(HttpStatus.OK.value(),
 									"Recommendation reject request sent successfully.", null);
 						} else {
-							if (recommendObj.get().getRecommendationStatus().getId() == 4L) {
+							if (recommendObj.get().getRecommendationStatus().getId() != 4L) {
 								recommendObj.get().setIsAgmApproved(false);
 								recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
 								recommendationRepository.save(recommendObj.get());
