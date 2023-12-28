@@ -41,7 +41,6 @@ public interface RecommendationService {
 
 	Response<?> viewRecommendationDetailsForOemAndAgmAndGmPagination(SearchDto searchDto, long pageNumber, long pageSize);
 
-	Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto);
 	Response<?> pendingRecommendationRequestForAppOwnerThroughPagination(SearchDto newSearchDto, Integer pageNumber,
 			Integer pageSize);
 
