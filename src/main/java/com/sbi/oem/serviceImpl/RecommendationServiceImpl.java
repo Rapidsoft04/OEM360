@@ -1813,6 +1813,24 @@ public class RecommendationServiceImpl implements RecommendationService {
 										}
 									}
 								}
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(1L, PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(1L, PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(1L, PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
 								approvedRecommendation.add(responseDto);
 							}
 						}
@@ -1899,24 +1917,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 							}
 						}
 						responseDto.setTrailResponse(trailResponseList);
-						if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
-							responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
-						} else {
-							String priority = "";
-							if (rcmnd.getPriorityId().longValue() == 1) {
-								priority = PriorityEnum.High.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
-								responseDto.setPriority(priority);
-							} else if (rcmnd.getPriorityId().longValue() == 2) {
-								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
-								responseDto.setPriority(priority);
-							} else {
-								priority = PriorityEnum.Low.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
-								responseDto.setPriority(priority);
-							}
-						}
 						if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
 							responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
 						} else {
