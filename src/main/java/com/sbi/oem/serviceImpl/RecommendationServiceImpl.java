@@ -1035,7 +1035,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						List<RecommendationMessages> messageList = recommendationMessagesRepository
 								.findAllByReferenceId(rcmnd.getReferenceId());
 						responseDto.setMessageList(messageList);
-						recommendations.add(responseDto);
+						recommendations.add(responseDto);	
 					}
 					responseDtos.setRecommendations(recommendations);
 
