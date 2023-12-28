@@ -748,21 +748,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 							} else {
 								return new Response<>(HttpStatus.OK.value(), "Recommendation already rejected.", null);
 							}
-							recommendObj.get().setIsAgmApproved(false);
-							recommendationRepository.save(recommendObj.get());
-							RecommendationTrail trailData = new RecommendationTrail();
-							trailData.setCreatedAt(new Date());
-							trailData.setRecommendationStatus(new RecommendationStatus(4L));
-							trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
-							recommendationTrailRepository.save(trailData);
-							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
-							messages.setCreatedAt(new Date());
-							recommendationMessagesRepository.save(messages);
-							notificationService.save(recommendObj.get(),
-									RecommendationStatusEnum.RECCOMENDATION_REJECTED);
-							emailTemplateService.sendMailRecommendationMessages(messages,
-									RecommendationStatusEnum.RECCOMENDATION_REJECTED);
-							return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
 						}
 					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found", null);
