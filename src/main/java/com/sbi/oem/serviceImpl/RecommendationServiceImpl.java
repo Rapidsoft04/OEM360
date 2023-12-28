@@ -728,7 +728,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 									"Recommendation reject request sent successfully.", null);
 						} else {
 							recommendObj.get().setIsAgmApproved(false);
-							recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
 							recommendationRepository.save(recommendObj.get());
 							RecommendationTrail trailData = new RecommendationTrail();
 							trailData.setCreatedAt(new Date());
