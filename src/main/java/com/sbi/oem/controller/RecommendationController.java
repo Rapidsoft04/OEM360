@@ -155,8 +155,8 @@ public class RecommendationController {
 
 	@GetMapping("/pending/list/for/appowner")
 	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(
-			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") long pageNumber,
-			@RequestParam(name = "pageSize", required = false, defaultValue = "0") long pageSize,
+			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber,
+			@RequestParam(name = "pageSize", required = false, defaultValue = "0") Integer pageSize,
 			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
 			@RequestParam(name = "priorityId", required = false) Long priorityId,
 			@RequestParam(name = "referenceId", required = false) String referenceId,
@@ -178,7 +178,7 @@ public class RecommendationController {
 		newSearchDto.setCreatedBy(createdBy);
 		newSearchDto.setUpdatedAt(updatedAt);
 
-		Response<?> response = recommendationService.pendingRecommendationRequestForAppOwner(newSearchDto);
+		Response<?> response = recommendationService.pendingRecommendationRequestForAppOwner(newSearchDto, pageNumber, pageSize);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
