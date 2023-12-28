@@ -727,22 +727,27 @@ public class RecommendationServiceImpl implements RecommendationService {
 							return new Response<>(HttpStatus.OK.value(),
 									"Recommendation reject request sent successfully.", null);
 						} else {
-							recommendObj.get().setIsAgmApproved(false);
-							recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
-							recommendationRepository.save(recommendObj.get());
-							RecommendationTrail trailData = new RecommendationTrail();
-							trailData.setCreatedAt(new Date());
-							trailData.setRecommendationStatus(new RecommendationStatus(4L));
-							trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
-							recommendationTrailRepository.save(trailData);
-							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
-							messages.setCreatedAt(new Date());
-							recommendationMessagesRepository.save(messages);
-							notificationService.save(recommendObj.get(),
-									RecommendationStatusEnum.RECCOMENDATION_REJECTED);
-							emailTemplateService.sendMailRecommendationMessages(messages,
-									RecommendationStatusEnum.RECCOMENDATION_REJECTED);
-							return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
+							if (recommendObj.get().getRecommendationStatus().getId() == 4L) {
+								recommendObj.get().setIsAgmApproved(false);
+								recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
+								recommendationRepository.save(recommendObj.get());
+								RecommendationTrail trailData = new RecommendationTrail();
+								trailData.setCreatedAt(new Date());
+								trailData.setRecommendationStatus(new RecommendationStatus(4L));
+								trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
+								recommendationTrailRepository.save(trailData);
+								RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+								messages.setCreatedAt(new Date());
+								recommendationMessagesRepository.save(messages);
+								notificationService.save(recommendObj.get(),
+										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
+								emailTemplateService.sendMailRecommendationMessages(messages,
+										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
+								return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.",
+										null);
+							} else {
+								return new Response<>(HttpStatus.OK.value(), "Recommendation already rejected.", null);
+							}
 						}
 					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found", null);
@@ -932,8 +937,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 								}
 								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
 										.sorted(Map.Entry.comparingByKey())
-										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
-												LinkedHashMap<Long, RecommendationTrail>::new));
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
 
 								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
 								if (sortedMap.containsKey(4L)) {
@@ -1042,13 +1047,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 					return new Response<>(HttpStatus.OK.value(), "Recomendation List OEM_SI", responseDtos);
 
 				} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
-					
+
 					List<DepartmentApprover> departmentList = departmentApproverRepository
 							.findAllByUserId(master.get().getUserId().getId());
 
 					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
-					
+
 					if (departmentIds != null && departmentIds.size() > 0) {
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
@@ -1070,7 +1075,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								}
 							}
 						}
-						
+
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
 							List<Recommendation> recommendationList = recommendationRepository
@@ -1091,11 +1096,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 								}
 							}
 						}
-						
+
 					}
 					responseDtos.setPendingRecommendation(pendingRecommendation);
 					responseDtos.setApprovedRecommendation(approvedRecommendation);
-					
+
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", responseDtos);
 
 				} else if (master.get().getUserTypeId().name().equals(UserType.SENIOR_MANAGEMENT.name())) {
