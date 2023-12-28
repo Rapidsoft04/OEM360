@@ -30,116 +30,116 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 	List<Recommendation> findAll(Specification<Recommendation> specification);
 
 	default List<Recommendation> findAllPendingRecommendationsBySearchDto(SearchDto searchDto) {
-		Specification<Recommendation> specification = (root, query, criteriacriteriacriteriaBuilder) -> {
+		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
 			if (searchDto.getRecommendationType() != null) {
 				predicates
-						.add(criteriacriteriacriteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
+						.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
 			}
 
 			if (searchDto.getPriorityId() != null) {
-				predicates.add(criteriacriteriacriteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
+				predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
 			}
 
 			if (searchDto.getReferenceId() != null) {
-				predicates.add(criteriacriteriacriteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
+				predicates.add(criteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
 			}
 
 			if (searchDto.getDepartmentId() != null) {
-				predicates.add(criteriacriteriacriteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
+				predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
 			}
 
 			if (searchDto.getStatusId() != null) {
 				predicates.add(
-						criteriacriteriacriteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
+						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
 			}
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
-				predicates.add(criteriacriteriacriteriaBuilder.or(criteriacriteriacriteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
 
 			}
 			
 			if(searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
 				Date currentDate = DateUtil.convertISTtoUTC(new Date());
-				predicates.add(criteriacriteriacriteriaBuilder.or(criteriacriteriacriteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
 			}
 			
 			if(searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
-				predicates.add(criteriacriteriacriteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
 			}
 			
 
 			if (searchDto.getCreatedBy() != null) {
-				predicates.add(criteriacriteriacriteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
+				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
 			}
 
-			query.orderBy(criteriacriteriacriteriaBuilder.desc(root.get("updatedAt")));
-			predicates.add(criteriacriteriacriteriaBuilder.or(criteriacriteriacriteriaBuilder.isNull(root.get("isAppOwnerApproved")),
-					criteriacriteriacriteriaBuilder.equal(root.get("isAppOwnerApproved"), false)));
+			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
+			predicates.add(criteriaBuilder.or(criteriaBuilder.isNull(root.get("isAppOwnerApproved")),
+					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false)));
 
-			return criteriacriteriacriteriaBuilder.and(predicates.toArray(new Predicate[0]));
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
 		return findAll(specification);
 	}
 
 	default List<Recommendation> findAllApprovedRecommendationsBySearchDto(SearchDto searchDto) {
-		Specification<Recommendation> specification = (root, query, criteriacriteriacriteriaBuilder) -> {
+		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
 			if (searchDto.getRecommendationType() != null) {
 				predicates
-						.add(criteriacriteriacriteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
+						.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
 			}
 
 			if (searchDto.getPriorityId() != null) {
-				predicates.add(criteriacriteriacriteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
+				predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
 			}
 
 			if (searchDto.getReferenceId() != null) {
-				predicates.add(criteriacriteriacriteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
+				predicates.add(criteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
 			}
 
 			if (searchDto.getDepartmentId() != null) {
-				predicates.add(criteriacriteriacriteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
+				predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
 			}
 
 			if (searchDto.getStatusId() != null) {
 				predicates.add(
-						criteriacriteriacriteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
+						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
 			}
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
-				predicates.add(criteriacriteriacriteriaBuilder.or(criteriacriteriacriteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
 
 			}
 			
 			if(searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
 				Date currentDate = DateUtil.convertISTtoUTC(new Date());
-				predicates.add(criteriacriteriacriteriaBuilder.or(criteriacriteriacriteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
 			}
 			
 			if(searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
-				predicates.add(criteriacriteriacriteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
 			}
 
 			if (searchDto.getCreatedBy() != null) {
-				predicates.add(criteriacriteriacriteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
+				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
 			}
 
-			query.orderBy(criteriacriteriacriteriaBuilder.desc(root.get("updatedAt")));
-			predicates.add(criteriacriteriacriteriaBuilder.equal(root.get("isAppOwnerApproved"), true));
+			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
+			predicates.add(criteriaBuilder.equal(root.get("isAppOwnerApproved"), true));
 
-			return criteriacriteriacriteriaBuilder.and(predicates.toArray(new Predicate[0]));
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
 		return findAll(specification);
@@ -187,8 +187,8 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
 			}
 
+//			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
-
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 

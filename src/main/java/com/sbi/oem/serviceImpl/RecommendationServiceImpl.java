@@ -785,7 +785,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
 						recommendationTrailRepository.save(trailData);
 						if (recommendationRejectionRequestDto.getAddtionalInformation() != null
-								|| !recommendationRejectionRequestDto.getAddtionalInformation().equals("")) {
+								&& recommendationRejectionRequestDto.getAddtionalInformation() != ""
+								&& !(recommendationRejectionRequestDto.getAddtionalInformation().isEmpty())) {
 							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 							messages.setCreatedAt(new Date());
 							recommendationMessagesRepository.save(messages);
