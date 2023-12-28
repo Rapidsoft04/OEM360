@@ -1758,8 +1758,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 					List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
-					RecommendationResponseDto pendingRecommendationResponseDto = new RecommendationResponseDto();
-					List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
+					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();
+					List<RecommendationResponseDto> approvedRecommendation = new ArrayList<>();
 					List<DepartmentApprover> departmentList = departmentApproverRepository
 							.findAllByUserId(master.get().getUserId().getId());
 
@@ -1813,31 +1813,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 										}
 									}
 								}
-								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
-									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
-								} else {
-									String priority = "";
-									if (rcmnd.getPriorityId().longValue() == 1) {
-										priority = PriorityEnum.High.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
-										responseDto.setPriority(priority);
-									} else if (rcmnd.getPriorityId().longValue() == 2) {
-										priority = PriorityEnum.Medium.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
-										responseDto.setPriority(priority);
-									} else {
-										priority = PriorityEnum.Low.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
-										responseDto.setPriority(priority);
-									}
-								}
-								pendingRecommendation.add(responseDto);
+								approvedRecommendation.add(responseDto);
 							}
 						}
 					}
-					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
+					approvedRecommendationResponseDto.setPendingRecommendation(approvedRecommendation);
 					Pagination<RecommendationResponseDto> paginate = new Pagination<>();
-					paginate.setData(pendingRecommendationResponseDto);
+					paginate.setData(approvedRecommendationResponseDto);
 					paginate.setPageNumber(pageNumber);
 					paginate.setPageSize(pageSize);
 					paginate.setNumberOfElements(recommendationPage.getNumberOfElements());
