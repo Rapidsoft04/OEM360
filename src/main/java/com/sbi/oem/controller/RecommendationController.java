@@ -207,6 +207,10 @@ public class RecommendationController {
 		newSearchDto.setCreatedBy(createdBy);
 		newSearchDto.setUpdatedAt(updatedAt);
 
+		Response<?> response = recommendationService.approvedRecommendationRequestForAppOwner(searchDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
 	@PostMapping("/pending/details")
 	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
 		Response<?> response = recommendationService.pendingRecommendationRequestForAppOwner(searchDto);
