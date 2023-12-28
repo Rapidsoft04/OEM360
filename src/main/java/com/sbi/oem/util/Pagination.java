@@ -10,50 +10,50 @@ import org.springframework.stereotype.Component;
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Pagination<T> {
 
-	private int pageSize;
-	private int pageNumber;
-	private int totalPages;
-	private int numberOfElements;
-	private long totalElements;
+	private Integer pageSize;
+	private Integer pageNumber;
+	private Integer totalPages;
+	private Integer numberOfElements;
+	private Integer totalElements;
 	private T data;
 
-	public int getPageSize() {
+	public Integer getPageSize() {
 		return pageSize;
 	}
 
-	public void setPageSize(int pageSize) {
+	public void setPageSize(Integer pageSize) {
 		this.pageSize = pageSize;
 	}
 
-	public int getPageNumber() {
+	public Integer getPageNumber() {
 		return pageNumber;
 	}
 
-	public void setPageNumber(int pageNumber) {
+	public void setPageNumber(Integer pageNumber) {
 		this.pageNumber = pageNumber;
 	}
 
-	public int getTotalPages() {
+	public Integer getTotalPages() {
 		return totalPages;
 	}
 
-	public void setTotalPages(int totalPages) {
+	public void setTotalPages(Integer totalPages) {
 		this.totalPages = totalPages;
 	}
 
-	public int getNumberOfElements() {
+	public Integer getNumberOfElements() {
 		return numberOfElements;
 	}
 
-	public void setNumberOfElements(int numberOfElements) {
+	public void setNumberOfElements(Integer numberOfElements) {
 		this.numberOfElements = numberOfElements;
 	}
 
-	public long getTotalElements() {
+	public Integer getTotalElements() {
 		return totalElements;
 	}
 
-	public void setTotalElements(long totalElements) {
+	public void setTotalElements(Integer totalElements) {
 		this.totalElements = totalElements;
 	}
 
@@ -64,4 +64,5 @@ public class Pagination<T> {
 	public void setData(T data) {
 		this.data = data;
 	}
+
 }

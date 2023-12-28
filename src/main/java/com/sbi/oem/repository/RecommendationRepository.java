@@ -7,6 +7,11 @@ import java.util.Optional;
 
 import javax.persistence.criteria.Predicate;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,7 +34,12 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 	List<Recommendation> findAll(Specification<Recommendation> specification);
 
-	default List<Recommendation> findAllPendingRecommendationsBySearchDto(SearchDto searchDto) {
+	Page<Recommendation> findAll(Specification<Recommendation> specification, Pageable pageable);
+
+	default Page<Recommendation> findAllPendingRecommendationsBySearchDto(SearchDto searchDto, Integer pageNumber,
+			Integer pageSize) {
+		Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
 		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
@@ -61,18 +71,18 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
 
 			}
-			
-			if(searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
 				Date currentDate = DateUtil.convertISTtoUTC(new Date());
-				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+				predicates
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
 			}
-			
-			if(searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+
+			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
 			}
-			
 
 			if (searchDto.getCreatedBy() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
@@ -85,7 +95,9 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
-		return findAll(specification);
+		Page<Recommendation> recommendationPage = findAll(specification, pageable);
+		long totalElements = recommendationPage.getTotalElements();
+		return recommendationPage;
 	}
 
 	default List<Recommendation> findAllApprovedRecommendationsBySearchDto(SearchDto searchDto) {
@@ -120,14 +132,15 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
 
 			}
-			
-			if(searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
 				Date currentDate = DateUtil.convertISTtoUTC(new Date());
-				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+				predicates
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
 			}
-			
-			if(searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+
+			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
 			}
@@ -154,7 +167,8 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			}
 
 			if (searchDto.getRecommendationType() != null) {
-				predicates.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
+				predicates
+						.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
 			}
 
 			if (searchDto.getPriorityId() != null) {
@@ -166,7 +180,8 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			}
 
 			if (searchDto.getStatusId() != null) {
-				predicates.add(criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
+				predicates.add(
+						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
 			}
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
@@ -175,14 +190,15 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
 
 			}
-			
-			if(searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
 				Date currentDate = DateUtil.convertISTtoUTC(new Date());
-				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+				predicates
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
 			}
-			
-			if(searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+
+			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
 			}

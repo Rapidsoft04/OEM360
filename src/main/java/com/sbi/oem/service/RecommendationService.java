@@ -35,7 +35,7 @@ public interface RecommendationService {
 
 	Response<?> addRecommendationThroughExcel(MultipartFile file);
 	
-	Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto);
+	Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto, Integer pageNumber, Integer pageSize);
 	
 	Response<?> approvedRecommendationRequestForAppOwner(SearchDto searchDto);
 

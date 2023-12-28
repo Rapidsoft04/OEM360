@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,6 +67,7 @@ import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
+import com.sbi.oem.util.Pagination;
 
 @Service
 public class RecommendationServiceImpl implements RecommendationService {
@@ -861,7 +863,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 	}
 
 	@Override
-	public Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto) {
+	public Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto, Integer pageNumber,
+			Integer pageSize) {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
@@ -874,11 +877,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
 
+					Page<Recommendation> recommendationPage = null;
 					if (departmentIds != null && departmentIds.size() > 0) {
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
-							List<Recommendation> recommendationList = recommendationRepository
-									.findAllPendingRecommendationsBySearchDto(searchDto);
+							recommendationPage = recommendationRepository
+									.findAllPendingRecommendationsBySearchDto(searchDto, pageNumber, pageSize);
+							List<Recommendation> recommendationList = recommendationPage.getContent();
+//							List<Recommendation> recommendationList = recommendationRepository
+//									.findAllPendingRecommendationsBySearchDto(searchDto, pageNumber, pageSize);
 							for (Recommendation rcmnd : recommendationList) {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
@@ -891,8 +898,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 					}
 					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
-					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner",
-							pendingRecommendationResponseDto);
+					Pagination<RecommendationResponseDto> paginate = new Pagination<>();
+					paginate.setData(pendingRecommendationResponseDto);
+					paginate.setPageNumber(pageNumber);
+					paginate.setPageSize(pageSize);
+					paginate.setNumberOfElements(recommendationPage.getNumberOfElements());
+					paginate.setTotalPages(recommendationPage.getTotalPages());
+					int totalElements = (int) recommendationPage.getTotalElements();
+					paginate.setTotalElements(totalElements);
+					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner", paginate);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
 				}
