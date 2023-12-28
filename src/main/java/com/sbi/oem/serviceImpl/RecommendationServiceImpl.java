@@ -863,143 +863,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 	}
 
 	@Override
-	public Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto, Integer pageNumber,
-			Integer pageSize) {
-		try {
-			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
-			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
-					RecommendationResponseDto pendingRecommendationResponseDto = new RecommendationResponseDto();
-					List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
-					List<DepartmentApprover> departmentList = departmentApproverRepository
-							.findAllByUserId(master.get().getUserId().getId());
-
-					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
-							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
-
-					Page<Recommendation> recommendationPage = null;
-					if (departmentIds != null && departmentIds.size() > 0) {
-						for (Long departmentId : departmentIds) {
-							searchDto.setDepartmentId(departmentId);
-							recommendationPage = recommendationRepository
-									.findAllPendingRecommendationsBySearchDto(searchDto, pageNumber, pageSize);
-							List<Recommendation> recommendationList = recommendationPage.getContent();
-//							List<Recommendation> recommendationList = recommendationRepository
-//									.findAllPendingRecommendationsBySearchDto(searchDto, pageNumber, pageSize);
-							for (Recommendation rcmnd : recommendationList) {
-								RecommendationResponseDto responseDto = rcmnd.convertToDto();
-								List<RecommendationMessages> messageList = recommendationMessagesRepository
-										.findAllByReferenceId(rcmnd.getReferenceId());
-								responseDto.setMessageList(messageList);
-								responseDto.setTrailResponse(null);
-								responseDto.setStatus(null);
-								pendingRecommendation.add(responseDto);
-							}
-						}
-					}
-					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
-					Pagination<RecommendationResponseDto> paginate = new Pagination<>();
-					paginate.setData(pendingRecommendationResponseDto);
-					paginate.setPageNumber(pageNumber);
-					paginate.setPageSize(pageSize);
-					paginate.setNumberOfElements(recommendationPage.getNumberOfElements());
-					paginate.setTotalPages(recommendationPage.getTotalPages());
-					int totalElements = (int) recommendationPage.getTotalElements();
-					paginate.setTotalElements(totalElements);
-					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner", paginate);
-				} else {
-					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
-				}
-			} else {
-				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
-		}
-	}
-
-	@Override
-	public Response<?> approvedRecommendationRequestForAppOwner(SearchDto searchDto) {
-		try {
-			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
-			if (master != null && master.isPresent()) {
-				List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
-				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
-					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();
-					List<RecommendationResponseDto> approvedRecommendations = new ArrayList<>();
-					List<DepartmentApprover> departmentList = departmentApproverRepository
-							.findAllByUserId(master.get().getUserId().getId());
-					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
-							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
-
-					if (departmentIds != null && departmentIds.size() > 0) {
-						for (Long departmentId : departmentIds) {
-							searchDto.setDepartmentId(departmentId);
-							List<Recommendation> recommendationList = recommendationRepository
-									.findAllApprovedRecommendationsBySearchDto(searchDto);
-
-							for (Recommendation rcmnd : recommendationList) {
-								RecommendationResponseDto responseDto = rcmnd.convertToDto();
-								List<RecommendationMessages> messageList = recommendationMessagesRepository
-										.findAllByReferenceId(rcmnd.getReferenceId());
-								responseDto.setMessageList(messageList);
-								List<RecommendationTrail> trailList = recommendationTrailRepository
-										.findAllByReferenceId(responseDto.getReferenceId());
-								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
-								for (RecommendationTrail trail : trailList) {
-									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
-								}
-								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
-										.sorted(Map.Entry.comparingByKey())
-										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
-
-								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-								if (sortedMap.containsKey(4L)) {
-									for (Long key : sortedMap.keySet()) {
-										RecommendationTrail trail = sortedMap.get(key);
-										RecommendationTrailResponseDto response = trail.convertToDto();
-										response.setIsStatusDone(true);
-										trailResponseList.add(response);
-									}
-								} else {
-									for (RecommendationStatus status : statusList) {
-										if (sortedMap.containsKey(status.getId().longValue())) {
-											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
-											RecommendationTrailResponseDto response = trail.convertToDto();
-											response.setIsStatusDone(true);
-											trailResponseList.add(response);
-										} else {
-											RecommendationTrail trail = new RecommendationTrail();
-											trail.setRecommendationStatus(status);
-											RecommendationTrailResponseDto response = trail.convertToDto();
-											response.setIsStatusDone(false);
-											trailResponseList.add(response);
-										}
-									}
-								}
-								responseDto.setTrailResponse(trailResponseList);
-								approvedRecommendations.add(responseDto);
-							}
-						}
-					}
-					approvedRecommendationResponseDto.setApprovedRecommendation(approvedRecommendations);
-					return new Response<>(HttpStatus.OK.value(), "Approved Recommendation of App Owner",
-							approvedRecommendationResponseDto);
-				} else {
-					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
-				}
-			} else {
-				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
-		}
-	}
-
-	@Override
 	public Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto) {
 
 		try {
@@ -1493,5 +1356,346 @@ public class RecommendationServiceImpl implements RecommendationService {
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master != null && master.isPresent()) {
+				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+					List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+					RecommendationResponseDto pendingRecommendationResponseDto = new RecommendationResponseDto();
+					List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
+					List<DepartmentApprover> departmentList = departmentApproverRepository
+							.findAllByUserId(master.get().getUserId().getId());
+
+					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
+
+					if (departmentIds != null && departmentIds.size() > 0) {
+						for (Long departmentId : departmentIds) {
+							searchDto.setDepartmentId(departmentId);
+							List<Recommendation> recommendationList = recommendationRepository
+									.findAllPendingRecommendationsBySearchDto(searchDto);
+							for (Recommendation rcmnd : recommendationList) {
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								responseDto.setMessageList(messageList);
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(responseDto.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(4L)) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(null);
+								responseDto.setStatus(null);
+								pendingRecommendation.add(responseDto);
+							}
+						}
+					}
+					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
+					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner",
+							pendingRecommendationResponseDto);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
+	@Override
+	public Response<?> approvedRecommendationRequestForAppOwner(SearchDto searchDto) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master != null && master.isPresent()) {
+				List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();
+					List<RecommendationResponseDto> approvedRecommendations = new ArrayList<>();
+					List<DepartmentApprover> departmentList = departmentApproverRepository
+							.findAllByUserId(master.get().getUserId().getId());
+					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
+
+					if (departmentIds != null && departmentIds.size() > 0) {
+						for (Long departmentId : departmentIds) {
+							searchDto.setDepartmentId(departmentId);
+							List<Recommendation> recommendationList = recommendationRepository
+									.findAllApprovedRecommendationsBySearchDto(searchDto);
+
+							for (Recommendation rcmnd : recommendationList) {
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								responseDto.setMessageList(messageList);
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(responseDto.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(4L)) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(trailResponseList);
+								approvedRecommendations.add(responseDto);
+							}
+						}
+					}
+					approvedRecommendationResponseDto.setApprovedRecommendation(approvedRecommendations);
+					return new Response<>(HttpStatus.OK.value(), "Approved Recommendation of App Owner",
+							approvedRecommendationResponseDto);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
+	@Override
+	public Response<?> pendingRecommendationRequestForAppOwnerThroughPagination(SearchDto searchDto, Integer pageNumber,
+			Integer pageSize) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master != null && master.isPresent()) {
+				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+					List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+					RecommendationResponseDto pendingRecommendationResponseDto = new RecommendationResponseDto();
+					List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
+					List<DepartmentApprover> departmentList = departmentApproverRepository
+							.findAllByUserId(master.get().getUserId().getId());
+
+					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
+
+					Page<Recommendation> recommendationPage = null;
+					if (departmentIds != null && departmentIds.size() > 0) {
+						for (Long departmentId : departmentIds) {
+							searchDto.setDepartmentId(departmentId);
+							recommendationPage = recommendationRepository.findAllPendingRequestByPagination(searchDto,
+									pageNumber, pageSize);
+							List<Recommendation> recommendationList = recommendationPage.getContent();
+							for (Recommendation rcmnd : recommendationList) {
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								responseDto.setMessageList(messageList);
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(responseDto.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(4L)) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(null);
+								responseDto.setStatus(null);
+								pendingRecommendation.add(responseDto);
+							}
+						}
+					}
+					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
+					Pagination<RecommendationResponseDto> paginate = new Pagination<>();
+					paginate.setData(pendingRecommendationResponseDto);
+					paginate.setPageNumber(pageNumber);
+					paginate.setPageSize(pageSize);
+					paginate.setNumberOfElements(recommendationPage.getNumberOfElements());
+					paginate.setTotalPages(recommendationPage.getTotalPages());
+					int totalElements = (int) recommendationPage.getTotalElements();
+					paginate.setTotalElements(totalElements);
+					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner", paginate);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
+	@Override
+	public Response<?> approvedRecommendationRequestForAppOwnerThroughPagination(SearchDto searchDto,
+			Integer pageNumber, Integer pageSize) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master != null && master.isPresent()) {
+				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+					List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+					RecommendationResponseDto pendingRecommendationResponseDto = new RecommendationResponseDto();
+					List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
+					List<DepartmentApprover> departmentList = departmentApproverRepository
+							.findAllByUserId(master.get().getUserId().getId());
+
+					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
+
+					Page<Recommendation> recommendationPage = null;
+					if (departmentIds != null && departmentIds.size() > 0) {
+						for (Long departmentId : departmentIds) {
+							searchDto.setDepartmentId(departmentId);
+							recommendationPage = recommendationRepository.findAllApprovedRequestByPagination(searchDto,
+									pageNumber, pageSize);
+							List<Recommendation> recommendationList = recommendationPage.getContent();
+							for (Recommendation rcmnd : recommendationList) {
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								responseDto.setMessageList(messageList);
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(responseDto.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(4L)) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								pendingRecommendation.add(responseDto);
+							}
+						}
+					}
+					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
+					Pagination<RecommendationResponseDto> paginate = new Pagination<>();
+					paginate.setData(pendingRecommendationResponseDto);
+					paginate.setPageNumber(pageNumber);
+					paginate.setPageSize(pageSize);
+					paginate.setNumberOfElements(recommendationPage.getNumberOfElements());
+					paginate.setTotalPages(recommendationPage.getTotalPages());
+					int totalElements = (int) recommendationPage.getTotalElements();
+					paginate.setTotalElements(totalElements);
+					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner", paginate);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
 	}
 }
