@@ -861,6 +861,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+					RecommendationResponseDto pendingRecommendationResponseDto = new RecommendationResponseDto();
 					List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
 					List<DepartmentApprover> departmentList = departmentApproverRepository
 							.findAllByUserId(master.get().getUserId().getId());
@@ -875,14 +876,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 									.findAllPendingRecommendationsBySearchDto(searchDto);
 							for (Recommendation rcmnd : recommendationList) {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository.findAllByReferenceId(rcmnd.getReferenceId());
+								responseDto.setMessageList(messageList);
 								responseDto.setTrailResponse(null);
 								responseDto.setStatus(null);
 								pendingRecommendation.add(responseDto);
 							}
 						}
 					}
+					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
 					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner",
-							pendingRecommendation);
+							pendingRecommendationResponseDto);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
 				}
@@ -901,10 +905,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
-					List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
+					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();
+					List<RecommendationResponseDto> approvedRecommendations = new ArrayList<>();
 					List<DepartmentApprover> departmentList = departmentApproverRepository
 							.findAllByUserId(master.get().getUserId().getId());
-
 					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
 
@@ -916,12 +920,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 							for (Recommendation rcmnd : recommendationList) {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
-								pendingRecommendation.add(responseDto);
+								List<RecommendationMessages> messageList = recommendationMessagesRepository.findAllByReferenceId(rcmnd.getReferenceId());
+								responseDto.setMessageList(messageList);
+								approvedRecommendations.add(responseDto);
 							}
 						}
 					}
+					approvedRecommendationResponseDto.setApprovedRecommendation(approvedRecommendations);
 					return new Response<>(HttpStatus.OK.value(), "Approved Recommendation of App Owner",
-							pendingRecommendation);
+							approvedRecommendationResponseDto);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
 				}
