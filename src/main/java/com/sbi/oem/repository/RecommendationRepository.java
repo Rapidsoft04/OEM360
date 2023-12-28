@@ -4,20 +4,30 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.Predicate;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.sbi.oem.dto.RecommendationResponseDto;
 import com.sbi.oem.dto.SearchDto;
 import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.util.DateUtil;
+import com.sbi.oem.util.Pagination;
 
 @Repository
 public interface RecommendationRepository extends JpaRepository<Recommendation, Long> {
+	
 
 	Optional<Recommendation> findByReferenceId(String refId);
 
@@ -26,8 +36,10 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 	@Query(value = "SELECT * FROM recommendation where created_by=?1 order by updated_at desc", nativeQuery = true)
 	List<Recommendation> findAllByUserId(Long id);
-
+	
 	List<Recommendation> findAll(Specification<Recommendation> specification);
+
+	Page<Recommendation> findAll(Specification<Recommendation> specification, Pageable pageable);
 
 	default List<Recommendation> findAllPendingRecommendationsBySearchDto(SearchDto searchDto) {
 		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
@@ -145,8 +157,9 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 		return findAll(specification);
 	}
 
-	default List<Recommendation> findAllByUserIdFilter(Long id, SearchDto searchDto) {
+	default Page<Recommendation> findAllByUserIdFilter(Long id, SearchDto searchDto ,long pageNumber, long pageSize) {
 		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
+			
 			List<Predicate> predicates = new ArrayList<>();
 
 			if (id != null) {
@@ -186,13 +199,20 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
 			}
+			
+			
 
-//			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
-		return findAll(specification);
+		Pageable pageable = PageRequest.of((int)pageNumber, (int)pageSize);
+		Page<Recommendation> recommendationPage = findAll(specification, pageable);
+		long totalElements = recommendationPage.getTotalElements();
+		return new PageImpl<>(recommendationPage.getContent(), pageable, totalElements);
+		
+
+        
 	}
 
 }

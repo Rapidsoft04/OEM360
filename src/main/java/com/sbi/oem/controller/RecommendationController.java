@@ -207,6 +207,14 @@ public class RecommendationController {
 		newSearchDto.setCreatedBy(createdBy);
 		newSearchDto.setUpdatedAt(updatedAt);
 
+	@PostMapping("/pending/details")
+	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
+		Response<?> response = recommendationService.pendingRecommendationRequestForAppOwner(searchDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
+	@PostMapping("/approved/details")
+	public ResponseEntity<?> approvedRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
 		Response<?> response = recommendationService.approvedRecommendationRequestForAppOwner(searchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
@@ -236,8 +244,8 @@ public class RecommendationController {
 		searchDto.setCreatedBy(createdBy);
 		searchDto.setUpdatedAt(updatedAt);
 
-		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGm(searchDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGm(searchDto , pageNumber ,pageSize);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 
 	}
 }

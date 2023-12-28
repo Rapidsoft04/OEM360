@@ -39,6 +39,6 @@ public interface RecommendationService {
 	
 	Response<?> approvedRecommendationRequestForAppOwner(SearchDto searchDto);
 
-	Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto);
+	Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto, long pageNumber, long pageSize);
 
 }

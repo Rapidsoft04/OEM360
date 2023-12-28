@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,6 +67,7 @@ import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
+import com.sbi.oem.util.Pagination;
 
 @Service
 public class RecommendationServiceImpl implements RecommendationService {
@@ -1034,7 +1036,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 	}
 
 	@Override
-	public Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto) {
+	public Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto ,long pageNumber, long pageSize) {
 
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
@@ -1049,11 +1051,25 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 					Long OemId = master.get().getUserId().getId();
 
-					List<Recommendation> RecomendationListOem = recommendationRepository.findAllByUserIdFilter(OemId,
-							searchDto);
+					 Page<Recommendation> recommendationPage = recommendationRepository.findAllByUserIdFilter(OemId,
+							searchDto ,pageNumber ,pageSize);
+					 
+					 List<Recommendation> RecomendationListOem = recommendationPage.getContent();
 
 					for (Recommendation rcmnd : RecomendationListOem) {
 						RecommendationResponseDto responseDto = rcmnd.convertToDto();
+						if (rcmnd.getPriorityId() != null) {
+							String priority = "";
+							if (rcmnd.getPriorityId().longValue() == 1) {
+								priority = PriorityEnum.High.getName();
+							} else if (rcmnd.getPriorityId().longValue() == 2) {
+								priority = PriorityEnum.Medium.getName();
+							} else {
+								priority = PriorityEnum.Low.getName();
+							}
+							responseDto.setPriority(priority);
+						}
+						
 						List<RecommendationTrail> trailList = recommendationTrailRepository
 								.findAllByReferenceId(rcmnd.getReferenceId());
 						Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
@@ -1112,7 +1128,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendations.add(responseDto);
 					}
 					responseDtos.setRecommendations(recommendations);
-					return new Response<>(HttpStatus.OK.value(), "Recomendation List OEM_SI", responseDtos);
+					
+					Pagination<RecommendationResponseDto> paginate = new Pagination<>();
+					paginate.setData(responseDtos);
+					paginate.setPageNumber((int)pageNumber);
+					paginate.setPageSize((int)pageSize);
+					paginate.setNumberOfElements(recommendationPage.getNumberOfElements());
+					paginate.setTotalPages(recommendationPage.getTotalPages());
+					int totalElements = (int) recommendationPage.getTotalElements();
+					paginate.setTotalElements(totalElements);
+					
+					return new Response<>(HttpStatus.OK.value(), "Recomendation List OEM_SI", paginate);
 
 				} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
 
@@ -1168,6 +1194,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 					}
 					responseDtos.setPendingRecommendation(pendingRecommendation);
 					responseDtos.setApprovedRecommendation(approvedRecommendation);
+					
+					
 
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", responseDtos);
 
