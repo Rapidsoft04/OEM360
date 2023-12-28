@@ -1677,7 +1677,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							}
 						}
 					}
-					approvedRecommendationResponseDto.setPendingRecommendation(approvedRecommendation);
+					approvedRecommendationResponseDto.setApprovedRecommendation(approvedRecommendation);
 					Pagination<RecommendationResponseDto> paginate = new Pagination<>();
 					paginate.setData(approvedRecommendationResponseDto);
 					paginate.setPageNumber(pageNumber);
