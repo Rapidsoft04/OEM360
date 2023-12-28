@@ -34,13 +34,19 @@ public interface RecommendationService {
 	Response<?> updateDeploymentDetails(RecommendationDetailsRequestDto recommendationDetailsRequestDto);
 
 	Response<?> addRecommendationThroughExcel(MultipartFile file);
-	
-	Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto, Integer pageNumber, Integer pageSize);
-	
+
+	Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto);
+
 	Response<?> approvedRecommendationRequestForAppOwner(SearchDto searchDto);
 
 	Response<?> viewRecommendationDetailsForOemAndAgmAndGmPagination(SearchDto searchDto, long pageNumber, long pageSize);
 
 	Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto);
+	Response<?> pendingRecommendationRequestForAppOwnerThroughPagination(SearchDto newSearchDto, Integer pageNumber,
+			Integer pageSize);
 
+	Response<?> approvedRecommendationRequestForAppOwnerThroughPagination(SearchDto searchDto, Integer pageNumber,
+			Integer pageSize);
+
+	Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto);
 }

@@ -11,10 +11,8 @@ import javax.persistence.criteria.Predicate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -42,8 +40,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 	Page<Recommendation> findAll(Specification<Recommendation> specification, Pageable pageable);
 
-	default List<Recommendation> findAllPendingRecommendationsBySearchDto(SearchDto searchDto) {
-	default Page<Recommendation> findAllPendingRecommendationsBySearchDto(SearchDto searchDto, Integer pageNumber,
+	default Page<Recommendation> findAllPendingRequestByPagination(SearchDto searchDto, Integer pageNumber,
 			Integer pageSize) {
 		Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
@@ -103,7 +100,128 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 		};
 
 		Page<Recommendation> recommendationPage = findAll(specification, pageable);
-		long totalElements = recommendationPage.getTotalElements();
+		return recommendationPage;
+	}
+
+	default List<Recommendation> findAllPendingRecommendationsBySearchDto(SearchDto searchDto) {
+
+		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
+
+			if (searchDto.getRecommendationType() != null) {
+				predicates
+						.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
+			}
+
+			if (searchDto.getPriorityId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
+			}
+
+			if (searchDto.getReferenceId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
+			}
+
+			if (searchDto.getDepartmentId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
+			}
+
+			if (searchDto.getStatusId() != null) {
+				predicates.add(
+						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
+			}
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+
+			}
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date currentDate = DateUtil.convertISTtoUTC(new Date());
+				predicates
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+			}
+
+			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+			}
+
+			if (searchDto.getCreatedBy() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
+			}
+
+			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
+			predicates.add(criteriaBuilder.or(criteriaBuilder.isNull(root.get("isAppOwnerApproved")),
+					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false)));
+
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+		};
+		return findAll(specification);
+	}
+
+	default Page<Recommendation> findAllApprovedRequestByPagination(SearchDto searchDto, Integer pageNumber,
+			Integer pageSize) {
+		Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
+
+			if (searchDto.getRecommendationType() != null) {
+				predicates
+						.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
+			}
+
+			if (searchDto.getPriorityId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
+			}
+
+			if (searchDto.getReferenceId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
+			}
+
+			if (searchDto.getDepartmentId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
+			}
+
+			if (searchDto.getStatusId() != null) {
+				predicates.add(
+						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
+			}
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+
+			}
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date currentDate = DateUtil.convertISTtoUTC(new Date());
+				predicates
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+			}
+
+			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+			}
+
+			if (searchDto.getCreatedBy() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
+			}
+
+			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
+			predicates.add(criteriaBuilder.or(criteriaBuilder.isNull(root.get("isAppOwnerApproved")),
+					criteriaBuilder.equal(root.get("isAppOwnerApproved"), true)));
+
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+		};
+
+		Page<Recommendation> recommendationPage = findAll(specification, pageable);
 		return recommendationPage;
 	}
 
