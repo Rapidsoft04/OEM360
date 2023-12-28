@@ -10,11 +10,28 @@ import org.springframework.stereotype.Component;
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Pagination<T> {
 
+	private int pageSize;
+	private int pageNumber;
 	private int totalPages;
 	private int numberOfElements;
 	private long totalElements;
 	private T data;
-	private Long totalGpsEquiptedVehicle;
+
+	public int getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
+	}
+
+	public int getPageNumber() {
+		return pageNumber;
+	}
+
+	public void setPageNumber(int pageNumber) {
+		this.pageNumber = pageNumber;
+	}
 
 	public int getTotalPages() {
 		return totalPages;
@@ -46,13 +63,5 @@ public class Pagination<T> {
 
 	public void setData(T data) {
 		this.data = data;
-	}
-
-	public Long getTotalGpsEquiptedVehicle() {
-		return totalGpsEquiptedVehicle;
-	}
-
-	public void setTotalGpsEquiptedVehicle(Long totalGpsEquiptedVehicle) {
-		this.totalGpsEquiptedVehicle = totalGpsEquiptedVehicle;
 	}
 }
