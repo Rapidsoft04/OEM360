@@ -114,6 +114,16 @@ public class RecommendationServiceImpl implements RecommendationService {
 		return null;
 	}
 
+	public static Map<Long, String> priorityMap = new HashMap<>();
+
+	public static void setPriorityMap(Map<Long, String> priorityMap) {
+		Map<Long, String> newMap = new HashMap<>();
+		newMap.put(1L, "High");
+		newMap.put(2L, "Medium");
+		newMap.put(3L, "Low");
+		RecommendationServiceImpl.priorityMap = newMap;
+	}
+
 	@Override
 	public Response<?> getRecommendationPageData(Long companyId) {
 		try {
@@ -886,6 +896,25 @@ public class RecommendationServiceImpl implements RecommendationService {
 								responseDto.setMessageList(messageList);
 								responseDto.setTrailResponse(null);
 								responseDto.setStatus(null);
+								if(priorityMap!=null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								}
+								else {
+									String priority="";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(1L, PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(1L, PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(1L, PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
 								pendingRecommendation.add(responseDto);
 							}
 						}
@@ -965,6 +994,25 @@ public class RecommendationServiceImpl implements RecommendationService {
 										}
 									}
 								}
+								if(priorityMap!=null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								}
+								else {
+									String priority="";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(1L, PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(1L, PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(1L, PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
 								responseDto.setTrailResponse(trailResponseList);
 								approvedRecommendations.add(responseDto);
 							}
@@ -1042,6 +1090,25 @@ public class RecommendationServiceImpl implements RecommendationService {
 							}
 						}
 						responseDto.setTrailResponse(trailResponseList);
+						if(priorityMap!=null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+							responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+						}
+						else {
+							String priority="";
+							if (rcmnd.getPriorityId().longValue() == 1) {
+								priority = PriorityEnum.High.getName();
+								priorityMap.put(1L, PriorityEnum.High.name());
+								responseDto.setPriority(priority);
+							} else if (rcmnd.getPriorityId().longValue() == 2) {
+								priority = PriorityEnum.Medium.getName();
+								priorityMap.put(1L, PriorityEnum.High.name());
+								responseDto.setPriority(priority);
+							} else {
+								priority = PriorityEnum.Low.getName();
+								priorityMap.put(1L, PriorityEnum.High.name());
+								responseDto.setPriority(priority);
+							}
+						}
 						recommendations.add(responseDto);
 					}
 					responseDtos.setRecommendations(recommendations);

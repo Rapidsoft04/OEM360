@@ -153,7 +153,7 @@ public class RecommendationController {
 //		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 //	}
 
-	@GetMapping("/pending/details")
+	@GetMapping("/pending/list/for/appowner")
 	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(
 			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") long pageNumber,
 			@RequestParam(name = "pageSize", required = false, defaultValue = "0") long pageSize,
@@ -182,7 +182,7 @@ public class RecommendationController {
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
-	@GetMapping("/approved/details")
+	@GetMapping("/approved/list/for/appowner")
 	public ResponseEntity<?> approvedRecommendationDetailsOfAppOwner(
 			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") long pageNumber,
 			@RequestParam(name = "pageSize", required = false, defaultValue = "0") long pageSize,
