@@ -780,7 +780,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
 						recommendationTrailRepository.save(trailData);
 						if (recommendationRejectionRequestDto.getAddtionalInformation() != null
-								|| !recommendationRejectionRequestDto.getAddtionalInformation().equals("")) {
+								&& recommendationRejectionRequestDto.getAddtionalInformation() != ""
+								&& !(recommendationRejectionRequestDto.getAddtionalInformation().isEmpty())) {
 							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 							messages.setCreatedAt(new Date());
 							recommendationMessagesRepository.save(messages);
@@ -932,8 +933,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 								}
 								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
 										.sorted(Map.Entry.comparingByKey())
-										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
-												LinkedHashMap<Long, RecommendationTrail>::new));
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
 
 								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
 								if (sortedMap.containsKey(4L)) {
@@ -1042,13 +1043,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 					return new Response<>(HttpStatus.OK.value(), "Recomendation List OEM_SI", responseDtos);
 
 				} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
-					
+
 					List<DepartmentApprover> departmentList = departmentApproverRepository
 							.findAllByUserId(master.get().getUserId().getId());
 
 					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
-					
+
 					if (departmentIds != null && departmentIds.size() > 0) {
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
@@ -1070,7 +1071,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								}
 							}
 						}
-						
+
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
 							List<Recommendation> recommendationList = recommendationRepository
@@ -1091,11 +1092,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 								}
 							}
 						}
-						
+
 					}
 					responseDtos.setPendingRecommendation(pendingRecommendation);
 					responseDtos.setApprovedRecommendation(approvedRecommendation);
-					
+
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", responseDtos);
 
 				} else if (master.get().getUserTypeId().name().equals(UserType.SENIOR_MANAGEMENT.name())) {
