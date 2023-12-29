@@ -2,6 +2,8 @@ package com.sbi.oem.dto;
 
 import java.util.Date;
 
+import com.sbi.oem.model.Department;
+
 public class SearchDto {
 
 	private Long recommendationType;
@@ -21,6 +23,8 @@ public class SearchDto {
 	private Long createdBy;
 
 	private Date updatedAt;
+	
+	private Department department;
 
 	public Long getRecommendationType() {
 		return recommendationType;
@@ -92,6 +96,14 @@ public class SearchDto {
 
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public Department getDepartment() {
+		return department;
+	}
+
+	public void setDepartment(Department department) {
+		this.department = department;
 	}
 
 	

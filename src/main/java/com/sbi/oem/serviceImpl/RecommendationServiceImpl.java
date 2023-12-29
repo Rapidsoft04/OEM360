@@ -441,7 +441,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					}
 					responseDtos.setRecommendations(recommendations);
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List.", responseDtos);
-				} else if (master.get().getUserTypeId().name().equals(UserType.SENIOR_MANAGEMENT.name())) {
+				} else if (master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name())) {
 					RecommendationResponseDto responseDtos = new RecommendationResponseDto();
 					List<RecommendationResponseDto> recommendations = new ArrayList<>();
 					List<Recommendation> recommendationList = recommendationRepository
@@ -898,8 +898,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			RecommendationResponseDto responseDtos = new RecommendationResponseDto();
-			List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
-			List<RecommendationResponseDto> approvedRecommendation = new ArrayList<>();
 			List<RecommendationResponseDto> recommendations = new ArrayList<>();
 
 			if (master != null && master.isPresent()) {
@@ -993,19 +991,21 @@ public class RecommendationServiceImpl implements RecommendationService {
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
 							List<Recommendation> recommendationList = recommendationRepository
-									.findAllPendingRecommendationsBySearchDto(searchDto);
+									.findAllRecommendationsForAgmOemAndGmBySearchDto(searchDto);
 							for (Recommendation rcmnd : recommendationList) {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
 								responseDto.setMessageList(messageList);
-								
+
 								if (rcmnd.getIsAppOwnerApproved() != null
-										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
+										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+										&& rcmnd.getRecommendationStatus().getId() == 2) {
 									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
 								}
 								if (rcmnd.getIsAppOwnerRejected() != null
-										&& rcmnd.getIsAppOwnerRejected().booleanValue() == true) {
+										&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+										&& rcmnd.getRecommendationStatus().getId() == 2) {
 									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
 								}
 								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
@@ -1044,7 +1044,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", responseDtos);
 
-				} else if (master.get().getUserTypeId().name().equals(UserType.SENIOR_MANAGEMENT.name())) {
+				} else if (master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name())) {
 
 					List<Recommendation> RecomendationListGm = recommendationRepository.findAll();
 
@@ -2041,7 +2041,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", responseDtos);
 
-				} else if (master.get().getUserTypeId().name().equals(UserType.SENIOR_MANAGEMENT.name())) {
+				} else if (master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name())) {
 
 					List<Recommendation> RecomendationListGm = recommendationRepository.findAll();
 
