@@ -35,7 +35,7 @@ public class RecommendationController {
 	@GetMapping("/page/data")
 	public ResponseEntity<?> getRecommendationPageData(@RequestParam("companyId") Long companyId) {
 		Response<?> response = recommendationService.getRecommendationPageData(companyId);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
 	@PostMapping("/create")

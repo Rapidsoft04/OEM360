@@ -1577,6 +1577,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
 								responseDto.setMessageList(messageList);
+								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+										.findAllByDepartmentId(rcmnd.getDepartment().getId());
+								responseDto.setApprover(departmentApprover.get().getAgm());
+								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
 								List<RecommendationTrail> trailList = recommendationTrailRepository
 										.findAllByReferenceId(responseDto.getReferenceId());
 								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
