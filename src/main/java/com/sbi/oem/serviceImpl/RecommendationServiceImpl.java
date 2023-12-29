@@ -898,6 +898,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			RecommendationResponseDto responseDtos = new RecommendationResponseDto();
+			List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
+			List<RecommendationResponseDto> approvedRecommendation = new ArrayList<>();
 			List<RecommendationResponseDto> recommendations = new ArrayList<>();
 
 			if (master != null && master.isPresent()) {
@@ -991,21 +993,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
 							List<Recommendation> recommendationList = recommendationRepository
-									.findAllRecommendationsForAgmOemAndGmBySearchDto(searchDto);
+									.findAllPendingRecommendationsBySearchDto(searchDto);
 							for (Recommendation rcmnd : recommendationList) {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
 								responseDto.setMessageList(messageList);
-
+								
 								if (rcmnd.getIsAppOwnerApproved() != null
-										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
-										&& rcmnd.getRecommendationStatus().getId() == 2) {
+										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
 									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
 								}
 								if (rcmnd.getIsAppOwnerRejected() != null
-										&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
-										&& rcmnd.getRecommendationStatus().getId() == 2) {
+										&& rcmnd.getIsAppOwnerRejected().booleanValue() == true) {
 									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
 								}
 								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
