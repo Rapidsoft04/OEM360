@@ -621,8 +621,30 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
 							.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
 					if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
-						return new Response<>(HttpStatus.BAD_REQUEST.value(),
-								"Deployment details already exist for the provided recommendation.", null);
+						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
+						details.setId(recommendDeployDetails.get().getId());
+						RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
+								.save(details);
+						Optional<Recommendation> recommendation = recommendationRepository
+								.findByReferenceId(details.getRecommendRefId());
+						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+						recommendationRepository.save(recommendation.get());
+						if (recommendationDetailsRequestDto.getDescription() != null
+								|| !recommendationDetailsRequestDto.getDescription().equals("")) {
+							RecommendationMessages messages = new RecommendationMessages();
+							messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
+							messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
+							messages.setCreatedAt(new Date());
+							messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
+							recommendationMessagesRepository.save(messages);
+						}
+						notificationService.save(recommendation.get(),
+								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
+						emailTemplateService.sendMailRecommendationDeplyomentDetails(savedDeploymentDetails,
+								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
+
+						return new Response<>(HttpStatus.OK.value(), "Deployment details updated successfully.", null);
+
 					} else {
 						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
 						details.setCreatedAt(new Date());
