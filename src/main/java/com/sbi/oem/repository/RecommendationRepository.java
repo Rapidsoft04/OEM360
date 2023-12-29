@@ -394,7 +394,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 	        return findAll(specification);
 	    }
-	 default List<Recommendation> findAllRecommendationsForAgmOemAndGmBySearchDto(SearchDto searchDto) {
+	 default List<Recommendation> findAllRecommendationsForGmBySearchDto(SearchDto searchDto) {
 
 			Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
 				List<Predicate> predicates = new ArrayList<>();
