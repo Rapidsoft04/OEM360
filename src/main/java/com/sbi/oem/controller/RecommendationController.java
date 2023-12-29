@@ -250,17 +250,6 @@ public class RecommendationController {
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
-	@PostMapping("/pending/details")
-	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
-		Response<?> response = recommendationService.pendingRecommendationRequestForAppOwner(searchDto);
-		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
-	}
-
-	@PostMapping("/approved/details")
-	public ResponseEntity<?> approvedRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
-		Response<?> response = recommendationService.approvedRecommendationRequestForAppOwner(searchDto);
-		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
-	}
 
 	@GetMapping("/view/details/agmAndoem")
 	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(

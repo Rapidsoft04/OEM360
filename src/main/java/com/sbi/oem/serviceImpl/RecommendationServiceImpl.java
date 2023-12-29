@@ -968,6 +968,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 								responseDto.setPriority(priority);
 							}
 						}
+						Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+								.findByRecommendRefId(rcmnd.getReferenceId());
+						if (deploymentDetails != null && deploymentDetails.isPresent()) {
+							responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+						} else {
+							responseDto.setRecommendationDeploymentDetails(null);
+						}
 						recommendations.add(responseDto);
 					}
 					responseDtos.setRecommendations(recommendations);
@@ -1018,6 +1025,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 										priorityMap.put(1L, PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									}
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
 								}
 							}
 						}
@@ -1111,6 +1125,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 								priorityMap.put(1L, PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							}
+						}
+						Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+								.findByRecommendRefId(rcmnd.getReferenceId());
+						if (deploymentDetails != null && deploymentDetails.isPresent()) {
+							responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+						} else {
+							responseDto.setRecommendationDeploymentDetails(null);
 						}
 						recommendations.add(responseDto);
 					}
@@ -1524,6 +1545,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 										responseDto.setPriority(priority);
 									}
 								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
 								pendingRecommendation.add(responseDto);
 							}
 						}
@@ -1621,6 +1649,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 										priorityMap.put(1L, PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									}
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
 								}
 								approvedRecommendations.add(responseDto);
 							}
