@@ -61,7 +61,18 @@ public class UserServiceImpl implements UserService {
 							loginResponse.setId(credentialMaster.getId());
 							loginResponse.setEmail(credentialMaster.getEmail());
 							loginResponse.setUserName(credentialMaster.getName());
-							loginResponse.setUserType(credentialMaster.getUserTypeId().name());
+							if(credentialMaster.getUserTypeId().name().equals(UserType.OEM_SI.name())) {
+								loginResponse.setUserType("OEM/SI");
+							}
+							else if(credentialMaster.getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+								loginResponse.setUserType("Application Owner");
+							}
+							else if(credentialMaster.getUserTypeId().name().equals(UserType.AGM.name())) {
+								loginResponse.setUserType("AGM");
+							}
+							else {
+								loginResponse.setUserType("GM IT Infra");
+							}
 							loginResponse.setToken(jwtTokenUtil.generateToken(userDetails));
 							loginResponse.setImageUrl(credentialMaster.getUserId().getUserLogoUrl());
 							loginResponse.setCompany(credentialMaster.getUserId().getCompany());

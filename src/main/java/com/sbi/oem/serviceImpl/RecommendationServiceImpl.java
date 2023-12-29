@@ -999,7 +999,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
 								responseDto.setMessageList(messageList);
-								pendingRecommendation.add(responseDto);
+								
 								if (rcmnd.getIsAppOwnerApproved() != null
 										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
 									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
@@ -1033,33 +1033,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 								} else {
 									responseDto.setRecommendationDeploymentDetails(null);
 								}
-							}
-						}
-
-						for (Long departmentId : departmentIds) {
-							searchDto.setDepartmentId(departmentId);
-							List<Recommendation> recommendationList = recommendationRepository
-									.findAllApprovedRecommendationsBySearchDto(searchDto);
-							for (Recommendation rcmnd : recommendationList) {
-								RecommendationResponseDto responseDto = rcmnd.convertToDto();
-								List<RecommendationMessages> messageList = recommendationMessagesRepository
-										.findAllByReferenceId(rcmnd.getReferenceId());
-								responseDto.setMessageList(messageList);
-								approvedRecommendation.add(responseDto);
-								if (rcmnd.getIsAppOwnerApproved() != null
-										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
-									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
-								}
-								if (rcmnd.getIsAppOwnerRejected() != null
-										&& rcmnd.getIsAppOwnerRejected().booleanValue() == true) {
-									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
-								}
+								recommendations.add(responseDto);
 							}
 						}
 
 					}
-					responseDtos.setPendingRecommendation(pendingRecommendation);
-					responseDtos.setApprovedRecommendation(approvedRecommendation);
+//					responseDtos.setPendingRecommendation(pendingRecommendation);
+//					responseDtos.setApprovedRecommendation(approvedRecommendation);
+					responseDtos.setRecommendations(recommendations);
 
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", responseDtos);
 
