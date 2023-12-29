@@ -22,7 +22,6 @@ import com.sbi.oem.util.DateUtil;
 
 @Repository
 public interface RecommendationRepository extends JpaRepository<Recommendation, Long> {
-	
 
 	Optional<Recommendation> findByReferenceId(String refId);
 
@@ -31,7 +30,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 	@Query(value = "SELECT * FROM recommendation where created_by=?1 order by updated_at desc", nativeQuery = true)
 	List<Recommendation> findAllByUserId(Long id);
-	
+
 	List<Recommendation> findAll(Specification<Recommendation> specification);
 
 	Page<Recommendation> findAll(Specification<Recommendation> specification, Pageable pageable);
@@ -277,9 +276,10 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 		return findAll(specification);
 	}
 
-	default Page<Recommendation> findAllRecommendationsOemAndAgmPagination(Long id, SearchDto searchDto ,long pageNumber, long pageSize) {
+	default Page<Recommendation> findAllRecommendationsOemAndAgmPagination(Long id, SearchDto searchDto,
+			long pageNumber, long pageSize) {
 		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
-			
+
 			List<Predicate> predicates = new ArrayList<>();
 
 			if (id != null) {
@@ -322,138 +322,146 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
 			}
-			
-			
 
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
-		Pageable pageable = PageRequest.of((int)pageNumber, (int)pageSize);
+		Pageable pageable = PageRequest.of((int) pageNumber, (int) pageSize);
 		Page<Recommendation> recommendationPage = findAll(specification, pageable);
 		long totalElements = recommendationPage.getTotalElements();
 		return new PageImpl<>(recommendationPage.getContent(), pageable, totalElements);
-		
 
-        
 	}
-	
-	 default List<Recommendation> findAllRecommendationsOemAndAgmBySearchDto(Long id, SearchDto searchDto) {
 
-	        Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
-	            List<Predicate> predicates = new ArrayList<>();
+	default List<Recommendation> findAllRecommendationsOemAndAgmBySearchDto(Long id, SearchDto searchDto) {
 
-	            if (id != null) {
-	                predicates.add(criteriaBuilder.equal(root.get("createdBy"), id));
-	            }
+		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
 
-	            if (searchDto.getRecommendationType() != null) {
-	                predicates.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
-	            }
+			if (id != null) {
+				predicates.add(criteriaBuilder.equal(root.get("createdBy"), id));
+			}
 
-	            if (searchDto.getPriorityId() != null) {
-	                predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
-	            }
+			if (searchDto.getRecommendationType() != null) {
+				predicates
+						.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
+			}
 
-	            if (searchDto.getDepartmentId() != null) {
-	                predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
-	            }
+			if (searchDto.getPriorityId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
+			}
 
-	            if (searchDto.getStatusId() != null) {
-	                predicates.add(criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
-	            }
+			if (searchDto.getDepartmentId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
+			}
 
-	            if (searchDto.getFromDate() != null) {
-	                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("recommendDate"), searchDto.getFromDate()));
-	            }
+			if (searchDto.getStatusId() != null) {
+				predicates.add(
+						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
+			}
 
-	            if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
-	                Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
-	                Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
-	                predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
-	            }
+			if (searchDto.getFromDate() != null) {
+				predicates
+						.add(criteriaBuilder.greaterThanOrEqualTo(root.get("recommendDate"), searchDto.getFromDate()));
+			}
 
-	            if (searchDto.getToDate() != null) {
-	                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("recommendDate"), searchDto.getToDate()));
-	            }
+			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+			}
 
-	            if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
-	                Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
-	                Date currentDate = DateUtil.convertISTtoUTC(new Date());
-	                predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
-	            }
+			if (searchDto.getToDate() != null) {
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("recommendDate"), searchDto.getToDate()));
+			}
 
-	            if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
-	                Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
-	                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
-	            }
+			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date currentDate = DateUtil.convertISTtoUTC(new Date());
+				predicates
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+			}
 
-	            query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
-	            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-	        };
+			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+			}
 
-	        return findAll(specification);
-	    }
-	 default List<Recommendation> findAllRecommendationsForGmBySearchDto(SearchDto searchDto) {
+			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+		};
 
-			Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
-				List<Predicate> predicates = new ArrayList<>();
-
-				if (searchDto.getRecommendationType() != null) {
-					predicates
-							.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
-				}
-
-				if (searchDto.getPriorityId() != null) {
-					predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
-				}
-
-				if (searchDto.getReferenceId() != null) {
-					predicates.add(criteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
-				}
-
-				if (searchDto.getDepartmentId() != null) {
-					predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
-				}
-
-				if (searchDto.getStatusId() != null) {
-					predicates.add(
-							criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
-				}
-
-				if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
-					Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
-					Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
-					predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
-
-				}
-
-				if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
-					Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
-					Date currentDate = DateUtil.convertISTtoUTC(new Date());
-					predicates
-							.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
-				}
-
-				if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
-					Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
-					predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
-				}
-
-				if (searchDto.getCreatedBy() != null) {
-					predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
-				}
-
-				query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
-
-				return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-			};
-			return findAll(specification);
-		}
-		
+		return findAll(specification);
 	}
-		
-	
-		
 
+	default List<Recommendation> findAllRecommendationsForGmBySearchDto(SearchDto searchDto) {
 
+		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
+
+			if (searchDto.getRecommendationType() != null) {
+				predicates
+						.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
+			}
+
+			if (searchDto.getPriorityId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
+			}
+
+			if (searchDto.getReferenceId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
+			}
+
+			if (searchDto.getDepartmentId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
+			}
+
+			if (searchDto.getStatusId() != null) {
+				predicates.add(
+						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
+			}
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+
+			}
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date currentDate = DateUtil.convertISTtoUTC(new Date());
+				predicates
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+			}
+
+			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+			}
+
+			if (searchDto.getCreatedBy() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
+			}
+
+			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
+
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+		};
+		return findAll(specification);
+	}
+
+	@Query(value = "SELECT * FROM recommendation where department_id=?1 and created_at between ?2 and ?3", nativeQuery = true)
+	List<Recommendation> findByAgmIdAndUpdatedAtBetween(Long id, String fromDate, String toDate);
+
+	@Query(value = "SELECT * FROM recommendation where created_at between ?1 and ?2", nativeQuery = true)
+	List<Recommendation> getAllDataForGMAndUpdatedAtBetween(String fromDate, String toDate);
+
+	@Query(value = "SELECT * FROM recommendation where department_id=?1 and created_at<?2", nativeQuery = true)
+	List<Recommendation> findAllByDepartmentIdAndCreatedAtBetweenToday(Long id, String toDate);
+
+	@Query(value = "SELECT * FROM recommendation where created_at<?1", nativeQuery = true)
+	List<Recommendation> getAllDataForGMAndCreatedAtBetweenToday(String toDate);
+
+}

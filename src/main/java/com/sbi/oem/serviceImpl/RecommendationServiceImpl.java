@@ -973,6 +973,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 						} else {
 							responseDto.setRecommendationDeploymentDetails(null);
 						}
+						Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+								.findAllByDepartmentId(rcmnd.getDepartment().getId());
+						responseDto.setApprover(departmentApprover.get().getAgm());
+						responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
 						recommendations.add(responseDto);
 					}
 					responseDtos.setRecommendations(recommendations);
@@ -992,6 +996,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 							searchDto.setDepartmentId(departmentId);
 							List<Recommendation> recommendationList = recommendationRepository
 									.findAllPendingRecommendationsBySearchDto(searchDto);
+							List<DepartmentApprover> departmentApproverList = departmentApproverRepository
+									.findAllByDepartmentIdIn(departmentIds);
+							Map<Long, DepartmentApprover> departmentApproverMap = new HashMap<>();
+							if (departmentApproverList != null && departmentApproverList.size() > 0) {
+								for (DepartmentApprover approver : departmentApproverList) {
+									if (!departmentApproverMap
+											.containsKey(approver.getDepartment().getId().longValue())) {
+										departmentApproverMap.put(approver.getDepartment().getId(), approver);
+									}
+								}
+							}
 							for (Recommendation rcmnd : recommendationList) {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
@@ -1031,13 +1046,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 								} else {
 									responseDto.setRecommendationDeploymentDetails(null);
 								}
+								if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+									DepartmentApprover approverObj = departmentApproverMap
+											.get(rcmnd.getDepartment().getId().longValue());
+									responseDto.setAppOwner(approverObj.getApplicationOwner());
+									responseDto.setApprover(approverObj.getAgm());
+								}
 								recommendations.add(responseDto);
 							}
 						}
 
 					}
-//					responseDtos.setPendingRecommendation(pendingRecommendation);
-//					responseDtos.setApprovedRecommendation(approvedRecommendation);
 					responseDtos.setRecommendations(recommendations);
 
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", responseDtos);
@@ -1047,12 +1066,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 					List<Recommendation> recomendationListGm = recommendationRepository
 							.findAllRecommendationsForGmBySearchDto(searchDto);
 					List<Long> departmentIds = recomendationListGm.stream()
-							.filter(e -> e.getDepartment().getId() != null).map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());
-					List<DepartmentApprover> departmentApproverList=departmentApproverRepository.findAllByDepartmentIdIn(departmentIds);
-					Map<Long, DepartmentApprover> departmentApproverMap=new HashMap<>();
-					if(departmentApproverList!=null && departmentApproverList.size()>0) {
-						for(DepartmentApprover approver:departmentApproverList) {
-							if(!departmentApproverMap.containsKey(approver.getDepartment().getId().longValue())) {
+							.filter(e -> e.getDepartment().getId() != null).map(e -> e.getDepartment().getId())
+							.distinct().collect(Collectors.toList());
+					List<DepartmentApprover> departmentApproverList = departmentApproverRepository
+							.findAllByDepartmentIdIn(departmentIds);
+					Map<Long, DepartmentApprover> departmentApproverMap = new HashMap<>();
+					if (departmentApproverList != null && departmentApproverList.size() > 0) {
+						for (DepartmentApprover approver : departmentApproverList) {
+							if (!departmentApproverMap.containsKey(approver.getDepartment().getId().longValue())) {
 								departmentApproverMap.put(approver.getDepartment().getId(), approver);
 							}
 						}
@@ -1121,8 +1142,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 						} else {
 							responseDto.setRecommendationDeploymentDetails(null);
 						}
-						if(departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
-							DepartmentApprover approverObj=departmentApproverMap.get(rcmnd.getDepartment().getId().longValue());
+						if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+							DepartmentApprover approverObj = departmentApproverMap
+									.get(rcmnd.getDepartment().getId().longValue());
 							responseDto.setAppOwner(approverObj.getApplicationOwner());
 							responseDto.setApprover(approverObj.getAgm());
 						}

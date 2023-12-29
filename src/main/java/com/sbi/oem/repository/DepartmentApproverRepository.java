@@ -21,4 +21,7 @@ public interface DepartmentApproverRepository extends JpaRepository<DepartmentAp
 	@Query(value = "SELECT * FROM department_approver where department_id in(?1)", nativeQuery = true)
 	List<DepartmentApprover> findAllByDepartmentIdIn(List<Long> departmentIds);
 
+	@Query(value = "SELECT * FROM department_approver where agm_id=?1", nativeQuery = true)
+	Optional<DepartmentApprover> findByAgmId(Long id);
+
 }
