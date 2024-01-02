@@ -42,6 +42,7 @@ import com.sbi.oem.dto.Response;
 import com.sbi.oem.dto.SearchDto;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.RecommendationStatusEnum;
+import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.CredentialMaster;
@@ -171,43 +172,61 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
-					Recommendation recommendation = new Recommendation();
+
+					String fileUrl = null;
 					if (recommendationAddRequestDto.getFile() != null
 							&& recommendationAddRequestDto.getFile().getSize() > 1048576) {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "File size can't be above 1MB.", null);
 					} else {
 						if (recommendationAddRequestDto.getFile() != null) {
-							String fileUrl = fileSystemStorageService
+							fileUrl = fileSystemStorageService
 									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
-							if (fileUrl != null && !fileUrl.isEmpty()) {
+						}
+						List<Recommendation> recommendationList = new ArrayList<>();
+						List<RecommendationTrail> recommendatioTrailList = new ArrayList<>();
+						if (recommendationAddRequestDto.getDepartmentIds() != null
+								&& recommendationAddRequestDto.getDepartmentIds().size() > 0) {
+							for (Long id : recommendationAddRequestDto.getDepartmentIds()) {
+								Recommendation recommendation = new Recommendation();
 								recommendation.setFileUrl(fileUrl);
+								recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
+								recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
+								recommendation.setCreatedAt(new Date());
+								recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
+								recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
+								recommendation.setDepartment(new Department(id));
+								recommendation
+										.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
+								recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
+								recommendation.setRecommendationType(
+										new RecommendationType(recommendationAddRequestDto.getTypeId()));
+								recommendation.setRecommendationStatus(
+										new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
+								recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
+								List<Recommendation> recommendList = recommendationRepository.findAll();
+								String refId = generateReferenceId(recommendList.size());
+								recommendation.setIsAppOwnerApproved(false);
+								recommendation.setIsAppOwnerRejected(false);
+								recommendation.setIsAgmApproved(false);
+								recommendation.setReferenceId(refId);
+								recommendation.setUpdatedAt(new Date());
+								recommendationList.add(recommendation);
+								RecommendationTrail trailData = new RecommendationTrail();
+								trailData.setCreatedAt(new Date());
+								trailData.setRecommendationStatus(
+										new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
+								trailData.setReferenceId(refId);
+								recommendatioTrailList.add(trailData);
+								recommendationRepository.save(recommendation);
+								recommendationTrailRepository.save(trailData);
 							}
 						}
-						recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
-						recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
-						recommendation.setCreatedAt(new Date());
-						recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
-						recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
-						recommendation.setDepartment(new Department(recommendationAddRequestDto.getDepartmentId()));
-						recommendation.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
-						recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
-						recommendation
-								.setRecommendationType(new RecommendationType(recommendationAddRequestDto.getTypeId()));
-						recommendation.setRecommendationStatus(new RecommendationStatus(1L));
-						recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
-						List<Recommendation> recommendList = recommendationRepository.findAll();
-						String refId = generateReferenceId(recommendList.size());
-						recommendation.setReferenceId(refId);
-						recommendation.setUpdatedAt(new Date());
-						Recommendation savedRecommendation = recommendationRepository.save(recommendation);
 
-						RecommendationTrail trailData = new RecommendationTrail();
-						trailData.setCreatedAt(new Date());
-						trailData.setRecommendationStatus(new RecommendationStatus(1L));
-						trailData.setReferenceId(refId);
-						recommendationTrailRepository.save(trailData);
-						notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
-						emailTemplateService.sendMailRecommendation(recommendation, RecommendationStatusEnum.CREATED);
+//						notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
+						notificationService.saveAllNotification(recommendationList, RecommendationStatusEnum.CREATED);
+//						emailTemplateService.sendMailRecommendation(recommendation, RecommendationStatusEnum.CREATED);
+						emailTemplateService.sendAllMailForRecommendation(recommendationList,
+								RecommendationStatusEnum.CREATED);
 
 						return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", null);
 					}
@@ -629,10 +648,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get().setIsAppOwnerApproved(true);
-						recommendation.get().setIsAppOwnerRejected(false);
 						recommendationRepository.save(recommendation.get());
 						if (recommendationDetailsRequestDto.getDescription() != null
-								|| !recommendationDetailsRequestDto.getDescription().equals("")) {
+								&& (recommendationDetailsRequestDto.getDescription() != "")
+								&& (!recommendationDetailsRequestDto.getDescription().equals(""))) {
 							RecommendationMessages messages = new RecommendationMessages();
 							messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
 							messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
@@ -655,7 +674,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setRecommendationStatus(new RecommendationStatus(2L));
 						recommendation.get().setIsAppOwnerApproved(true);
-						recommendation.get().setIsAppOwnerRejected(false);
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get()
 								.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
@@ -700,12 +718,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 					RecommendationMessages messages = recommendation.convertToEntity();
 					messages.setCreatedAt(new Date());
 					recommendationMessagesRepository.save(messages);
+					recommendObj.get().setIsAppOwnerApproved(false);
 					recommendObj.get().setIsAppOwnerRejected(true);
-					recommendObj.get().setRecommendationStatus(new RecommendationStatus(2L));
+					recommendObj.get()
+							.setRecommendationStatus(new RecommendationStatus(StatusEnum.Review_process.getId()));
 					recommendationRepository.save(recommendObj.get());
 					RecommendationTrail recommendTrail = new RecommendationTrail();
 					recommendTrail.setCreatedAt(new Date());
-					recommendTrail.setRecommendationStatus(new RecommendationStatus(2L));
+					recommendTrail.setRecommendationStatus(new RecommendationStatus(StatusEnum.Review_process.getId()));
 					recommendTrail.setReferenceId(recommendation.getReferenceId());
 					recommendationTrailRepository.save(recommendTrail);
 					Optional<RecommendationDeplyomentDetails> recommendDeploymentDetails = deplyomentDetailsRepository
@@ -748,6 +768,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
 					recommendationObj.get().setUpdatedAt(new Date());
 					recommendationObj.get().setIsAppOwnerRejected(false);
+					recommendationObj.get().setIsAppOwnerApproved(false);
 					recommendationRepository.save(recommendationObj.get());
 					return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
 				} else {
@@ -781,6 +802,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM);
 							emailTemplateService.sendMailRecommendationMessages(messages,
 									RecommendationStatusEnum.REJECTED_BY_AGM);
+							recommendObj.get().setIsAppOwnerApproved(false);
 							recommendObj.get().setUpdatedAt(new Date());
 							recommendationRepository.save(recommendObj.get());
 							return new Response<>(HttpStatus.OK.value(),
@@ -2174,11 +2196,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 								responseDto.setPriority(priority);
 							} else if (rcmnd.getPriorityId().longValue() == 2) {
 								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(2L, PriorityEnum.Medium.name());
 								responseDto.setPriority(priority);
 							} else {
 								priority = PriorityEnum.Low.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(3L, PriorityEnum.Low.name());
 								responseDto.setPriority(priority);
 							}
 						}
@@ -2200,6 +2222,66 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 
 		return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+	}
+
+	@Override
+	public Response<?> updateRecommendationStatus(RecommendationDetailsRequestDto recommendationRequestDto) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master != null && master.isPresent()) {
+				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+					Optional<Recommendation> recommendationObj = recommendationRepository
+							.findByReferenceId(recommendationRequestDto.getRecommendRefId());
+					if (recommendationObj != null && recommendationObj.isPresent()) {
+						if (recommendationObj.get().getRecommendationStatus() != null && recommendationObj.get()
+								.getRecommendationStatus().getId() == StatusEnum.Rejected.getId()) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation already rejected.",
+									null);
+						} else if (recommendationObj.get().getRecommendationStatus() != null && recommendationObj.get()
+								.getRecommendationStatus().getId()
+								.longValue() > recommendationRequestDto.getRecommendationStatus().getId().longValue()) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid status.",
+									null);
+						} else if (recommendationObj.get().getRecommendationStatus() != null
+								&& recommendationObj.get().getRecommendationStatus().getId()
+										.longValue() == StatusEnum.Approved.getId().longValue()
+								&& recommendationRequestDto.getRecommendationStatus().getId()
+										.longValue() != StatusEnum.Department_implementation.getId().longValue()) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid status.",
+									null);
+						} else if (recommendationObj.get().getRecommendationStatus() != null
+								&& recommendationObj.get().getRecommendationStatus().getId()
+										.longValue() != StatusEnum.Approved.getId().longValue()
+								&& recommendationObj.get().getRecommendationStatus().getId().longValue()
+										+ 1 != recommendationRequestDto.getRecommendationStatus().getId().longValue()) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid status.",
+									null);
+						} else {
+							recommendationObj.get()
+									.setRecommendationStatus(recommendationRequestDto.getRecommendationStatus());
+							recommendationObj.get().setUpdatedAt(new Date());
+							RecommendationTrail trailData = new RecommendationTrail();
+							trailData.setCreatedAt(new Date());
+							trailData.setRecommendationStatus(recommendationRequestDto.getRecommendationStatus());
+							trailData.setReferenceId(recommendationRequestDto.getRecommendRefId());
+							recommendationTrailRepository.save(trailData);
+							recommendationRepository.save(recommendationObj.get());
+							return new Response<>(HttpStatus.OK.value(), "Recommendation status updated successfully.",
+									null);
+						}
+					} else {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found.", null);
+					}
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to update status.", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
+		}
 	}
 
 }

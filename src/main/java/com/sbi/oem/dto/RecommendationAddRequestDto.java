@@ -1,6 +1,7 @@
 package com.sbi.oem.dto;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +20,7 @@ public class RecommendationAddRequestDto {
 	private String urlLink;
 	private Long createdBy;
 	private String expectedImpact;
+	private List<Long> departmentIds;
 
 	public String getDescription() {
 		return description;
@@ -98,6 +100,14 @@ public class RecommendationAddRequestDto {
 
 	public void setExpectedImpact(String expectedImpact) {
 		this.expectedImpact = expectedImpact;
+	}
+
+	public List<Long> getDepartmentIds() {
+		return departmentIds;
+	}
+
+	public void setDepartmentIds(List<Long> departmentIds) {
+		this.departmentIds = departmentIds;
 	}
 
 }

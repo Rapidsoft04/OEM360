@@ -1,6 +1,5 @@
 package com.sbi.oem.service;
 
-
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -13,14 +12,17 @@ import com.sbi.oem.model.RecommendationMessages;
 
 @Service
 public interface EmailTemplateService {
-	
-	
-	  Response<?> sendMailRecommendation(Recommendation recommendation, RecommendationStatusEnum status);
 
-	  Response<?> sendMailRecommendationDeplyomentDetails(RecommendationDeplyomentDetails details ,RecommendationStatusEnum recommendation);
+	Response<?> sendMailRecommendation(Recommendation recommendation, RecommendationStatusEnum status);
 
-	  Response<?> sendMailRecommendationMessages(RecommendationMessages messages, RecommendationStatusEnum rejectedByAppowner);
+	Response<?> sendMailRecommendationDeplyomentDetails(RecommendationDeplyomentDetails details,
+			RecommendationStatusEnum recommendation);
 
-	  Response<?> sendMailBuldRecommendation(List<Recommendation> recommendationList);
+	Response<?> sendMailRecommendationMessages(RecommendationMessages messages,
+			RecommendationStatusEnum rejectedByAppowner);
+
+	Response<?> sendMailBuldRecommendation(List<Recommendation> recommendationList);
+
+	void sendAllMailForRecommendation(List<Recommendation> recommendationList, RecommendationStatusEnum created);
 
 }

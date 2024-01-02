@@ -16,7 +16,7 @@ public class ValidationServiceImpl implements ValidationService {
 	public Response<?> checkForRecommendationAddPayload(RecommendationAddRequestDto recommendationAddRequestDto) {
 		if (recommendationAddRequestDto.getComponentId() == null) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the component.", null);
-		} else if (recommendationAddRequestDto.getDepartmentId() == null) {
+		} else if (recommendationAddRequestDto.getDepartmentIds() == null && recommendationAddRequestDto.getDepartmentIds().size()<=0) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the department.", null);
 		} else if (recommendationAddRequestDto.getDescription() == null
 				|| recommendationAddRequestDto.getDescription() == "") {
@@ -58,6 +58,20 @@ public class ValidationServiceImpl implements ValidationService {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the reference id.", null);
 		} else if (recommendation.getRejectionMessage() == null || recommendation.getRejectionMessage().equals("")) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide reason for rejection.", null);
+		} else {
+			return new Response<>(HttpStatus.OK.value(), "OK", null);
+		}
+	}
+
+	@Override
+	public Response<?> checkForUpdateRecommendationStatusPayload(
+			RecommendationDetailsRequestDto recommendationRequestDto) {
+		if (recommendationRequestDto.getRecommendRefId() == null
+				|| recommendationRequestDto.getRecommendRefId().isBlank()
+				|| recommendationRequestDto.getRecommendRefId().equals("")) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the reference id.", null);
+		} else if (recommendationRequestDto.getRecommendationStatus() == null) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the status.", null);
 		} else {
 			return new Response<>(HttpStatus.OK.value(), "OK", null);
 		}

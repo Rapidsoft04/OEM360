@@ -13,4 +13,6 @@ public interface ValidationService {
 
 	Response<?> checkForAppOwnerRecommendationRejectedPayload(RecommendationRejectionRequestDto recommendation);
 
+	Response<?> checkForUpdateRecommendationStatusPayload(RecommendationDetailsRequestDto recommendationRequestDto);
+
 }

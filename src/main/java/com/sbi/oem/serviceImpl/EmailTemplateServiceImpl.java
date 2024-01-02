@@ -493,6 +493,117 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 		return new Response<>(HttpStatus.OK.value(), "Emails sent successfully", null);
 	}
+
+	@Override
+	public void sendAllMailForRecommendation(List<Recommendation> recommendationList,
+			RecommendationStatusEnum status) {
+		// TODO Auto-generated method stub
+		try {
+
+			CompletableFuture.runAsync(() -> {
+
+				try {
+					for(Recommendation recommendation:recommendationList) {
+						Optional<DepartmentApprover> userDepartment = departmentApproverRepository
+								.findAllByDepartmentId(recommendation.getDepartment().getId());
+
+						Optional<Component> userComponent = componentRepository
+								.findById(recommendation.getComponent().getId());
+
+						Optional<RecommendationType> userRecommendationType = recommendationTypeRepository
+								.findById(recommendation.getRecommendationType().getId());
+
+						Optional<User> user = userRepository.findById(recommendation.getCreatedBy().getId());
+
+						String priority = "";
+						if (recommendation.getPriorityId().longValue() == 1) {
+							priority = PriorityEnum.High.getName();
+						} else if (recommendation.getPriorityId().longValue() == 2) {
+							priority = PriorityEnum.Medium.getName();
+						} else {
+							priority = PriorityEnum.Low.getName();
+						}
+
+						byte[] userRecommendationfile = null;
+						String fileName = null;
+
+						if (recommendation.getFileUrl() != null) {
+							userRecommendationfile = convertMultipartFileToBytes(recommendation.getFileUrl());
+							fileName = recommendation.getReferenceId();
+						}
+
+						String agmEmail = userDepartment.get().getAgm().getEmail();
+						String applicationOwnerEmail = userDepartment.get().getApplicationOwner().getEmail();
+						String OemMail = user.get().getEmail();
+						String[] ccEmails = {};
+						String sendMail = "";
+
+						String mailSubject = "";
+						String mailHeading = "";
+
+						if (status.equals(RecommendationStatusEnum.CREATED)) {
+
+							mailSubject = "OEM Recommendation Request";
+							mailHeading = "OEM Recommendation Request";
+							sendMail = agmEmail;
+							ccEmails = new String[] { applicationOwnerEmail };
+
+						} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
+
+							mailSubject = "OEM Recommendation Approved";
+							mailHeading = "OEM Recommendation Approved By AGM";
+							sendMail = OemMail;
+							ccEmails = new String[] { applicationOwnerEmail };
+						}
+
+						String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
+								+ "<div style='max-width: 1600px; margin: 0 auto; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
+								+ "<div style='background-image: url(https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg);"
+								+ "background-size: 150px; background-position: top right; background-repeat: no-repeat;  background-color: rgba(255, 255, 255, 01); height: auto;'>"
+								+ "<h1 style='font-size: 24px; color: #333; font-weight: bold;'> %s </h1>" + "<br>"
+								+ "<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear User,</p>"
+								+ "<p style='font-size: 16px; color: #333;'>We would like to bring to your attention a new recommendation with the following details:</p>"
+								+ "<p style='font-size: 16px; color: #333;'><b> Reference Id : </b>%s</p>"
+								+ "<p style='font-size: 16px; color: #333;'><b> Recommendation Type : </b>%s</p>"
+								+ "<p style='font-size: 16px; color: #333;'><b> Priority Type : </b>%s</p>"
+								+ "<p style='font-size: 16px; color: #333;'><b> Descriptions : </b>%s</p>"
+								+ "<p style='font-size: 16px; color: #333;'><b> Department Name :</b> %s</p>"
+								+ "<p style='font-size: 16px; color: #333;'><b> Component Name : </b>%s</p>"
+								+ "<p style='font-size: 16px; color: #333;'><b> Recommend Date : </b>%s</p>"
+								+ "<p style='font-size: 16px; color: #333;'><b> Expected Impact : </b>%s</p>" + "<br>"
+								+ "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
+								+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
+								+ "<p style='font-size: 16px; color: #333;'>OEM Team</p>" + "</div>" + "</div>" + "</div>",
+								mailHeading, recommendation.getReferenceId(),
+								userRecommendationType.get().getName() != null ? userRecommendationType.get().getName()
+										: "NA",
+								priority != null ? priority : "NA",
+								recommendation.getDescriptions() != null ? recommendation.getDescriptions() : "NA",
+								userDepartment.get().getDepartment().getName() != null
+										? userDepartment.get().getDepartment().getName()
+										: "NA",
+								userComponent.get().getName() != null ? userComponent.get().getName() : "NA",
+								recommendation.getRecommendDate() != null ? formatDate(recommendation.getRecommendDate())
+										: "NA",
+								recommendation.getExpectedImpact() != null ? recommendation.getExpectedImpact() : "NA");
+
+						emailService.sendMailAndFile(sendMail, ccEmails, mailSubject, content, userRecommendationfile,
+								fileName);
+					}
+					
+				} catch (MessagingException e) {
+					e.printStackTrace();
+				}
+
+			});
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+
+
+	}
 			
 
 }

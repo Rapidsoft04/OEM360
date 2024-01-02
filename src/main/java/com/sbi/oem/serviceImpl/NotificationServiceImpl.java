@@ -147,5 +147,62 @@ public class NotificationServiceImpl implements NotificationService {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public void saveAllNotification(List<Recommendation> recommendationList, RecommendationStatusEnum status) {
+
+		try {
+			for(Recommendation recommendation:recommendationList) {
+
+				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+						.findAllByDepartmentId(recommendation.getDepartment().getId());
+				if (departmentApprover != null && !departmentApprover.isEmpty()) {
+					if (status.equals(RecommendationStatusEnum.CREATED)) {
+						List<User> userList = Arrays.asList(departmentApprover.get().getAgm(),
+								departmentApprover.get().getApplicationOwner());
+						String text = "New recommendation request has been created.";
+						for (User user : userList) {
+							createNotification(recommendation.getReferenceId(), text, user);
+						}
+					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {
+						User agm = departmentApprover.get().getAgm();
+						String text = "App owner has accepted a new recommendation.";
+						createNotification(recommendation.getReferenceId(), text, agm);
+					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
+						User agm = departmentApprover.get().getAgm();
+						String text = "App owner has rejected a recommendation.";
+						createNotification(recommendation.getReferenceId(), text, agm);
+					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
+						List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
+								departmentApprover.get().getApplicationOwner());
+						String text = "Your recommendation request has been approved by AGM.";
+						for (User user : userList) {
+							createNotification(recommendation.getReferenceId(), text, user);
+						}
+					} else if (status.equals(RecommendationStatusEnum.REVERTED_BY_AGM)) {
+						User appOwner = departmentApprover.get().getApplicationOwner();
+						String text = "AGM has commented on your recommendation";
+						createNotification(recommendation.getReferenceId(), text, appOwner);
+					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_AGM)) {
+						User appOwner = departmentApprover.get().getApplicationOwner();
+						String text = "Your recommendation request has been rejected by AGM.";
+						createNotification(recommendation.getReferenceId(), text, appOwner);
+					} else if (status.equals(RecommendationStatusEnum.RECCOMENDATION_REJECTED)) {
+						User oem = recommendation.getCreatedBy();
+						String text = "AGM has Rejected the recommendation";
+						createNotification(recommendation.getReferenceId(), text, oem);
+					} else if (status.equals(RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS)) {
+						User agm = departmentApprover.get().getAgm();
+						String text = "Deployment Details have been updated";
+						createNotification(recommendation.getReferenceId(), text, agm);
+					}
+				}
+			
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+	}
 	
 }
