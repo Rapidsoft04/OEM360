@@ -43,7 +43,7 @@ public class SwaggerConfig {
 				.securityContexts(Arrays.asList(securityContext()))
 				.securitySchemes(Arrays.asList(apiKey()))
 				.select()
-                .apis(RequestHandlerSelectors.any())
+                .apis(RequestHandlerSelectors.basePackage("com.sbi.oem"))
                 .paths(PathSelectors.any())
                 .build();
 	}

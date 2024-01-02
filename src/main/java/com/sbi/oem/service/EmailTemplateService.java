@@ -1,6 +1,8 @@
 package com.sbi.oem.service;
 
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.sbi.oem.dto.Response;
@@ -18,5 +20,7 @@ public interface EmailTemplateService {
 	  Response<?> sendMailRecommendationDeplyomentDetails(RecommendationDeplyomentDetails details ,RecommendationStatusEnum recommendation);
 
 	  Response<?> sendMailRecommendationMessages(RecommendationMessages messages, RecommendationStatusEnum rejectedByAppowner);
+
+	  Response<?> sendMailBuldRecommendation(List<Recommendation> recommendationList);
 
 }

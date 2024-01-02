@@ -59,7 +59,7 @@ public class Utility {
 						if (userType.equalsIgnoreCase(UserType.AGM.name())) {
 							return true;
 						}
-						else if (userType.equalsIgnoreCase(UserType.SENIOR_MANAGEMENT.name())) {
+						else if (userType.equalsIgnoreCase(UserType.GM_IT_INFRA.name())) {
 							return true;
 						}
 					}

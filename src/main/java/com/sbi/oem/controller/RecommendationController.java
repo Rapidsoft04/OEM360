@@ -1,5 +1,7 @@
 package com.sbi.oem.controller;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +35,7 @@ public class RecommendationController {
 	@GetMapping("/page/data")
 	public ResponseEntity<?> getRecommendationPageData(@RequestParam("companyId") Long companyId) {
 		Response<?> response = recommendationService.getRecommendationPageData(companyId);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
 	@PostMapping("/create")
@@ -131,34 +133,182 @@ public class RecommendationController {
 		}
 	}
 
-	public ResponseEntity<?> pendingRecommendationRequestForAppOwner(@RequestBody SearchDto searchDto) {
-		return null;
-	}
-
 	@PostMapping("/add/through/excel")
 	public ResponseEntity<?> addRecommendationThroughExcel(@ModelAttribute MultipartFile file) {
 		Response<?> response = recommendationService.addRecommendationThroughExcel(file);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
-	@PostMapping("/pending/details")
-	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
-		Response<?> response = recommendationService.pendingRecommendationRequestForAppOwner(searchDto);
+	@GetMapping("/pending/details/for/appowner")
+	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(
+			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
+			@RequestParam(name = "priorityId", required = false) Long priorityId,
+			@RequestParam(name = "referenceId", required = false) String referenceId,
+			@RequestParam(name = "departmentId", required = false) Long departmentId,
+			@RequestParam(name = "statusId", required = false) Long statusId,
+			@RequestParam(name = "fromDate", required = false) Date fromDate,
+			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "createdBy", required = false) Long createdBy,
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
+		
+		SearchDto newSearchDto = new SearchDto();
+		newSearchDto.setRecommendationType(recommendationType);
+		newSearchDto.setPriorityId(priorityId);
+		newSearchDto.setReferenceId(referenceId);
+		newSearchDto.setDepartmentId(departmentId);
+		newSearchDto.setStatusId(statusId);
+		newSearchDto.setFromDate(fromDate);
+		newSearchDto.setToDate(toDate);
+		newSearchDto.setCreatedBy(createdBy);
+		newSearchDto.setUpdatedAt(updatedAt);
+		Response<?> response = recommendationService.pendingRecommendationRequestForAppOwner(newSearchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
-	@PostMapping("/approved/details")
-	public ResponseEntity<?> approvedRecommendationDetailsOfAppOwner(@RequestBody SearchDto searchDto) {
-		Response<?> response = recommendationService.approvedRecommendationRequestForAppOwner(searchDto);
+	@GetMapping("/approved/details/for/appowner")
+	public ResponseEntity<?> approvedRecommendationDetailsOfAppOwner(
+			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
+			@RequestParam(name = "priorityId", required = false) Long priorityId,
+			@RequestParam(name = "referenceId", required = false) String referenceId,
+			@RequestParam(name = "departmentId", required = false) Long departmentId,
+			@RequestParam(name = "statusId", required = false) Long statusId,
+			@RequestParam(name = "fromDate", required = false) Date fromDate,
+			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "createdBy", required = false) Long createdBy,
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
+		SearchDto newSearchDto = new SearchDto();
+		newSearchDto.setRecommendationType(recommendationType);
+		newSearchDto.setPriorityId(priorityId);
+		newSearchDto.setReferenceId(referenceId);
+		newSearchDto.setDepartmentId(departmentId);
+		newSearchDto.setStatusId(statusId);
+		newSearchDto.setFromDate(fromDate);
+		newSearchDto.setToDate(toDate);
+		newSearchDto.setCreatedBy(createdBy);
+		newSearchDto.setUpdatedAt(updatedAt);
+		Response<?> response = recommendationService.approvedRecommendationRequestForAppOwner(newSearchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
-	@PostMapping("/view/details/oemandagm")
-	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(@RequestBody SearchDto searchDto) {
+	@GetMapping("/pending/details/for/appowner/paginate")
+	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(
+			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber,
+			@RequestParam(name = "pageSize", required = false, defaultValue = "0") Integer pageSize,
+			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
+			@RequestParam(name = "priorityId", required = false) Long priorityId,
+			@RequestParam(name = "referenceId", required = false) String referenceId,
+			@RequestParam(name = "departmentId", required = false) Long departmentId,
+			@RequestParam(name = "statusId", required = false) Long statusId,
+			@RequestParam(name = "fromDate", required = false) Date fromDate,
+			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "createdBy", required = false) Long createdBy,
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
+
+		SearchDto newSearchDto = new SearchDto();
+		newSearchDto.setRecommendationType(recommendationType);
+		newSearchDto.setPriorityId(priorityId);
+		newSearchDto.setReferenceId(referenceId);
+		newSearchDto.setDepartmentId(departmentId);
+		newSearchDto.setStatusId(statusId);
+		newSearchDto.setFromDate(fromDate);
+		newSearchDto.setToDate(toDate);
+		newSearchDto.setCreatedBy(createdBy);
+		newSearchDto.setUpdatedAt(updatedAt);
+
+		Response<?> response = recommendationService
+				.pendingRecommendationRequestForAppOwnerThroughPagination(newSearchDto, pageNumber, pageSize);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
+	@GetMapping("/approved/details/for/appowner/paginate")
+	public ResponseEntity<?> approvedRecommendationDetailsOfAppOwner(
+			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber,
+			@RequestParam(name = "pageSize", required = false, defaultValue = "0") Integer pageSize,
+			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
+			@RequestParam(name = "priorityId", required = false) Long priorityId,
+			@RequestParam(name = "referenceId", required = false) String referenceId,
+			@RequestParam(name = "departmentId", required = false) Long departmentId,
+			@RequestParam(name = "statusId", required = false) Long statusId,
+			@RequestParam(name = "fromDate", required = false) Date fromDate,
+			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "createdBy", required = false) Long createdBy,
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt, SearchDto searchDto) {
+
+		SearchDto newSearchDto = new SearchDto();
+		newSearchDto.setRecommendationType(recommendationType);
+		newSearchDto.setPriorityId(priorityId);
+		newSearchDto.setReferenceId(referenceId);
+		newSearchDto.setDepartmentId(departmentId);
+		newSearchDto.setStatusId(statusId);
+		newSearchDto.setFromDate(fromDate);
+		newSearchDto.setToDate(toDate);
+		newSearchDto.setCreatedBy(createdBy);
+		newSearchDto.setUpdatedAt(updatedAt);
+
+		Response<?> response = recommendationService
+				.approvedRecommendationRequestForAppOwnerThroughPagination(searchDto, pageNumber, pageSize);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
+
+	@GetMapping("/view/details/agmAndoem")
+	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(
+			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
+			@RequestParam(name = "priorityId", required = false) Long priorityId,
+			@RequestParam(name = "referenceId", required = false) String referenceId,
+			@RequestParam(name = "departmentId", required = false) Long departmentId,
+			@RequestParam(name = "statusId", required = false) Long statusId,
+			@RequestParam(name = "fromDate", required = false) Date fromDate,
+			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "createdBy", required = false) Long createdBy,
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
+
+		SearchDto searchDto = new SearchDto();
+		searchDto.setRecommendationType(recommendationType);
+		searchDto.setPriorityId(priorityId);
+		searchDto.setReferenceId(referenceId);
+		searchDto.setDepartmentId(departmentId);
+		searchDto.setStatusId(statusId);
+		searchDto.setFromDate(fromDate);
+		searchDto.setToDate(toDate);
+		searchDto.setCreatedBy(createdBy);
+		searchDto.setUpdatedAt(updatedAt);
 
 		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGm(searchDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	// paginate
+
+	@GetMapping("/view/all/recommendationsforagmoemandgm")
+	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(
+			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") int pageNumber,
+			@RequestParam(name = "pageSize", required = false, defaultValue = "0") int pageSize,
+			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
+			@RequestParam(name = "priorityId", required = false) Long priorityId,
+			@RequestParam(name = "referenceId", required = false) String referenceId,
+			@RequestParam(name = "departmentId", required = false) Long departmentId,
+			@RequestParam(name = "statusId", required = false) Long statusId,
+			@RequestParam(name = "fromDate", required = false) Date fromDate,
+			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "createdBy", required = false) Long createdBy,
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
+
+		SearchDto searchDto = new SearchDto();
+		searchDto.setRecommendationType(recommendationType);
+		searchDto.setPriorityId(priorityId);
+		searchDto.setReferenceId(referenceId);
+		searchDto.setDepartmentId(departmentId);
+		searchDto.setStatusId(statusId);
+		searchDto.setFromDate(fromDate);
+		searchDto.setToDate(toDate);
+		searchDto.setCreatedBy(createdBy);
+		searchDto.setUpdatedAt(updatedAt);
+
+		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGmPagination(searchDto,
+				pageNumber, pageSize);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 
 	}
 }
