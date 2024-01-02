@@ -193,7 +193,7 @@ public class RecommendationController {
 	@GetMapping("/pending/details/for/appowner/paginate")
 	public ResponseEntity<?> pendingRecommendationDetailsOfAppOwner(
 			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber,
-			@RequestParam(name = "pageSize", required = false, defaultValue = "0") Integer pageSize,
+			@RequestParam(name = "pageSize", required = false, defaultValue = "5") Integer pageSize,
 			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
 			@RequestParam(name = "priorityId", required = false) Long priorityId,
 			@RequestParam(name = "referenceId", required = false) String referenceId,
@@ -223,7 +223,7 @@ public class RecommendationController {
 	@GetMapping("/approved/details/for/appowner/paginate")
 	public ResponseEntity<?> approvedRecommendationDetailsOfAppOwner(
 			@RequestParam(name = "pageNumber", required = false, defaultValue = "0") Integer pageNumber,
-			@RequestParam(name = "pageSize", required = false, defaultValue = "0") Integer pageSize,
+			@RequestParam(name = "pageSize", required = false, defaultValue = "5") Integer pageSize,
 			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
 			@RequestParam(name = "priorityId", required = false) Long priorityId,
 			@RequestParam(name = "referenceId", required = false) String referenceId,
