@@ -1018,7 +1018,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
 							List<Recommendation> recommendationList = recommendationRepository
-									.findAllPendingRecommendationsBySearchDto(searchDto);
+									.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
 							List<DepartmentApprover> departmentApproverList = departmentApproverRepository
 									.findAllByDepartmentIdIn(departmentIds);
 							Map<Long, DepartmentApprover> departmentApproverMap = new HashMap<>();
