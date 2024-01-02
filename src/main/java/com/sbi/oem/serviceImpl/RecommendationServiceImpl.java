@@ -198,6 +198,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
 						List<Recommendation> recommendList = recommendationRepository.findAll();
 						String refId = generateReferenceId(recommendList.size());
+						recommendation.setIsAppOwnerApproved(false);
+						recommendation.setIsAppOwnerRejected(false);
+						recommendation.setIsAgmApproved(false);
 						recommendation.setReferenceId(refId);
 						recommendation.setUpdatedAt(new Date());
 						Recommendation savedRecommendation = recommendationRepository.save(recommendation);
@@ -630,7 +633,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get().setIsAppOwnerApproved(true);
-						recommendation.get().setIsAppOwnerRejected(false);
 						recommendationRepository.save(recommendation.get());
 						if (recommendationDetailsRequestDto.getDescription() != null
 								|| !recommendationDetailsRequestDto.getDescription().equals("")) {
@@ -656,7 +658,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setRecommendationStatus(new RecommendationStatus(2L));
 						recommendation.get().setIsAppOwnerApproved(true);
-						recommendation.get().setIsAppOwnerRejected(false);
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get()
 								.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
@@ -701,12 +702,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 					RecommendationMessages messages = recommendation.convertToEntity();
 					messages.setCreatedAt(new Date());
 					recommendationMessagesRepository.save(messages);
+					recommendObj.get().setIsAppOwnerApproved(false);
 					recommendObj.get().setIsAppOwnerRejected(true);
-					recommendObj.get().setRecommendationStatus(new RecommendationStatus(2L));
+					recommendObj.get()
+							.setRecommendationStatus(new RecommendationStatus(StatusEnum.Review_process.getId()));
 					recommendationRepository.save(recommendObj.get());
 					RecommendationTrail recommendTrail = new RecommendationTrail();
 					recommendTrail.setCreatedAt(new Date());
-					recommendTrail.setRecommendationStatus(new RecommendationStatus(2L));
+					recommendTrail.setRecommendationStatus(new RecommendationStatus(StatusEnum.Review_process.getId()));
 					recommendTrail.setReferenceId(recommendation.getReferenceId());
 					recommendationTrailRepository.save(recommendTrail);
 					Optional<RecommendationDeplyomentDetails> recommendDeploymentDetails = deplyomentDetailsRepository
@@ -749,6 +752,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
 					recommendationObj.get().setUpdatedAt(new Date());
 					recommendationObj.get().setIsAppOwnerRejected(false);
+					recommendationObj.get().setIsAppOwnerApproved(false);
 					recommendationRepository.save(recommendationObj.get());
 					return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
 				} else {
@@ -782,6 +786,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM);
 							emailTemplateService.sendMailRecommendationMessages(messages,
 									RecommendationStatusEnum.REJECTED_BY_AGM);
+							recommendObj.get().setIsAppOwnerApproved(false);
 							recommendObj.get().setUpdatedAt(new Date());
 							recommendationRepository.save(recommendObj.get());
 							return new Response<>(HttpStatus.OK.value(),
@@ -2221,8 +2226,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.longValue() > recommendationRequestDto.getRecommendationStatus().getId().longValue()) {
 							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid status.",
 									null);
-						} else if (recommendationRequestDto.getRecommendationStatus().getId()
-								.longValue() != recommendationObj.get().getRecommendationStatus().getId().longValue()) {
+						} else if (recommendationObj.get().getRecommendationStatus() != null
+								&& recommendationObj.get().getRecommendationStatus().getId()
+										.longValue() == StatusEnum.Approved.getId().longValue()
+								&& recommendationRequestDto.getRecommendationStatus().getId()
+										.longValue() != StatusEnum.Department_implementation.getId().longValue()) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid status.",
+									null);
+						} else if (recommendationObj.get().getRecommendationStatus() != null
+								&& recommendationObj.get().getRecommendationStatus().getId()
+										.longValue() != StatusEnum.Approved.getId().longValue()
+								&& recommendationObj.get().getRecommendationStatus().getId().longValue()
+										+ 1 != recommendationRequestDto.getRecommendationStatus().getId().longValue()) {
 							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid status.",
 									null);
 						} else {
