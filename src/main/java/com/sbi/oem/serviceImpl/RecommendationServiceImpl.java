@@ -628,6 +628,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						Optional<Recommendation> recommendation = recommendationRepository
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+						recommendation.get().setIsAppOwnerApproved(true);
+						recommendation.get().setIsAppOwnerRejected(false);
 						recommendationRepository.save(recommendation.get());
 						if (recommendationDetailsRequestDto.getDescription() != null
 								|| !recommendationDetailsRequestDto.getDescription().equals("")) {
@@ -653,6 +655,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setRecommendationStatus(new RecommendationStatus(2L));
 						recommendation.get().setIsAppOwnerApproved(true);
+						recommendation.get().setIsAppOwnerRejected(false);
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get()
 								.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
