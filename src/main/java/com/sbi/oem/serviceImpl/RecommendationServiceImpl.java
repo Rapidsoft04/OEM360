@@ -172,46 +172,61 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
-					Recommendation recommendation = new Recommendation();
+
+					String fileUrl = null;
 					if (recommendationAddRequestDto.getFile() != null
 							&& recommendationAddRequestDto.getFile().getSize() > 1048576) {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "File size can't be above 1MB.", null);
 					} else {
 						if (recommendationAddRequestDto.getFile() != null) {
-							String fileUrl = fileSystemStorageService
+							fileUrl = fileSystemStorageService
 									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
-							if (fileUrl != null && !fileUrl.isEmpty()) {
-								recommendation.setFileUrl(fileUrl);
-							}
 						}
-						recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
-						recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
-						recommendation.setCreatedAt(new Date());
-						recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
-						recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
-						recommendation.setDepartment(new Department(recommendationAddRequestDto.getDepartmentId()));
-						recommendation.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
-						recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
-						recommendation
-								.setRecommendationType(new RecommendationType(recommendationAddRequestDto.getTypeId()));
-						recommendation.setRecommendationStatus(new RecommendationStatus(1L));
-						recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
-						List<Recommendation> recommendList = recommendationRepository.findAll();
-						String refId = generateReferenceId(recommendList.size());
-						recommendation.setIsAppOwnerApproved(false);
-						recommendation.setIsAppOwnerRejected(false);
-						recommendation.setIsAgmApproved(false);
-						recommendation.setReferenceId(refId);
-						recommendation.setUpdatedAt(new Date());
-						Recommendation savedRecommendation = recommendationRepository.save(recommendation);
+						List<Recommendation> recommendationList = new ArrayList<>();
+						List<RecommendationTrail> recommendatioTrailList = new ArrayList<>();
+						if (recommendationAddRequestDto.getDepartmentIds() != null
+								&& recommendationAddRequestDto.getDepartmentIds().size() > 0) {
+							for (Long id : recommendationAddRequestDto.getDepartmentIds()) {
+								Recommendation recommendation = new Recommendation();
+								recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
+								recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
+								recommendation.setCreatedAt(new Date());
+								recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
+								recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
+								recommendation
+										.setDepartment(new Department(recommendationAddRequestDto.getDepartmentId()));
+								recommendation
+										.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
+								recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
+								recommendation.setRecommendationType(
+										new RecommendationType(recommendationAddRequestDto.getTypeId()));
+								recommendation.setRecommendationStatus(
+										new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
+								recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
+								List<Recommendation> recommendList = recommendationRepository.findAll();
+								String refId = generateReferenceId(recommendList.size());
+								recommendation.setIsAppOwnerApproved(false);
+								recommendation.setIsAppOwnerRejected(false);
+								recommendation.setIsAgmApproved(false);
+								recommendation.setReferenceId(refId);
+								recommendation.setUpdatedAt(new Date());
+								recommendationList.add(recommendation);
+								RecommendationTrail trailData = new RecommendationTrail();
+								trailData.setCreatedAt(new Date());
+								trailData.setRecommendationStatus(
+										new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
+								trailData.setReferenceId(refId);
+								recommendatioTrailList.add(trailData);
+							}
+							recommendationRepository.saveAll(recommendationList);
+							recommendationTrailRepository.saveAll(recommendatioTrailList);
+						}
 
-						RecommendationTrail trailData = new RecommendationTrail();
-						trailData.setCreatedAt(new Date());
-						trailData.setRecommendationStatus(new RecommendationStatus(1L));
-						trailData.setReferenceId(refId);
-						recommendationTrailRepository.save(trailData);
-						notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
-						emailTemplateService.sendMailRecommendation(recommendation, RecommendationStatusEnum.CREATED);
+//						notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
+						notificationService.saveAllNotification(recommendationList, RecommendationStatusEnum.CREATED);
+//						emailTemplateService.sendMailRecommendation(recommendation, RecommendationStatusEnum.CREATED);
+						emailTemplateService.sendAllMailForRecommendation(recommendationList,
+								RecommendationStatusEnum.CREATED);
 
 						return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", null);
 					}
@@ -635,7 +650,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendation.get().setIsAppOwnerApproved(true);
 						recommendationRepository.save(recommendation.get());
 						if (recommendationDetailsRequestDto.getDescription() != null
-								|| !recommendationDetailsRequestDto.getDescription().equals("")) {
+								&& (recommendationDetailsRequestDto.getDescription() != "")
+								&& (!recommendationDetailsRequestDto.getDescription().equals(""))) {
 							RecommendationMessages messages = new RecommendationMessages();
 							messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
 							messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());

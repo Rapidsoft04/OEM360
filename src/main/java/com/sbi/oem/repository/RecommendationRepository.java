@@ -520,10 +520,6 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			}
 
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
-			predicates.add(criteriaBuilder.or(criteriaBuilder.isNull(root.get("isAppOwnerApproved")),
-					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false),
-					criteriaBuilder.equal(root.get("isAppOwnerRejected"), true),
-					criteriaBuilder.isNull(root.get("isAppOwnerRejected"))));
 
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
