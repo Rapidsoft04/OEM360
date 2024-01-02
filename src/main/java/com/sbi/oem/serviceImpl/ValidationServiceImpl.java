@@ -16,7 +16,7 @@ public class ValidationServiceImpl implements ValidationService {
 	public Response<?> checkForRecommendationAddPayload(RecommendationAddRequestDto recommendationAddRequestDto) {
 		if (recommendationAddRequestDto.getComponentId() == null) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the component.", null);
-		} else if (recommendationAddRequestDto.getDepartmentId() == null) {
+		} else if (recommendationAddRequestDto.getDepartmentIds() == null && recommendationAddRequestDto.getDepartmentIds().size()<=0) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the department.", null);
 		} else if (recommendationAddRequestDto.getDescription() == null
 				|| recommendationAddRequestDto.getDescription() == "") {

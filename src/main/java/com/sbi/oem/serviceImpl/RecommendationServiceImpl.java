@@ -217,9 +217,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 										new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
 								trailData.setReferenceId(refId);
 								recommendatioTrailList.add(trailData);
+								recommendationRepository.save(recommendation);
+								recommendationTrailRepository.save(trailData);
 							}
-							recommendationRepository.saveAll(recommendationList);
-							recommendationTrailRepository.saveAll(recommendatioTrailList);
 						}
 
 //						notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
