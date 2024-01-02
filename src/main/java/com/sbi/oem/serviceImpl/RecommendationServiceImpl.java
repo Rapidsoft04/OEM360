@@ -744,6 +744,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<Recommendation> recommendationObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
 					recommendationObj.get().setUpdatedAt(new Date());
+					recommendationObj.get().setIsAppOwnerRejected(false);
 					recommendationRepository.save(recommendationObj.get());
 					return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
 				} else {
