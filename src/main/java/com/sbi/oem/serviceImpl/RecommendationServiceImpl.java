@@ -42,6 +42,7 @@ import com.sbi.oem.dto.Response;
 import com.sbi.oem.dto.SearchDto;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.RecommendationStatusEnum;
+import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.CredentialMaster;
@@ -2174,11 +2175,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 								responseDto.setPriority(priority);
 							} else if (rcmnd.getPriorityId().longValue() == 2) {
 								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(2L, PriorityEnum.Medium.name());
 								responseDto.setPriority(priority);
 							} else {
 								priority = PriorityEnum.Low.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(3L, PriorityEnum.Low.name());
 								responseDto.setPriority(priority);
 							}
 						}
@@ -2200,6 +2201,56 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 
 		return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+	}
+
+	@Override
+	public Response<?> updateRecommendationStatus(RecommendationDetailsRequestDto recommendationRequestDto) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master != null && master.isPresent()) {
+				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+					Optional<Recommendation> recommendationObj = recommendationRepository
+							.findByReferenceId(recommendationRequestDto.getRecommendRefId());
+					if (recommendationObj != null && recommendationObj.isPresent()) {
+						if (recommendationObj.get().getRecommendationStatus() != null && recommendationObj.get()
+								.getRecommendationStatus().getId() == StatusEnum.Rejected.getId()) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation already rejected.",
+									null);
+						} else if (recommendationObj.get().getRecommendationStatus() != null && recommendationObj.get()
+								.getRecommendationStatus().getId()
+								.longValue() > recommendationRequestDto.getRecommendationStatus().getId().longValue()) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid status.",
+									null);
+						} else if (recommendationRequestDto.getRecommendationStatus().getId()
+								.longValue() != recommendationObj.get().getRecommendationStatus().getId().longValue()) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid status.",
+									null);
+						} else {
+							recommendationObj.get()
+									.setRecommendationStatus(recommendationRequestDto.getRecommendationStatus());
+							recommendationObj.get().setUpdatedAt(new Date());
+							RecommendationTrail trailData = new RecommendationTrail();
+							trailData.setCreatedAt(new Date());
+							trailData.setRecommendationStatus(recommendationRequestDto.getRecommendationStatus());
+							trailData.setReferenceId(recommendationRequestDto.getRecommendRefId());
+							recommendationTrailRepository.save(trailData);
+							recommendationRepository.save(recommendationObj.get());
+							return new Response<>(HttpStatus.OK.value(), "Recommendation status updated successfully.",
+									null);
+						}
+					} else {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found.", null);
+					}
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to update status.", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
+		}
 	}
 
 }

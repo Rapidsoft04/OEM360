@@ -150,7 +150,7 @@ public class RecommendationController {
 			@RequestParam(name = "toDate", required = false) Date toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
 			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
-		
+
 		SearchDto newSearchDto = new SearchDto();
 		newSearchDto.setRecommendationType(recommendationType);
 		newSearchDto.setPriorityId(priorityId);
@@ -250,7 +250,6 @@ public class RecommendationController {
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
-
 	@GetMapping("/view/details/agmAndoem")
 	public ResponseEntity<?> viewRecommendationDetailsForOemAndAgmAndGm(
 			@RequestParam(name = "recommendationType", required = false) Long recommendationType,
@@ -310,5 +309,18 @@ public class RecommendationController {
 				pageNumber, pageSize);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 
+	}
+
+	@PostMapping("/status/update")
+	public ResponseEntity<?> updateRecommendationStatus(
+			@RequestBody RecommendationDetailsRequestDto recommendationRequestDto) {
+		Response<?> validationResponse = validationService
+				.checkForUpdateRecommendationStatusPayload(recommendationRequestDto);
+		if (validationResponse.getResponseCode() == HttpStatus.OK.value()) {
+			Response<?> response = recommendationService.updateRecommendationStatus(recommendationRequestDto);
+			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+		} else {
+			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
+		}
 	}
 }

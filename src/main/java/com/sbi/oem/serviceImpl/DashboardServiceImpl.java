@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.sbi.oem.constant.Constant;
 import com.sbi.oem.dto.DashboardResponseDto;
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.DepartmentApprover;
@@ -128,32 +129,39 @@ public class DashboardServiceImpl implements DashboardService {
 							Long testingDoneRecommendationCount = 0L;
 							Long approvedRecommendationNotYetReleasedCount = 0L;
 							for (Recommendation recommendation : recommendationList) {
-								if (recommendation.getRecommendationStatus().getId().longValue() < 3L) {
+								if (recommendation.getRecommendationStatus().getId().longValue() < StatusEnum.Approved
+										.getId().longValue()) {
 									pendingForApprovalCount = pendingForApprovalCount + 1L;
 								}
-								if (recommendation.getRecommendationStatus().getId().longValue() == 7L) {
+								if (recommendation.getRecommendationStatus().getId().longValue() == StatusEnum.Released
+										.getId().longValue()) {
 									releasedRecommendationCount = releasedRecommendationCount + 1L;
 								}
 								if (recommendation.getIsAgmApproved() != null
 										&& recommendation.getIsAgmApproved().booleanValue() == true
-										&& recommendation.getRecommendationStatus().getId().longValue() < 7L) {
+										&& recommendation.getRecommendationStatus().getId()
+												.longValue() < StatusEnum.Released.getId().longValue()) {
 									approvedRecommendationNotYetReleasedCount = approvedRecommendationNotYetReleasedCount
 											+ 1L;
 								}
-								if (recommendation.getRecommendationStatus().getId().longValue() == 4L) {
+								if (recommendation.getRecommendationStatus().getId().longValue() == StatusEnum.Rejected
+										.getId().longValue()) {
 									rejectedRecommendationCount = rejectedRecommendationCount + 1L;
 								}
 								if (recommendation.getIsAgmApproved() != null
 										&& recommendation.getIsAgmApproved().booleanValue() == true
-										&& recommendation.getRecommendationStatus().getId().longValue() == 3L) {
+										&& recommendation.getRecommendationStatus().getId()
+												.longValue() == StatusEnum.Approved.getId().longValue()) {
 									approvedRecommendationToBeImplementCount = approvedRecommendationToBeImplementCount
 											+ 1L;
 								}
 
-								if (recommendation.getRecommendationStatus().getId().longValue() == 5L) {
+								if (recommendation.getRecommendationStatus().getId()
+										.longValue() == StatusEnum.Department_implementation.getId().longValue()) {
 									implementationDoneRecommendationCount = implementationDoneRecommendationCount + 1L;
 								}
-								if (recommendation.getRecommendationStatus().getId().longValue() == 6L) {
+								if (recommendation.getRecommendationStatus().getId()
+										.longValue() == StatusEnum.UAT_testing.getId().longValue()) {
 									testingDoneRecommendationCount = testingDoneRecommendationCount + 1L;
 								}
 
@@ -193,32 +201,39 @@ public class DashboardServiceImpl implements DashboardService {
 						Long testingDoneRecommendationCount = 0L;
 						Long approvedRecommendationNotYetReleasedCount = 0L;
 						for (Recommendation recommendation : recommendationList) {
-							if (recommendation.getRecommendationStatus().getId().longValue() < 3L) {
+							if (recommendation.getRecommendationStatus().getId().longValue() < StatusEnum.Approved
+									.getId().longValue()) {
 								pendingForApprovalCount = pendingForApprovalCount + 1L;
 							}
-							if (recommendation.getRecommendationStatus().getId().longValue() == 7L) {
+							if (recommendation.getRecommendationStatus().getId().longValue() == StatusEnum.Released
+									.getId().longValue()) {
 								releasedRecommendationCount = releasedRecommendationCount + 1L;
 							}
 							if (recommendation.getIsAgmApproved() != null
 									&& recommendation.getIsAgmApproved().booleanValue() == true
-									&& recommendation.getRecommendationStatus().getId().longValue() < 7L) {
+									&& recommendation.getRecommendationStatus().getId()
+											.longValue() < StatusEnum.Released.getId().longValue()) {
 								approvedRecommendationNotYetReleasedCount = approvedRecommendationNotYetReleasedCount
 										+ 1L;
 							}
-							if (recommendation.getRecommendationStatus().getId().longValue() == 4L) {
+							if (recommendation.getRecommendationStatus().getId().longValue() == StatusEnum.Rejected
+									.getId().longValue()) {
 								rejectedRecommendationCount = rejectedRecommendationCount + 1L;
 							}
 							if (recommendation.getIsAgmApproved() != null
 									&& recommendation.getIsAgmApproved().booleanValue() == true
-									&& recommendation.getRecommendationStatus().getId().longValue() == 3L) {
+									&& recommendation.getRecommendationStatus().getId()
+											.longValue() == StatusEnum.Approved.getId().longValue()) {
 								approvedRecommendationToBeImplementCount = approvedRecommendationToBeImplementCount
 										+ 1L;
 							}
 
-							if (recommendation.getRecommendationStatus().getId().longValue() == 5L) {
+							if (recommendation.getRecommendationStatus().getId()
+									.longValue() == StatusEnum.Department_implementation.getId().longValue()) {
 								implementationDoneRecommendationCount = implementationDoneRecommendationCount + 1L;
 							}
-							if (recommendation.getRecommendationStatus().getId().longValue() == 6L) {
+							if (recommendation.getRecommendationStatus().getId().longValue() == StatusEnum.UAT_testing
+									.getId().longValue()) {
 								testingDoneRecommendationCount = testingDoneRecommendationCount + 1L;
 							}
 

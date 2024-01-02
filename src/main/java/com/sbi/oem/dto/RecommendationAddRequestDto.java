@@ -5,6 +5,8 @@ import java.util.Date;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sbi.oem.model.RecommendationStatus;
+
 public class RecommendationAddRequestDto {
 
 	private String description;

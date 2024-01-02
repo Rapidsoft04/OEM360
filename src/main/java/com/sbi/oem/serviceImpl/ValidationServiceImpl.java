@@ -63,4 +63,18 @@ public class ValidationServiceImpl implements ValidationService {
 		}
 	}
 
+	@Override
+	public Response<?> checkForUpdateRecommendationStatusPayload(
+			RecommendationDetailsRequestDto recommendationRequestDto) {
+		if (recommendationRequestDto.getRecommendRefId() == null
+				|| recommendationRequestDto.getRecommendRefId().isBlank()
+				|| recommendationRequestDto.getRecommendRefId().equals("")) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the reference id.", null);
+		} else if (recommendationRequestDto.getRecommendationStatus() == null) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the status.", null);
+		} else {
+			return new Response<>(HttpStatus.OK.value(), "OK", null);
+		}
+	}
+
 }
