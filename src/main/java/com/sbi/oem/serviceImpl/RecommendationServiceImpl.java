@@ -188,13 +188,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 								&& recommendationAddRequestDto.getDepartmentIds().size() > 0) {
 							for (Long id : recommendationAddRequestDto.getDepartmentIds()) {
 								Recommendation recommendation = new Recommendation();
+								recommendation.setFileUrl(fileUrl);
 								recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
 								recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
 								recommendation.setCreatedAt(new Date());
 								recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
 								recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
-								recommendation
-										.setDepartment(new Department(recommendationAddRequestDto.getDepartmentId()));
+								recommendation.setDepartment(new Department(id));
 								recommendation
 										.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
 								recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
