@@ -628,6 +628,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						Optional<Recommendation> recommendation = recommendationRepository
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+						recommendation.get().setIsAppOwnerApproved(true);
+						recommendation.get().setIsAppOwnerRejected(false);
 						recommendationRepository.save(recommendation.get());
 						if (recommendationDetailsRequestDto.getDescription() != null
 								|| !recommendationDetailsRequestDto.getDescription().equals("")) {
@@ -653,6 +655,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setRecommendationStatus(new RecommendationStatus(2L));
 						recommendation.get().setIsAppOwnerApproved(true);
+						recommendation.get().setIsAppOwnerRejected(false);
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get()
 								.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
@@ -744,6 +747,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<Recommendation> recommendationObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
 					recommendationObj.get().setUpdatedAt(new Date());
+					recommendationObj.get().setIsAppOwnerRejected(false);
 					recommendationRepository.save(recommendationObj.get());
 					return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
 				} else {
@@ -1017,7 +1021,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
 							List<Recommendation> recommendationList = recommendationRepository
-									.findAllPendingRecommendationsBySearchDto(searchDto);
+									.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
 							List<DepartmentApprover> departmentApproverList = departmentApproverRepository
 									.findAllByDepartmentIdIn(departmentIds);
 							Map<Long, DepartmentApprover> departmentApproverMap = new HashMap<>();
@@ -1800,6 +1804,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 										responseDto.setPriority(priority);
 									}
 								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
 								pendingRecommendation.add(responseDto);
 							}
 						}
@@ -1906,6 +1917,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 										priorityMap.put(1L, PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									}
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
 								}
 								approvedRecommendation.add(responseDto);
 							}

@@ -89,8 +89,9 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			predicates.add(criteriaBuilder.or(criteriaBuilder.isNull(root.get("isAppOwnerApproved")),
-					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false)));
-
+					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false),
+					criteriaBuilder.equal(root.get("isAppOwnerRejected"), false),
+					criteriaBuilder.isNull(root.get("isAppOwnerRejected"))));
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
@@ -150,7 +151,9 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			predicates.add(criteriaBuilder.or(criteriaBuilder.isNull(root.get("isAppOwnerApproved")),
-					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false)));
+					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false),
+					criteriaBuilder.equal(root.get("isAppOwnerRejected"), false),
+					criteriaBuilder.isNull(root.get("isAppOwnerRejected"))));
 
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
@@ -269,7 +272,8 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			predicates.add(criteriaBuilder.equal(root.get("isAppOwnerApproved"), true));
-
+			predicates.add(criteriaBuilder.equal(root.get("isAppOwnerRejected"), true));
+			
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
@@ -464,4 +468,64 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 	@Query(value = "SELECT * FROM recommendation where created_at<?1", nativeQuery = true)
 	List<Recommendation> getAllDataForGMAndCreatedAtBetweenToday(String toDate);
 
+	default List<Recommendation> findAllPendingRecommendationsForAgmBySearchDto(SearchDto searchDto) {
+
+		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
+
+			if (searchDto.getRecommendationType() != null) {
+				predicates
+						.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
+			}
+
+			if (searchDto.getPriorityId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
+			}
+
+			if (searchDto.getReferenceId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
+			}
+
+			if (searchDto.getDepartmentId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
+			}
+
+			if (searchDto.getStatusId() != null) {
+				predicates.add(
+						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
+			}
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+
+			}
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date currentDate = DateUtil.convertISTtoUTC(new Date());
+				predicates
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+			}
+
+			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+			}
+
+			if (searchDto.getCreatedBy() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
+			}
+
+			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
+			predicates.add(criteriaBuilder.or(criteriaBuilder.isNull(root.get("isAppOwnerApproved")),
+					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false),
+					criteriaBuilder.equal(root.get("isAppOwnerRejected"), true),
+					criteriaBuilder.isNull(root.get("isAppOwnerRejected"))));
+
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+		};
+		return findAll(specification);
+	}
 }
