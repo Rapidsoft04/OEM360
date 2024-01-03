@@ -1716,16 +1716,16 @@ public class RecommendationServiceImpl implements RecommendationService {
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
 								responseDto.setMessageList(messageList);
-								if (messageList != null && messageList.size() > 0) {
-									List<RecommendationMessages> updatedMessageList = messageList.stream()
-											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
-													.longValue() == master.get().getUserId().getId().longValue())
-											.collect(Collectors.toList());
-									Collections.sort(updatedMessageList,
-											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
-									String message = updatedMessageList.get(0).getRejectionReason();
-									responseDto.setPastExperienceComment(message);
-								}
+//								if (messageList != null && messageList.size() > 0) {
+//									List<RecommendationMessages> updatedMessageList = messageList.stream()
+//											.filter(e -> e.getCreatedBy() != null && 
+//											e.getCreatedBy().getId().longValue() == master.get().getUserId().getId().longValue())
+//											.collect(Collectors.toList());
+//									Collections.sort(updatedMessageList,
+//											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+//									String message = updatedMessageList.get(0).getRejectionReason();
+//									responseDto.setPastExperienceComment(message);
+//								}
 								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 										.findAllByDepartmentId(rcmnd.getDepartment().getId());
 								responseDto.setApprover(departmentApprover.get().getAgm());
