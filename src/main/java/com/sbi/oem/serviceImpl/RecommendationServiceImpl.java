@@ -2316,6 +2316,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 									.getId()) {
 								notificationService.save(updatedRecommendation,
 										RecommendationStatusEnum.RECOMMENDATION_RELEASED);
+								
+								emailTemplateService.sendMailRecommendation(updatedRecommendation,
+										RecommendationStatusEnum.RECOMMENDATION_RELEASED);
 							} else {
 								notificationService.save(updatedRecommendation,
 										RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED);

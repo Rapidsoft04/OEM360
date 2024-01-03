@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.RecommendationStatusEnum;
+import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
@@ -91,6 +92,23 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						priority = PriorityEnum.Low.getName();
 					}
 
+					String RecommendationStatus = "";
+					if (recommendation.getRecommendationStatus().getId() == 1) {
+						RecommendationStatus = StatusEnum.OEM_recommendation.getName();
+					} else if (recommendation.getRecommendationStatus().getId() == 2) {
+						RecommendationStatus = StatusEnum.Review_process.getName();
+					} else if (recommendation.getRecommendationStatus().getId() == 3) {
+						RecommendationStatus = StatusEnum.Approved.getName();
+					} else if (recommendation.getRecommendationStatus().getId() == 4) {
+						RecommendationStatus = StatusEnum.Rejected.getName();
+					} else if (recommendation.getRecommendationStatus().getId() == 5) {
+						RecommendationStatus = StatusEnum.Department_implementation.getName();
+					} else if (recommendation.getRecommendationStatus().getId() == 6) {
+						RecommendationStatus = StatusEnum.UAT_testing.getName();
+					} else if (recommendation.getRecommendationStatus().getId() == 7) {
+						RecommendationStatus = StatusEnum.Released.getName();
+					} 
+
 					byte[] userRecommendationfile = null;
 					String fileName = null;
 
@@ -121,25 +139,24 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						mailHeading = "OEM Recommendation Approved By AGM";
 						sendMail = OemMail;
 						ccEmails = new String[] { applicationOwnerEmail };
-						
-					} else if(status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
-						
+
+					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
+
 						mailSubject = "OEM Recommendation Updated";
-						mailHeading = "OEM Recommendation Update";					
+						mailHeading = "OEM Recommendation Update";
 						sendMail = agmEmail;
 						ccEmails = new String[] { agmEmail };
-					} else if(status.equals(RecommendationStatusEnum.RECOMMENDATION_RELEASED)) {
-						
+					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_RELEASED)) {
+
 						mailSubject = "OEM Recommendation Released";
-						mailHeading = "OEM Recommendation Released";					
+						mailHeading = "OEM Recommendation Released";
 						sendMail = OemMail;
 						ccEmails = new String[] { agmEmail };
-						
+
 					}
-	
-					
-					if(status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
-						
+
+					if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
+
 						String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
 								+ "<div style='max-width: 1600px; margin: 0 auto; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
 								+ "<div style='background-image: url(https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg);"
@@ -148,6 +165,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 								+ "<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear User,</p>"
 								+ "<p style='font-size: 16px; color: #333;'>We would like to bring to your attention for the updated recommendation with the following details:</p>"
 								+ "<p style='font-size: 16px; color: #333;'><b> Reference Id : </b>%s</p>"
+								+ "<p style='font-size: 16px; color: #333;'><b> Status : </b>%s</p>"
 								+ "<p style='font-size: 16px; color: #333;'><b> Recommendation Type : </b>%s</p>"
 								+ "<p style='font-size: 16px; color: #333;'><b> Priority Type : </b>%s</p>"
 								+ "<p style='font-size: 16px; color: #333;'><b> Descriptions : </b>%s</p>"
@@ -157,8 +175,9 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 								+ "<p style='font-size: 16px; color: #333;'><b> Expected Impact : </b>%s</p>" + "<br>"
 								+ "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
 								+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
-								+ "<p style='font-size: 16px; color: #333;'>OEM Team</p>" + "</div>" + "</div>" + "</div>",
-								mailHeading, recommendation.getReferenceId(),
+								+ "<p style='font-size: 16px; color: #333;'>OEM Team</p>" + "</div>" + "</div>"
+								+ "</div>", mailHeading, recommendation.getReferenceId(),
+								RecommendationStatus !=null ? RecommendationStatus :"NA",
 								userRecommendationType.get().getName() != null ? userRecommendationType.get().getName()
 										: "NA",
 								priority != null ? priority : "NA",
@@ -167,7 +186,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 										? userDepartment.get().getDepartment().getName()
 										: "NA",
 								userComponent.get().getName() != null ? userComponent.get().getName() : "NA",
-								recommendation.getRecommendDate() != null ? formatDate(recommendation.getRecommendDate())
+								recommendation.getRecommendDate() != null
+										? formatDate(recommendation.getRecommendDate())
 										: "NA",
 								recommendation.getExpectedImpact() != null ? recommendation.getExpectedImpact() : "NA");
 
@@ -175,10 +195,9 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						emailService.sendMailAndFile(sendMail, ccEmails, mailSubject, content, userRecommendationfile,
 								fileName);
 						System.out.println("mail send");
-						
-						
-					}else {
-						
+
+					} else {
+
 						String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
 								+ "<div style='max-width: 1600px; margin: 0 auto; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
 								+ "<div style='background-image: url(https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg);"
@@ -196,8 +215,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 								+ "<p style='font-size: 16px; color: #333;'><b> Expected Impact : </b>%s</p>" + "<br>"
 								+ "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
 								+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
-								+ "<p style='font-size: 16px; color: #333;'>OEM Team</p>" + "</div>" + "</div>" + "</div>",
-								mailHeading, recommendation.getReferenceId(),
+								+ "<p style='font-size: 16px; color: #333;'>OEM Team</p>" + "</div>" + "</div>"
+								+ "</div>", mailHeading, recommendation.getReferenceId(),
 								userRecommendationType.get().getName() != null ? userRecommendationType.get().getName()
 										: "NA",
 								priority != null ? priority : "NA",
@@ -206,7 +225,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 										? userDepartment.get().getDepartment().getName()
 										: "NA",
 								userComponent.get().getName() != null ? userComponent.get().getName() : "NA",
-								recommendation.getRecommendDate() != null ? formatDate(recommendation.getRecommendDate())
+								recommendation.getRecommendDate() != null
+										? formatDate(recommendation.getRecommendDate())
 										: "NA",
 								recommendation.getExpectedImpact() != null ? recommendation.getExpectedImpact() : "NA");
 
@@ -214,18 +234,14 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						emailService.sendMailAndFile(sendMail, ccEmails, mailSubject, content, userRecommendationfile,
 								fileName);
 						System.out.println("mail send");
-						
-						
+
 					}
-					
 
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
 
 			});
-			
-			
 
 		} catch (Exception e) {
 
@@ -443,39 +459,38 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 	@Override
 	public Response<?> sendMailBuldRecommendation(List<Recommendation> recommendationList) {
-		
+
 		try {
-			
-		    CompletableFuture.runAsync(() -> {
-		    	
-		        try {
-		        	
-		            Map<Long, List<Recommendation>> recommendationMap = recommendationList.stream()
-		                    .collect(Collectors.groupingBy(recommendation -> recommendation.getDepartment().getId()));
 
-		            for (Map.Entry<Long, List<Recommendation>> entry : recommendationMap.entrySet()) {
-		                Long departmentId = entry.getKey();
-		                List<Recommendation> departmentRecommendations = entry.getValue();
+			CompletableFuture.runAsync(() -> {
 
-		                Optional<DepartmentApprover> userDepartment = departmentApproverRepository
-		                        .findAllByDepartmentId(departmentId);
+				try {
 
-		                String agmEmail = userDepartment.get().getAgm().getEmail();
-		                String applicationOwnerEmail = userDepartment.get().getApplicationOwner().getEmail();
+					Map<Long, List<Recommendation>> recommendationMap = recommendationList.stream()
+							.collect(Collectors.groupingBy(recommendation -> recommendation.getDepartment().getId()));
 
-		                for (Recommendation recommendation : departmentRecommendations) {
-		                    
+					for (Map.Entry<Long, List<Recommendation>> entry : recommendationMap.entrySet()) {
+						Long departmentId = entry.getKey();
+						List<Recommendation> departmentRecommendations = entry.getValue();
 
-		                    byte[] userRecommendationfile = null;
-		                    String fileName = null;
+						Optional<DepartmentApprover> userDepartment = departmentApproverRepository
+								.findAllByDepartmentId(departmentId);
 
-		                    if (recommendation.getFileUrl() != null) {
-		                        userRecommendationfile = convertMultipartFileToBytes(recommendation.getFileUrl());
-		                        fileName = recommendation.getReferenceId();
-		                    }
-		                    
-		                    String priority = "";
-		                    
+						String agmEmail = userDepartment.get().getAgm().getEmail();
+						String applicationOwnerEmail = userDepartment.get().getApplicationOwner().getEmail();
+
+						for (Recommendation recommendation : departmentRecommendations) {
+
+							byte[] userRecommendationfile = null;
+							String fileName = null;
+
+							if (recommendation.getFileUrl() != null) {
+								userRecommendationfile = convertMultipartFileToBytes(recommendation.getFileUrl());
+								fileName = recommendation.getReferenceId();
+							}
+
+							String priority = "";
+
 							if (recommendation.getPriorityId().longValue() == 1) {
 								priority = PriorityEnum.High.getName();
 							} else if (recommendation.getPriorityId().longValue() == 2) {
@@ -484,92 +499,87 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 								priority = PriorityEnum.Low.getName();
 							}
 
-		                    String mailSubject = "OEM Recommendation Request";
-		                    String mailHeading = "OEM Recommendation Request";
+							String mailSubject = "OEM Recommendation Request";
+							String mailHeading = "OEM Recommendation Request";
 
-		                    String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
-		                            + "<div style='max-width: 1600px; margin: 0 auto; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
-		                            + "<div style='background-image: url(https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg);"
-		                            + "background-size: 150px; background-position: top right; background-repeat: no-repeat;  background-color: rgba(255, 255, 255, 01); height: auto;'>"
-		                            + "<h1 style='font-size: 24px; color: #333; font-weight: bold;'> %s </h1>" + "<br>"
-		                            + "<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear User,</p>"
-		                            + "<p style='font-size: 16px; color: #333;'>We would like to bring to your attention a new recommendation with the following details:</p>"
-		                            + "<p style='font-size: 16px; color: #333;'><b> Reference Id : </b>%s</p>"
-		                            + "<p style='font-size: 16px; color: #333;'><b> Recommendation Type : </b>%s</p>"
-		                            + "<p style='font-size: 16px; color: #333;'><b> Priority Type : </b>%s</p>"
-		                            + "<p style='font-size: 16px; color: #333;'><b> Descriptions : </b>%s</p>"
-		                            + "<p style='font-size: 16px; color: #333;'><b> Department Name :</b> %s</p>"
-		                            + "<p style='font-size: 16px; color: #333;'><b> Component Name : </b>%s</p>"
-		                            + "<p style='font-size: 16px; color: #333;'><b> Recommend Date : </b>%s</p>"
-		                            + "<p style='font-size: 16px; color: #333;'><b> Expected Impact : </b>%s</p>" + "<br>"
-		                            + "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
-		                            + "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
-		                            + "<p style='font-size: 16px; color: #333;'>OEM Team</p>" + "</div>" + "</div>" + "</div>",
-		                            mailHeading, recommendation.getReferenceId(),
-		                            recommendation.getRecommendationType().getName() != null
-		                                    ? recommendation.getRecommendationType().getName()
-		                                    : "NA",
-		                            priority != null ? priority : "NA",
-		                            recommendation.getDescriptions() != null ? recommendation.getDescriptions() : "NA",
-		                            userDepartment.get().getDepartment().getName() != null
-		                                    ? userDepartment.get().getDepartment().getName()
-		                                    : "NA",
-		                            recommendation.getComponent().getName() != null
-		                                    ? recommendation.getComponent().getName()
-		                                    : "NA",
-		                            recommendation.getRecommendDate() != null
-		                                    ? formatDate(recommendation.getRecommendDate())
-		                                    : "NA",
-		                            recommendation.getExpectedImpact() != null
-		                                    ? recommendation.getExpectedImpact()
-		                                    : "NA");
+							String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
+									+ "<div style='max-width: 1600px; margin: 0 auto; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
+									+ "<div style='background-image: url(https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg);"
+									+ "background-size: 150px; background-position: top right; background-repeat: no-repeat;  background-color: rgba(255, 255, 255, 01); height: auto;'>"
+									+ "<h1 style='font-size: 24px; color: #333; font-weight: bold;'> %s </h1>" + "<br>"
+									+ "<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear User,</p>"
+									+ "<p style='font-size: 16px; color: #333;'>We would like to bring to your attention a new recommendation with the following details:</p>"
+									+ "<p style='font-size: 16px; color: #333;'><b> Reference Id : </b>%s</p>"
+									+ "<p style='font-size: 16px; color: #333;'><b> Recommendation Type : </b>%s</p>"
+									+ "<p style='font-size: 16px; color: #333;'><b> Priority Type : </b>%s</p>"
+									+ "<p style='font-size: 16px; color: #333;'><b> Descriptions : </b>%s</p>"
+									+ "<p style='font-size: 16px; color: #333;'><b> Department Name :</b> %s</p>"
+									+ "<p style='font-size: 16px; color: #333;'><b> Component Name : </b>%s</p>"
+									+ "<p style='font-size: 16px; color: #333;'><b> Recommend Date : </b>%s</p>"
+									+ "<p style='font-size: 16px; color: #333;'><b> Expected Impact : </b>%s</p>"
+									+ "<br>"
+									+ "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
+									+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
+									+ "<p style='font-size: 16px; color: #333;'>OEM Team</p>" + "</div>" + "</div>"
+									+ "</div>", mailHeading, recommendation.getReferenceId(),
+									recommendation.getRecommendationType().getName() != null
+											? recommendation.getRecommendationType().getName()
+											: "NA",
+									priority != null ? priority : "NA",
+									recommendation.getDescriptions() != null ? recommendation.getDescriptions() : "NA",
+									userDepartment.get().getDepartment().getName() != null
+											? userDepartment.get().getDepartment().getName()
+											: "NA",
+									recommendation.getComponent().getName() != null
+											? recommendation.getComponent().getName()
+											: "NA",
+									recommendation.getRecommendDate() != null
+											? formatDate(recommendation.getRecommendDate())
+											: "NA",
+									recommendation.getExpectedImpact() != null ? recommendation.getExpectedImpact()
+											: "NA");
 
-		                    try {
-		                        emailService.sendMailAndFile(agmEmail, new String[]{applicationOwnerEmail}, mailSubject,
-		                                content,
-		                                userRecommendationfile, fileName);
+							try {
+								emailService.sendMailAndFile(agmEmail, new String[] { applicationOwnerEmail },
+										mailSubject, content, userRecommendationfile, fileName);
 
-		                        
-		                        System.out.println("Mail sent successfully");
-		                        
-		                        
-		                    } catch (MessagingException e) {
-		                    	
-		                        System.out.println("Failed to send mail");
-		                        
-		                        e.printStackTrace();
-		                    }
-		                }
-		            }
-		            
-		        } catch (Exception e) {
-		        	
-		            e.printStackTrace();
-		            
-		        }
-		    });
-		    
+								System.out.println("Mail sent successfully");
+
+							} catch (MessagingException e) {
+
+								System.out.println("Failed to send mail");
+
+								e.printStackTrace();
+							}
+						}
+					}
+
+				} catch (Exception e) {
+
+					e.printStackTrace();
+
+				}
+			});
+
 		} catch (Exception e) {
-			
-		    e.printStackTrace();
-		    
-		    return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to send email", null);
-		}
 
+			e.printStackTrace();
+
+			return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to send email", null);
+		}
 
 		return new Response<>(HttpStatus.OK.value(), "Emails sent successfully", null);
 	}
 
 	@Override
-	public void sendAllMailForRecommendation(List<Recommendation> recommendationList,
-			RecommendationStatusEnum status) {
+	public void sendAllMailForRecommendation(List<Recommendation> recommendationList, RecommendationStatusEnum status) {
 		// TODO Auto-generated method stub
 		try {
 
 			CompletableFuture.runAsync(() -> {
 
 				try {
-					for(Recommendation recommendation:recommendationList) {
+					for (Recommendation recommendation : recommendationList) {
 						Optional<DepartmentApprover> userDepartment = departmentApproverRepository
 								.findAllByDepartmentId(recommendation.getDepartment().getId());
 
@@ -639,8 +649,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 								+ "<p style='font-size: 16px; color: #333;'><b> Expected Impact : </b>%s</p>" + "<br>"
 								+ "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
 								+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
-								+ "<p style='font-size: 16px; color: #333;'>OEM Team</p>" + "</div>" + "</div>" + "</div>",
-								mailHeading, recommendation.getReferenceId(),
+								+ "<p style='font-size: 16px; color: #333;'>OEM Team</p>" + "</div>" + "</div>"
+								+ "</div>", mailHeading, recommendation.getReferenceId(),
 								userRecommendationType.get().getName() != null ? userRecommendationType.get().getName()
 										: "NA",
 								priority != null ? priority : "NA",
@@ -649,14 +659,15 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 										? userDepartment.get().getDepartment().getName()
 										: "NA",
 								userComponent.get().getName() != null ? userComponent.get().getName() : "NA",
-								recommendation.getRecommendDate() != null ? formatDate(recommendation.getRecommendDate())
+								recommendation.getRecommendDate() != null
+										? formatDate(recommendation.getRecommendDate())
 										: "NA",
 								recommendation.getExpectedImpact() != null ? recommendation.getExpectedImpact() : "NA");
 
 						emailService.sendMailAndFile(sendMail, ccEmails, mailSubject, content, userRecommendationfile,
 								fileName);
 					}
-					
+
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
@@ -668,8 +679,6 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 			e.printStackTrace();
 		}
 
-
 	}
-			
 
 }
