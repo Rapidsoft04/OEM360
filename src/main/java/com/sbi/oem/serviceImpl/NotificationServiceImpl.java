@@ -84,7 +84,7 @@ public class NotificationServiceImpl implements NotificationService {
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_RELEASED)) {
 						List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
 								departmentApprover.get().getAgm());
-						String text = "Your recommendation has been released.";
+						String text = "Recommendation has been released.";
 						for (User user : userList) {
 							createNotification(recommendation.getReferenceId(), text, user);
 						}
