@@ -29,17 +29,9 @@ public class User {
 
 	@Column(name = "phone_no")
 	private String phoneNo;
-	
+
 	@Column(name = "user_type_id")
-	private UserType userTypeId;
-
-	public UserType getUserTypeId() {
-		return userTypeId;
-	}
-
-	public void setUserTypeId(UserType userTypeId) {
-		this.userTypeId = userTypeId;
-	}
+	private UserType userType;
 
 	@Column(name = "is_active")
 	private Boolean isActive;
@@ -159,6 +151,14 @@ public class User {
 
 	public void setUserLogoUrl(String userLogoUrl) {
 		this.userLogoUrl = userLogoUrl;
+	}
+
+	public UserType getUserType() {
+		return userType;
+	}
+
+	public void setUserType(UserType userType) {
+		this.userType = userType;
 	}
 
 	public User(Long id, String userName, String email, String phoneNumber, Boolean isActive) {
