@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -1060,6 +1062,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
+								if (messageList != null && messageList.size() > 0) {
+									messageList.stream().filter(e -> e.getCreatedBy() != null)
+											.map(e -> e.getCreatedBy().getId() == master.get().getUserId().getId())
+											.collect(Collectors.toList());
+									Collections.sort(messageList,
+											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+									String message = messageList.get(0).getRejectionReason();
+									responseDto.setPastExperienceComment(message);
+								}
 								responseDto.setMessageList(messageList);
 
 								if (rcmnd.getIsAppOwnerApproved() != null
@@ -1129,7 +1140,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 					}
 					for (Recommendation rcmnd : recomendationListGm) {
 						RecommendationResponseDto responseDto = rcmnd.convertToDto();
-
+						List<RecommendationMessages> messageList = recommendationMessagesRepository
+								.findAllByReferenceId(rcmnd.getReferenceId());
+						if (messageList != null && messageList.size() > 0) {
+							messageList.stream().filter(e -> e.getCreatedBy() != null)
+									.map(e -> e.getCreatedBy().getId() == master.get().getUserId().getId())
+									.collect(Collectors.toList());
+							Collections.sort(messageList,
+									Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+							String message = messageList.get(0).getRejectionReason();
+							responseDto.setPastExperienceComment(message);
+						}
 						List<RecommendationTrail> trailList = recommendationTrailRepository
 								.findAllByReferenceId(rcmnd.getReferenceId());
 						Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
@@ -1553,6 +1574,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
+								if (messageList != null && messageList.size() > 0) {
+									messageList.stream().filter(e -> e.getCreatedBy() != null)
+											.map(e -> e.getCreatedBy().getId() == master.get().getUserId().getId())
+											.collect(Collectors.toList());
+									Collections.sort(messageList,
+											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+									String message = messageList.get(0).getRejectionReason();
+									responseDto.setPastExperienceComment(message);
+								}
 								responseDto.setMessageList(messageList);
 								List<RecommendationTrail> trailList = recommendationTrailRepository
 										.findAllByReferenceId(responseDto.getReferenceId());
@@ -1659,6 +1689,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
+								if (messageList != null && messageList.size() > 0) {
+									messageList.stream().filter(e -> e.getCreatedBy() != null)
+											.map(e -> e.getCreatedBy().getId() == master.get().getUserId().getId())
+											.collect(Collectors.toList());
+									Collections.sort(messageList,
+											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+									String message = messageList.get(0).getRejectionReason();
+									responseDto.setPastExperienceComment(message);
+								}
 								responseDto.setMessageList(messageList);
 								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 										.findAllByDepartmentId(rcmnd.getDepartment().getId());
