@@ -1630,7 +1630,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 									}
 								}
 								responseDto.setTrailResponse(null);
-								responseDto.setStatus(null);
 								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
 									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
 								} else {
@@ -1659,6 +1658,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 								} else {
 									responseDto.setRecommendationDeploymentDetails(null);
 								}
+								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+										.findAllByDepartmentId(rcmnd.getDepartment().getId());
+								responseDto.setApprover(departmentApprover.get().getAgm());
+								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
 								pendingRecommendation.add(responseDto);
 							}
 						}
