@@ -123,9 +123,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	public static void setPriorityMap(Map<Long, String> priorityMap) {
 		Map<Long, String> newMap = new HashMap<>();
-		newMap.put(1L, "High");
-		newMap.put(2L, "Medium");
-		newMap.put(3L, "Low");
+		newMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.getName());
+		newMap.put(PriorityEnum.Medium.getId().longValue(), PriorityEnum.Medium.getName());
+		newMap.put(PriorityEnum.Low.getId().longValue(), PriorityEnum.Low.getName());
 		RecommendationServiceImpl.priorityMap = newMap;
 	}
 
@@ -326,15 +326,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 								String priority = "";
 								if (rcmnd.getPriorityId().longValue() == 1) {
 									priority = PriorityEnum.High.getName();
-									priorityMap.put(1L, PriorityEnum.High.name());
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 									responseDto.setPriority(priority);
 								} else if (rcmnd.getPriorityId().longValue() == 2) {
 									priority = PriorityEnum.Medium.getName();
-									priorityMap.put(1L, PriorityEnum.High.name());
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 									responseDto.setPriority(priority);
 								} else {
 									priority = PriorityEnum.Low.getName();
-									priorityMap.put(1L, PriorityEnum.High.name());
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 									responseDto.setPriority(priority);
 								}
 							}
@@ -366,7 +366,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 											LinkedHashMap<Long, RecommendationTrail>::new));
 
 							List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-							if (sortedMap.containsKey(4L)) {
+							if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 								for (Long key : sortedMap.keySet()) {
 									RecommendationTrail trail = sortedMap.get(key);
 									RecommendationTrailResponseDto response = trail.convertToDto();
@@ -423,15 +423,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 							String priority = "";
 							if (rcmnd.getPriorityId().longValue() == 1) {
 								priority = PriorityEnum.High.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else if (rcmnd.getPriorityId().longValue() == 2) {
 								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else {
 								priority = PriorityEnum.Low.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							}
 						}
@@ -476,15 +476,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 							String priority = "";
 							if (rcmnd.getPriorityId().longValue() == 1) {
 								priority = PriorityEnum.High.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else if (rcmnd.getPriorityId().longValue() == 2) {
 								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else {
 								priority = PriorityEnum.Low.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							}
 						}
@@ -515,7 +515,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 										LinkedHashMap<Long, RecommendationTrail>::new));
 
 						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-						if (sortedMap.containsKey(4L)) {
+						if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 							for (Long key : sortedMap.keySet()) {
 								RecommendationTrail trail = sortedMap.get(key);
 								RecommendationTrailResponseDto response = trail.convertToDto();
@@ -557,15 +557,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 							String priority = "";
 							if (rcmnd.getPriorityId().longValue() == 1) {
 								priority = PriorityEnum.High.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else if (rcmnd.getPriorityId().longValue() == 2) {
 								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else {
 								priority = PriorityEnum.Low.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							}
 						}
@@ -585,7 +585,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 										LinkedHashMap<Long, RecommendationTrail>::new));
 
 						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-						if (sortedMap.containsKey(4L)) {
+						if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 							for (Long key : sortedMap.keySet()) {
 								RecommendationTrail trail = sortedMap.get(key);
 								RecommendationTrailResponseDto response = trail.convertToDto();
@@ -675,7 +675,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						deplyomentDetailsRepository.save(details);
 						Optional<Recommendation> recommendation = recommendationRepository
 								.findByReferenceId(details.getRecommendRefId());
-						recommendation.get().setRecommendationStatus(new RecommendationStatus(2L));
+						recommendation.get().setRecommendationStatus(new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
 						recommendation.get().setIsAppOwnerApproved(true);
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get()
@@ -684,7 +684,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendationRepository.save(recommendation.get());
 						RecommendationTrail trail = new RecommendationTrail();
 						trail.setCreatedAt(new Date());
-						trail.setRecommendationStatus(new RecommendationStatus(2L));
+						trail.setRecommendationStatus(new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
 						trail.setReferenceId(details.getRecommendRefId());
 						recommendationTrailRepository.save(trail);
 
@@ -811,13 +811,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 							return new Response<>(HttpStatus.OK.value(),
 									"Recommendation reject request sent successfully.", null);
 						} else {
-							if (recommendObj.get().getRecommendationStatus().getId() != 4L) {
+							if (recommendObj.get().getRecommendationStatus().getId() != StatusEnum.Rejected.getId().longValue()) {
 								recommendObj.get().setIsAgmApproved(false);
-								recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
+								recommendObj.get().setRecommendationStatus(new RecommendationStatus(StatusEnum.Rejected.getId().longValue()));
 								recommendationRepository.save(recommendObj.get());
 								RecommendationTrail trailData = new RecommendationTrail();
 								trailData.setCreatedAt(new Date());
-								trailData.setRecommendationStatus(new RecommendationStatus(4L));
+								trailData.setRecommendationStatus(new RecommendationStatus(StatusEnum.Rejected.getId().longValue()));
 								trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
 								recommendationTrailRepository.save(trailData);
 								RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
@@ -861,11 +861,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 					if (recommendObj.get().getIsAppOwnerApproved() != null
 							&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
 						recommendObj.get().setIsAgmApproved(true);
-						recommendObj.get().setRecommendationStatus(new RecommendationStatus(3L));
+						recommendObj.get().setRecommendationStatus(new RecommendationStatus(StatusEnum.Approved.getId().longValue()));
 						recommendationRepository.save(recommendObj.get());
 						RecommendationTrail trailData = new RecommendationTrail();
 						trailData.setCreatedAt(new Date());
-						trailData.setRecommendationStatus(new RecommendationStatus(3L));
+						trailData.setRecommendationStatus(new RecommendationStatus(StatusEnum.Approved.getId().longValue()));
 						trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
 						recommendationTrailRepository.save(trailData);
 						if (recommendationRejectionRequestDto.getAddtionalInformation() != null
@@ -975,7 +975,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 										LinkedHashMap<Long, RecommendationTrail>::new));
 
 						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-						if (sortedMap.containsKey(4L)) {
+						if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 							for (Long key : sortedMap.keySet()) {
 								RecommendationTrail trail = sortedMap.get(key);
 								RecommendationTrailResponseDto response = trail.convertToDto();
@@ -1005,15 +1005,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 							String priority = "";
 							if (rcmnd.getPriorityId().longValue() == 1) {
 								priority = PriorityEnum.High.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else if (rcmnd.getPriorityId().longValue() == 2) {
 								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else {
 								priority = PriorityEnum.Low.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							}
 						}
@@ -1087,15 +1087,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 									String priority = "";
 									if (rcmnd.getPriorityId().longValue() == 1) {
 										priority = PriorityEnum.High.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else if (rcmnd.getPriorityId().longValue() == 2) {
 										priority = PriorityEnum.Medium.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else {
 										priority = PriorityEnum.Low.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									}
 								}
@@ -1163,7 +1166,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 										LinkedHashMap<Long, RecommendationTrail>::new));
 
 						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-						if (sortedMap.containsKey(4L)) {
+						if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 							for (Long key : sortedMap.keySet()) {
 								RecommendationTrail trail = sortedMap.get(key);
 								RecommendationTrailResponseDto response = trail.convertToDto();
@@ -1193,15 +1196,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 							String priority = "";
 							if (rcmnd.getPriorityId().longValue() == 1) {
 								priority = PriorityEnum.High.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else if (rcmnd.getPriorityId().longValue() == 2) {
 								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else {
 								priority = PriorityEnum.Low.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							}
 						}
@@ -1393,13 +1396,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 										recommendation.setPriorityId(null);
 									} else {
 										if (object.get("Priority").toString().trim().toUpperCase().equals("HIGH")) {
-											recommendation.setPriorityId(1L);
+											recommendation.setPriorityId(PriorityEnum.High.getId().longValue());
 										} else if (object.get("Priority").toString().trim().toUpperCase()
 												.equals("MEDIUM")) {
-											recommendation.setPriorityId(2L);
+											recommendation.setPriorityId(PriorityEnum.Medium.getId().longValue());
 										} else if (object.get("Priority").toString().trim().toUpperCase()
 												.equals("LOW")) {
-											recommendation.setPriorityId(3L);
+											recommendation.setPriorityId(PriorityEnum.Low.getId().longValue());
 										} else {
 											recommendation.setPriorityId(null);
 										}
@@ -1466,10 +1469,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 								recommendation.setUpdatedAt(new Date());
 								List<Recommendation> recommendationListObj = recommendationRepository.findAll();
 								recommendation.setReferenceId(generateReferenceId(recommendationListObj.size()));
-								recommendation.setRecommendationStatus(new RecommendationStatus(1L));
+								recommendation.setRecommendationStatus(
+										new RecommendationStatus(StatusEnum.OEM_recommendation.getId().longValue()));
 								RecommendationTrail trailData = new RecommendationTrail();
 								trailData.setCreatedAt(new Date());
-								trailData.setRecommendationStatus(new RecommendationStatus(1L));
+								trailData.setRecommendationStatus(
+										new RecommendationStatus(StatusEnum.OEM_recommendation.getId().longValue()));
 								trailData.setReferenceId(recommendation.getReferenceId());
 								recommendationTrailRepository.save(trailData);
 								recommendation.setCreatedBy(master.get().getUserId());
@@ -1596,7 +1601,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
 
 								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-								if (sortedMap.containsKey(4L)) {
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 									for (Long key : sortedMap.keySet()) {
 										RecommendationTrail trail = sortedMap.get(key);
 										RecommendationTrailResponseDto response = trail.convertToDto();
@@ -1627,15 +1632,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 									String priority = "";
 									if (rcmnd.getPriorityId().longValue() == 1) {
 										priority = PriorityEnum.High.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else if (rcmnd.getPriorityId().longValue() == 2) {
 										priority = PriorityEnum.Medium.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else {
 										priority = PriorityEnum.Low.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									}
 								}
@@ -1715,7 +1723,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
 
 								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-								if (sortedMap.containsKey(4L)) {
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 									for (Long key : sortedMap.keySet()) {
 										RecommendationTrail trail = sortedMap.get(key);
 										RecommendationTrailResponseDto response = trail.convertToDto();
@@ -1745,15 +1753,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 									String priority = "";
 									if (rcmnd.getPriorityId().longValue() == 1) {
 										priority = PriorityEnum.High.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else if (rcmnd.getPriorityId().longValue() == 2) {
 										priority = PriorityEnum.Medium.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else {
 										priority = PriorityEnum.Low.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									}
 								}
@@ -1823,7 +1834,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
 
 								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-								if (sortedMap.containsKey(4L)) {
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 									for (Long key : sortedMap.keySet()) {
 										RecommendationTrail trail = sortedMap.get(key);
 										RecommendationTrailResponseDto response = trail.convertToDto();
@@ -1854,15 +1865,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 									String priority = "";
 									if (rcmnd.getPriorityId().longValue() == 1) {
 										priority = PriorityEnum.High.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else if (rcmnd.getPriorityId().longValue() == 2) {
 										priority = PriorityEnum.Medium.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else {
 										priority = PriorityEnum.Low.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									}
 								}
@@ -1939,7 +1953,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
 
 								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-								if (sortedMap.containsKey(4L)) {
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 									for (Long key : sortedMap.keySet()) {
 										RecommendationTrail trail = sortedMap.get(key);
 										RecommendationTrailResponseDto response = trail.convertToDto();
@@ -1968,15 +1982,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 									String priority = "";
 									if (rcmnd.getPriorityId().longValue() == 1) {
 										priority = PriorityEnum.High.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else if (rcmnd.getPriorityId().longValue() == 2) {
 										priority = PriorityEnum.Medium.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else {
 										priority = PriorityEnum.Low.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									}
 								}
@@ -2049,7 +2066,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 										LinkedHashMap<Long, RecommendationTrail>::new));
 
 						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-						if (sortedMap.containsKey(4L)) {
+						if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 							for (Long key : sortedMap.keySet()) {
 								RecommendationTrail trail = sortedMap.get(key);
 								RecommendationTrailResponseDto response = trail.convertToDto();
@@ -2079,15 +2096,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 							String priority = "";
 							if (rcmnd.getPriorityId().longValue() == 1) {
 								priority = PriorityEnum.High.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else if (rcmnd.getPriorityId().longValue() == 2) {
 								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else {
 								priority = PriorityEnum.Low.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							}
 						}
@@ -2139,15 +2156,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 									String priority = "";
 									if (rcmnd.getPriorityId().longValue() == 1) {
 										priority = PriorityEnum.High.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else if (rcmnd.getPriorityId().longValue() == 2) {
 										priority = PriorityEnum.Medium.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									} else {
 										priority = PriorityEnum.Low.getName();
-										priorityMap.put(1L, PriorityEnum.High.name());
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
 										responseDto.setPriority(priority);
 									}
 								}
@@ -2202,7 +2222,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 										LinkedHashMap<Long, RecommendationTrail>::new));
 
 						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-						if (sortedMap.containsKey(4L)) {
+						if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
 							for (Long key : sortedMap.keySet()) {
 								RecommendationTrail trail = sortedMap.get(key);
 								RecommendationTrailResponseDto response = trail.convertToDto();
@@ -2232,15 +2252,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 							String priority = "";
 							if (rcmnd.getPriorityId().longValue() == 1) {
 								priority = PriorityEnum.High.getName();
-								priorityMap.put(1L, PriorityEnum.High.name());
+								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							} else if (rcmnd.getPriorityId().longValue() == 2) {
 								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(2L, PriorityEnum.Medium.name());
+								priorityMap.put(PriorityEnum.Medium.getId().longValue(), PriorityEnum.Medium.name());
 								responseDto.setPriority(priority);
 							} else {
 								priority = PriorityEnum.Low.getName();
-								priorityMap.put(3L, PriorityEnum.Low.name());
+								priorityMap.put(PriorityEnum.Low.getId().longValue(), PriorityEnum.Low.name());
 								responseDto.setPriority(priority);
 							}
 						}
