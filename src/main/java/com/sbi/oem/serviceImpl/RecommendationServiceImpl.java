@@ -2339,6 +2339,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 							} else {
 								notificationService.save(updatedRecommendation,
 										RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED);
+								
+								emailTemplateService.sendMailRecommendation(updatedRecommendation, 
+										RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED);
 							}
 							return new Response<>(HttpStatus.OK.value(), "Recommendation status updated successfully.",
 									null);
