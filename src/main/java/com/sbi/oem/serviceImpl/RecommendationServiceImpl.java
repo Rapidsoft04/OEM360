@@ -813,7 +813,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						} else {
 							if (recommendObj.get().getRecommendationStatus().getId() != StatusEnum.Rejected.getId().longValue()) {
 								recommendObj.get().setIsAgmApproved(false);
-								recommendObj.get().setRecommendationStatus(new RecommendationStatus(StatusEnum.Rejected.getId().longValue()));
+								recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
+								recommendObj.get().setIsAgmRejected(true);
 								recommendationRepository.save(recommendObj.get());
 								RecommendationTrail trailData = new RecommendationTrail();
 								trailData.setCreatedAt(new Date());
@@ -1063,7 +1064,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
 								if (messageList != null && messageList.size() > 0) {
-									messageList.stream().filter(e -> e.getCreatedBy() != null)
+									messageList.stream()
+											.filter(e -> e.getCreatedBy() != null && e.getRejectionReason() != null)
 											.map(e -> e.getCreatedBy().getId() == master.get().getUserId().getId())
 											.collect(Collectors.toList());
 									Collections.sort(messageList,
@@ -1072,15 +1074,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 									responseDto.setPastExperienceComment(message);
 								}
 								responseDto.setMessageList(messageList);
-
-								if (rcmnd.getIsAppOwnerApproved() != null
-										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
-									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
-								}
-								if (rcmnd.getIsAppOwnerRejected() != null
-										&& rcmnd.getIsAppOwnerRejected().booleanValue() == true) {
-									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
-								}
 								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
 									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
 								} else {
@@ -1115,7 +1108,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 									responseDto.setAppOwner(approverObj.getApplicationOwner());
 									responseDto.setApprover(approverObj.getAgm());
 								}
-								recommendations.add(responseDto);
+								if (rcmnd.getIsAppOwnerApproved() != null
+										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
+									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+									recommendations.add(responseDto);
+								}
+								if (rcmnd.getIsAppOwnerRejected() != null
+										&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+										&& (rcmnd.getIsAgmRejected() == null
+										|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+									recommendations.add(responseDto);
+								}
+
 							}
 						}
 
