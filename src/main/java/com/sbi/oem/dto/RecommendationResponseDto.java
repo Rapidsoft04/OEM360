@@ -68,6 +68,8 @@ public class RecommendationResponseDto {
 
 	private List<RecommendationTrailResponseDto> trailResponse;
 
+	private String pastExperienceComment;
+
 	public Long getId() {
 		return id;
 	}
@@ -282,6 +284,14 @@ public class RecommendationResponseDto {
 
 	public void setTrailResponse(List<RecommendationTrailResponseDto> trailResponse) {
 		this.trailResponse = trailResponse;
+	}
+
+	public String getPastExperienceComment() {
+		return pastExperienceComment;
+	}
+
+	public void setPastExperienceComment(String pastExperienceComment) {
+		this.pastExperienceComment = pastExperienceComment;
 	}
 
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,

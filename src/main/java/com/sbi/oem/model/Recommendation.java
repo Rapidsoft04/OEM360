@@ -83,6 +83,9 @@ public class Recommendation {
 	@Column(name = "updated_at")
 	private Date updatedAt;
 
+	@Column(name = "is_agm_rejected")
+	private Boolean isAgmRejected;
+
 	public Long getId() {
 		return id;
 	}
@@ -233,6 +236,14 @@ public class Recommendation {
 
 	public void setImpactedDepartment(String impactedDepartment) {
 		this.impactedDepartment = impactedDepartment;
+	}
+
+	public Boolean getIsAgmRejected() {
+		return isAgmRejected;
+	}
+
+	public void setIsAgmRejected(Boolean isAgmRejected) {
+		this.isAgmRejected = isAgmRejected;
 	}
 
 	public Recommendation() {

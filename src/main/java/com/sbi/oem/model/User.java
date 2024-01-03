@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.sbi.oem.enums.UserType;
+
 @Entity
 @Table(name = "user")
 public class User {
@@ -27,6 +29,9 @@ public class User {
 
 	@Column(name = "phone_no")
 	private String phoneNo;
+
+	@Column(name = "user_type_id")
+	private UserType userType;
 
 	@Column(name = "is_active")
 	private Boolean isActive;
@@ -146,6 +151,14 @@ public class User {
 
 	public void setUserLogoUrl(String userLogoUrl) {
 		this.userLogoUrl = userLogoUrl;
+	}
+
+	public UserType getUserType() {
+		return userType;
+	}
+
+	public void setUserType(UserType userType) {
+		this.userType = userType;
 	}
 
 	public User(Long id, String userName, String email, String phoneNumber, Boolean isActive) {

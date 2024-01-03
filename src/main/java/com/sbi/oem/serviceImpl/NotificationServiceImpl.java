@@ -75,8 +75,19 @@ public class NotificationServiceImpl implements NotificationService {
 						createNotification(recommendation.getReferenceId(), text, oem);
 					} else if (status.equals(RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS)) {
 						User agm = departmentApprover.get().getAgm();
-						String text = "Deployment Details have been updated";
+						String text = "Recommendation deployment details has been updated";
 						createNotification(recommendation.getReferenceId(), text, agm);
+					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
+						User agm = departmentApprover.get().getAgm();
+						String text = "Recommendation status has been changed";
+						createNotification(recommendation.getReferenceId(), text, agm);
+					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_RELEASED)) {
+						List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
+								departmentApprover.get().getAgm());
+						String text = "Recommendation has been released.";
+						for (User user : userList) {
+							createNotification(recommendation.getReferenceId(), text, user);
+						}
 					}
 				}
 			}
