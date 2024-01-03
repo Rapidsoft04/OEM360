@@ -648,6 +648,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get().setIsAppOwnerApproved(true);
+						recommendation.get().setUpdatedAt(new Date());
 						recommendationRepository.save(recommendation.get());
 						if (recommendationDetailsRequestDto.getDescription() != null
 								&& (recommendationDetailsRequestDto.getDescription() != "")
@@ -2229,7 +2230,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 					Optional<Recommendation> recommendationObj = recommendationRepository
 							.findByReferenceId(recommendationRequestDto.getRecommendRefId());
 					if (recommendationObj != null && recommendationObj.isPresent()) {
