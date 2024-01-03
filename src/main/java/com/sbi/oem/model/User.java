@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.sbi.oem.enums.UserType;
+
 @Entity
 @Table(name = "user")
 public class User {
@@ -27,6 +29,17 @@ public class User {
 
 	@Column(name = "phone_no")
 	private String phoneNo;
+	
+	@Column(name = "user_type_id")
+	private UserType userTypeId;
+
+	public UserType getUserTypeId() {
+		return userTypeId;
+	}
+
+	public void setUserTypeId(UserType userTypeId) {
+		this.userTypeId = userTypeId;
+	}
 
 	@Column(name = "is_active")
 	private Boolean isActive;
