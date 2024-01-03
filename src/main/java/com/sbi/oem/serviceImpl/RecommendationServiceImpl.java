@@ -2265,7 +2265,16 @@ public class RecommendationServiceImpl implements RecommendationService {
 							trailData.setRecommendationStatus(recommendationRequestDto.getRecommendationStatus());
 							trailData.setReferenceId(recommendationRequestDto.getRecommendRefId());
 							recommendationTrailRepository.save(trailData);
-							recommendationRepository.save(recommendationObj.get());
+							Recommendation updatedRecommendation = recommendationRepository
+									.save(recommendationObj.get());
+							if (updatedRecommendation.getRecommendationStatus().getId() == StatusEnum.Released
+									.getId()) {
+								notificationService.save(updatedRecommendation,
+										RecommendationStatusEnum.RECOMMENDATION_RELEASED);
+							} else {
+								notificationService.save(updatedRecommendation,
+										RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED);
+							}
 							return new Response<>(HttpStatus.OK.value(), "Recommendation status updated successfully.",
 									null);
 						}
