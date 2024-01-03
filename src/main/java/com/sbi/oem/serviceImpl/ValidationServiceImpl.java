@@ -16,7 +16,8 @@ public class ValidationServiceImpl implements ValidationService {
 	public Response<?> checkForRecommendationAddPayload(RecommendationAddRequestDto recommendationAddRequestDto) {
 		if (recommendationAddRequestDto.getComponentId() == null) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the component.", null);
-		} else if (recommendationAddRequestDto.getDepartmentIds() == null && recommendationAddRequestDto.getDepartmentIds().size()<=0) {
+		} else if (recommendationAddRequestDto.getDepartmentIds() == null
+				&& recommendationAddRequestDto.getDepartmentIds().size() <= 0) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the department.", null);
 		} else if (recommendationAddRequestDto.getDescription() == null
 				|| recommendationAddRequestDto.getDescription() == "") {
@@ -46,6 +47,26 @@ public class ValidationServiceImpl implements ValidationService {
 		} else if (recommendationDetailsRequestDto.getImpactedDepartment() == null
 				|| recommendationDetailsRequestDto.getImpactedDepartment() == "") {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the impacted department.", null);
+		} else if (recommendationDetailsRequestDto.getDevelopmentStartDate()
+				.after(recommendationDetailsRequestDto.getDeploymentDate())) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(),
+					"Development start date should be before the deployment date.", null);
+		} else if (recommendationDetailsRequestDto.getDevelopementEndDate()
+				.after(recommendationDetailsRequestDto.getDeploymentDate())) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(),
+					"Development end date should be before the deployment date.", null);
+		} else if (recommendationDetailsRequestDto.getTestCompletionDate()
+				.after(recommendationDetailsRequestDto.getDeploymentDate())) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(),
+					"Test completion date should be before the deployment date.", null);
+		} else if (recommendationDetailsRequestDto.getDevelopmentStartDate()
+				.after(recommendationDetailsRequestDto.getDevelopementEndDate())) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(),
+					"Development start date should be before the development end date.", null);
+		} else if (recommendationDetailsRequestDto.getDevelopementEndDate()
+				.after(recommendationDetailsRequestDto.getTestCompletionDate())) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(),
+					"Development end date should be before the test completion date.", null);
 		} else {
 			return new Response<>(HttpStatus.OK.value(), "OK", null);
 		}
