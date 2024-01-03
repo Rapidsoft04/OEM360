@@ -648,6 +648,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get().setIsAppOwnerApproved(true);
+						recommendation.get().setUpdatedAt(new Date());
 						recommendationRepository.save(recommendation.get());
 						if (recommendationDetailsRequestDto.getDescription() != null
 								&& (recommendationDetailsRequestDto.getDescription() != "")
