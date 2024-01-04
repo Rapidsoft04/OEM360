@@ -23,11 +23,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.model.Component;
+import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.model.RecommendationDeplyomentDetails;
@@ -120,6 +122,13 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					String agmEmail = userDepartment.get().getAgm().getEmail();
 					String applicationOwnerEmail = userDepartment.get().getApplicationOwner().getEmail();
 					String OemMail = user.get().getEmail();
+					
+//					User agm =userDepartment.get().getAgm();
+//					User AppOwner =userDepartment.get().getApplicationOwner();
+//					User 
+					
+					
+					
 					String[] ccEmails = {};
 					String sendMail = "";
 					String userName="";
@@ -164,34 +173,35 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED) || status.equals(RecommendationStatusEnum.RECOMMENDATION_RELEASED)) {
 
 						String content = String.format("<div style='background-color: #f4f4f4; padding: 20px; max-width: 100vw;'>"
-						        + "<div style='max-width: 100vw; margin: 0 auto; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
-						        + "<div class='header-container' style='display:flex; justify-content: space-between; padding:15px ; background-color: #af1111'>"
-						        + "<div>"
-						        +        "<h1 class='header-title'>%s</h1>"
-						        + "</div>"
-						        + "<div class='header-image'>"
-						        +         "<img style='max-height:10vh;max-width:10vw;background-repeat: no-repeat;' "
-						        +          "src='https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg'/>"
-						        + "</div>"
-						        + "</div>"
+						        + "<div style='max-width: 100vw; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow: auto;'>"
+						        + "<img style='max-height: 15vh; max-width: 15vw; background-repeat: no-repeat; float: right;' src='https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg'/>"
+						        + "<h1 class='header-title' style='margin: 0;'>%s</h1>"
+						        + "<div style='clear: both;'></div>"
 						        + "<div>"
 						        + String.format("<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear %s,</p>", userName)
-						        + "<p style='font-size: 16px; color: #333;'>We would like to bring to your attention for the updated recommendation with the following details:</p>"
-						        + "<p style='font-size: 16px; color: #333;'><b> Reference Id : </b>%s</p>"
-						        + "<p style='font-size: 16px; color: #333;'><b> Status : </b>%s</p>"
-						        + "<p style='font-size: 16px; color: #333;'><b> Recommendation Type : </b>%s</p>"
-						        + "<p style='font-size: 16px; color: #333;'><b> Priority Type : </b>%s</p>"
-						        + "<p style='font-size: 16px; color: #333;'><b> Descriptions : </b>%s</p>"
-						        + "<p style='font-size: 16px; color: #333;'><b> Department Name :</b> %s</p>"
-						        + "<p style='font-size: 16px; color: #333;'><b> Component Name : </b>%s</p>"
-						        + "<p style='font-size: 16px; color: #333;'><b> Recommend Date : </b>%s</p>"
-						        + "<p style='font-size: 16px; color: #333;'><b> Expected Impact : </b>%s</p>" + "<br>"
+						        + "<p style='font-size: 16px; color: #333;'>We would like to bring to your attention an updated recommendation with the following details:</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b>Reference Id :</b> %s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b>Status :</b> %s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b>Recommendation Type :</b> %s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b>Priority Type :</b> %s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b>Descriptions :</b> %s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b>Department Name :</b> %s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b>Component Name :</b> %s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b>Recommend Date :</b> %s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b>Expected Impact :</b> %s</p><br>"
 						        + "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
 						        + "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
+						        + "<p style='font-size: 16px; color: #333;'>OEM Team</p>"
 						        + "</div>"
 						        + "</div>"
 						        + "</div>"
 						        + "<style>"
+						        + "@media screen and (max-width: 600px) {"
+						        + ".header-image img {"
+						        + "margin-left: 10px; "
+						        + "}"
+						        + "}"
+						        + "</style>"
 						        ,
 								
 								mailHeading, recommendation.getReferenceId(),
@@ -272,7 +282,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 
 	@Override
-	public Response<?> sendMailRecommendationDeplyomentDetails(RecommendationDeplyomentDetails details,
+	public Response<?> sendMailRecommendationDeplyomentDetails(RecommendationDetailsRequestDto details,
 			RecommendationStatusEnum status) {
 		try {
 
@@ -285,6 +295,16 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 					Optional<DepartmentApprover> userDepartment = departmentApproverRepository
 							.findAllByDepartmentId(userRecommendation.get().getDepartment().getId());
+					
+					List<Department> departmentList = details.getDepartmentList();
+					System.out.println(departmentList.size() + "size");
+					departmentList.forEach(x ->{
+						
+					   System.out.println(x.getName());
+						
+					});
+					
+					
 
 					String OemMail = userRecommendation.get().getCreatedBy().getEmail();
 
@@ -340,7 +360,9 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					);
 
 					emailService.sendMail(sendEmail, ccEmails, mailSubject, content);
-
+				
+					System.out.println("mail send");
+					
 				} catch (MessagingException e) {
 					e.printStackTrace();
 				}
