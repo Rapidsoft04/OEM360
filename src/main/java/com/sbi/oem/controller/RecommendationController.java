@@ -92,7 +92,7 @@ public class RecommendationController {
 
 	@PostMapping("/reject/request/revert/by/agm")
 	public ResponseEntity<?> revertApprovalRequestToAppOwnerForApproval(
-			@RequestBody RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+			@RequestBody RecommendationDetailsRequestDto recommendationRejectionRequestDto) {
 		Response<?> response = recommendationService
 				.revertApprovalRequestToAppOwnerForApproval(recommendationRejectionRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));

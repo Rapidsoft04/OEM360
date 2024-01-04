@@ -25,7 +25,7 @@ public interface RecommendationService {
 	Response<?> rejectRecommendationByAppOwner(RecommendationRejectionRequestDto recommendation);
 
 	Response<?> revertApprovalRequestToAppOwnerForApproval(
-			RecommendationRejectionRequestDto recommendationRejectionRequestDto);
+			RecommendationDetailsRequestDto recommendationRejectionRequestDto);
 
 	Response<?> rejectRecommendationByAgm(RecommendationRejectionRequestDto recommendationRejectionRequestDto);
 

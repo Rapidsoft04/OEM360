@@ -757,12 +757,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Override
 	public Response<?> revertApprovalRequestToAppOwnerForApproval(
-			RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+			RecommendationDetailsRequestDto recommendationRejectionRequestDto) {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
-					RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+					RecommendationMessages messages = new RecommendationMessages();
+					messages.setCreatedBy(recommendationRejectionRequestDto.getCreatedBy());
+					messages.setAdditionalMessage(recommendationRejectionRequestDto.getDescription());
+					messages.setReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					messages.setCreatedAt(new Date());
 					recommendationMessagesRepository.save(messages);
 					notificationService.getRecommendationByReferenceId(messages.getReferenceId(),
@@ -1069,7 +1072,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
-								responseDto.setMessageList(messageList);
+
 								if (messageList != null && messageList.size() > 0) {
 									List<RecommendationMessages> updatedMessageList = messageList.stream()
 											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
@@ -1081,7 +1084,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 										String message = updatedMessageList.get(0).getRejectionReason();
 										responseDto.setPastExperienceComment(message);
 									}
-
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
 								}
 								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
 									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
@@ -1160,7 +1165,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 						RecommendationResponseDto responseDto = rcmnd.convertToDto();
 						List<RecommendationMessages> messageList = recommendationMessagesRepository
 								.findAllByReferenceId(rcmnd.getReferenceId());
-						responseDto.setMessageList(messageList);
 						if (messageList != null && messageList.size() > 0) {
 							List<RecommendationMessages> updatedMessageList = messageList.stream()
 									.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
@@ -1168,8 +1172,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 									.collect(Collectors.toList());
 							Collections.sort(updatedMessageList,
 									Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
-							String message = updatedMessageList.get(0).getRejectionReason();
-							responseDto.setPastExperienceComment(message);
+							if (updatedMessageList != null && updatedMessageList.size() > 0) {
+								String message = updatedMessageList.get(0).getRejectionReason();
+								responseDto.setPastExperienceComment(message);
+							}
+							responseDto.setMessageList(messageList);
+						} else {
+							responseDto.setMessageList(null);
 						}
 						List<RecommendationTrail> trailList = recommendationTrailRepository
 								.findAllByReferenceId(rcmnd.getReferenceId());
@@ -1609,7 +1618,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 										String message = updatedMessageList.get(0).getRejectionReason();
 										responseDto.setPastExperienceComment(message);
 									}
-
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
 								}
 								List<RecommendationTrail> trailList = recommendationTrailRepository
 										.findAllByReferenceId(responseDto.getReferenceId());
