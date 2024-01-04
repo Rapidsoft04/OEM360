@@ -664,7 +664,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 						notificationService.save(recommendation.get(),
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
-						emailTemplateService.sendMailRecommendationDeplyomentDetails(savedDeploymentDetails,
+						
+						System.out.println("mail send!!");
+						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 
 						return new Response<>(HttpStatus.OK.value(), "Deployment details updated successfully.", null);
@@ -691,7 +693,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendationTrailRepository.save(trail);
 
 						notificationService.save(recommendation.get(), RecommendationStatusEnum.APPROVED_BY_APPOWNER);
-						emailTemplateService.sendMailRecommendationDeplyomentDetails(details,
+						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.APPROVED_BY_APPOWNER);
 						return new Response<>(HttpStatus.CREATED.value(), "Deployment details added successfully.",
 								null);
@@ -931,7 +933,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 						notificationService.save(recommendation.get(),
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
-						emailTemplateService.sendMailRecommendationDeplyomentDetails(savedDeploymentDetails,
+						
+						System.out.println("mail send !!");
+						
+						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 
 						return new Response<>(HttpStatus.BAD_REQUEST.value(),
