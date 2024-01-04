@@ -51,4 +51,6 @@ public interface RecommendationService {
 	Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto);
 
 	Response<?> updateRecommendationStatus(RecommendationDetailsRequestDto recommendationRequestDto);
+
+	Response<?> getAllStatusListToBeImplement();
 }

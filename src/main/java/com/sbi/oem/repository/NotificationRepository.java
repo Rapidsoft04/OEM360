@@ -21,4 +21,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 	@Transactional
 	@Query(value = "UPDATE notification SET is_seen = true WHERE user_id = :userId", nativeQuery = true)
 	int markAsSeen(Long userId);
+	
+	@Transactional
+    @Modifying
+    @Query(value = "DELETE FROM notification WHERE is_seen = true", nativeQuery = true)
+    void deleteByIsSeenTrue();
 }

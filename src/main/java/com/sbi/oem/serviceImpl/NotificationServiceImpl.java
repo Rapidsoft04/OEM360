@@ -7,6 +7,8 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.sbi.oem.dto.Response;
@@ -21,6 +23,7 @@ import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.service.NotificationService;
 
 @Service
+@EnableScheduling
 public class NotificationServiceImpl implements NotificationService {
 
 	@Autowired
@@ -224,6 +227,11 @@ public class NotificationServiceImpl implements NotificationService {
 
 		notificationThread.start();
 
+	}
+
+	@Scheduled(cron = "0 00 18 * * *", zone = "UTC")
+	public void deleteSeenNotifications() {
+		notificationRepository.deleteByIsSeenTrue();
 	}
 
 }

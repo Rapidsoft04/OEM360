@@ -721,7 +721,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 
 					Optional<Recommendation> recommendObj = recommendationRepository
-							.findByReferenceId(recommendation.getReferenceId());
+							.findByReferenceId(recommendation.getRecommendRefId());
 					RecommendationMessages messages = recommendation.convertToEntity();
 					messages.setCreatedAt(new Date());
 					recommendationMessagesRepository.save(messages);
@@ -733,10 +733,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 					RecommendationTrail recommendTrail = new RecommendationTrail();
 					recommendTrail.setCreatedAt(new Date());
 					recommendTrail.setRecommendationStatus(new RecommendationStatus(StatusEnum.Review_process.getId()));
-					recommendTrail.setReferenceId(recommendation.getReferenceId());
+					recommendTrail.setReferenceId(recommendation.getRecommendRefId());
 					recommendationTrailRepository.save(recommendTrail);
 					Optional<RecommendationDeplyomentDetails> recommendDeploymentDetails = deplyomentDetailsRepository
-							.findByRecommendRefId(recommendation.getReferenceId());
+							.findByRecommendRefId(recommendation.getRecommendRefId());
 					if (recommendDeploymentDetails != null && recommendDeploymentDetails.isPresent()) {
 						deplyomentDetailsRepository.delete(recommendDeploymentDetails.get());
 					}
@@ -772,7 +772,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					emailTemplateService.sendMailRecommendationMessages(messages,
 							RecommendationStatusEnum.REVERTED_BY_AGM);
 					Optional<Recommendation> recommendationObj = recommendationRepository
-							.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
+							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					recommendationObj.get().setUpdatedAt(new Date());
 					recommendationObj.get().setIsAppOwnerRejected(false);
 					recommendationObj.get().setIsAppOwnerApproved(false);
@@ -799,7 +799,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
 					Optional<Recommendation> recommendObj = recommendationRepository
-							.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
+							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					if (recommendObj != null && recommendObj.isPresent()) {
 						if (recommendObj.get().getIsAppOwnerApproved() != null
 								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
@@ -825,7 +825,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								trailData.setCreatedAt(new Date());
 								trailData.setRecommendationStatus(
 										new RecommendationStatus(StatusEnum.Rejected.getId().longValue()));
-								trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
+								trailData.setReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 								recommendationTrailRepository.save(trailData);
 								RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 								messages.setCreatedAt(new Date());
@@ -864,7 +864,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
 					Optional<Recommendation> recommendObj = recommendationRepository
-							.findByReferenceId(recommendationRejectionRequestDto.getReferenceId());
+							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					if (recommendObj.get().getIsAppOwnerApproved() != null
 							&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
 						recommendObj.get().setIsAgmApproved(true);
@@ -875,7 +875,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						trailData.setCreatedAt(new Date());
 						trailData.setRecommendationStatus(
 								new RecommendationStatus(StatusEnum.Approved.getId().longValue()));
-						trailData.setReferenceId(recommendationRejectionRequestDto.getReferenceId());
+						trailData.setReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 						recommendationTrailRepository.save(trailData);
 						if (recommendationRejectionRequestDto.getAddtionalInformation() != null
 								&& recommendationRejectionRequestDto.getAddtionalInformation() != ""
@@ -1123,7 +1123,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 									responseDto.setApprover(approverObj.getAgm());
 								}
 								if (rcmnd.getIsAppOwnerApproved() != null
-										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true) {
+										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+										&& (rcmnd.getIsAgmApproved() == null || rcmnd.getIsAgmApproved() != true)) {
 									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
 									recommendations.add(responseDto);
 								}
@@ -1609,8 +1610,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 											.collect(Collectors.toList());
 									Collections.sort(updatedMessageList,
 											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
-									String message = updatedMessageList.get(0).getRejectionReason();
-									responseDto.setPastExperienceComment(message);
+									if (updatedMessageList != null && updatedMessageList.size() > 0) {
+										String message = updatedMessageList.get(0).getRejectionReason();
+										responseDto.setPastExperienceComment(message);
+									}
+
 								}
 								List<RecommendationTrail> trailList = recommendationTrailRepository
 										.findAllByReferenceId(responseDto.getReferenceId());
@@ -2384,6 +2388,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
 		}
+	}
+
+	@Override
+	public Response<?> getAllStatusListToBeImplement() {
+		List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+		List<RecommendationStatus> updatedStatusList = statusList.stream()
+				.filter(e -> e.getStatusName().equals(StatusEnum.Department_implementation.getName())
+						|| e.getStatusName().equals(StatusEnum.UAT_testing.getName())
+						|| e.getStatusName().equals(StatusEnum.Released.getName()))
+				.collect(Collectors.toList());
+
+		return new Response<>(HttpStatus.OK.value(), "Status List.", updatedStatusList);
 	}
 
 }
