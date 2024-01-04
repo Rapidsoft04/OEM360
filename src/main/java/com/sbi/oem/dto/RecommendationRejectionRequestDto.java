@@ -5,17 +5,17 @@ import com.sbi.oem.model.User;
 
 public class RecommendationRejectionRequestDto {
 
-	private String referenceId;
+	private String recommendRefId;
 	private User createdBy;
 	private String rejectionMessage;
 	private String addtionalInformation;
 
-	public String getReferenceId() {
-		return referenceId;
+	public String getRecommendRefId() {
+		return recommendRefId;
 	}
 
-	public void setReferenceId(String referenceId) {
-		this.referenceId = referenceId;
+	public void setRecommendRefId(String recommendRefId) {
+		this.recommendRefId = recommendRefId;
 	}
 
 	public User getCreatedBy() {
@@ -43,7 +43,7 @@ public class RecommendationRejectionRequestDto {
 	}
 
 	public RecommendationMessages convertToEntity() {
-		return new RecommendationMessages(this.referenceId != null ? this.referenceId : null,
+		return new RecommendationMessages(this.recommendRefId != null ? this.recommendRefId : null,
 				this.createdBy != null ? this.createdBy : null,
 				this.rejectionMessage != null ? this.rejectionMessage : null,
 				this.addtionalInformation != null ? this.addtionalInformation : null);

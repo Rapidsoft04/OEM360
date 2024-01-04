@@ -23,6 +23,7 @@ import com.sbi.oem.util.DateUtil;
 @Repository
 public interface RecommendationRepository extends JpaRepository<Recommendation, Long> {
 
+	@Query(value = "SELECT * FROM recommendation where ref_id=?1", nativeQuery = true)
 	Optional<Recommendation> findByReferenceId(String refId);
 
 	@Query(value = "SELECT * FROM recommendation where department_id in (?1) order by updated_at desc", nativeQuery = true)

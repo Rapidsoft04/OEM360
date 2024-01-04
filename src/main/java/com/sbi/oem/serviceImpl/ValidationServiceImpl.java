@@ -75,7 +75,7 @@ public class ValidationServiceImpl implements ValidationService {
 
 	@Override
 	public Response<?> checkForAppOwnerRecommendationRejectedPayload(RecommendationRejectionRequestDto recommendation) {
-		if (recommendation.getReferenceId() == null || recommendation.getReferenceId().equals("")) {
+		if (recommendation.getRecommendRefId() == null || recommendation.getRecommendRefId().equals("")) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the reference id.", null);
 		} else if (recommendation.getRejectionMessage() == null || recommendation.getRejectionMessage().equals("")) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide reason for rejection.", null);
