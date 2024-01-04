@@ -122,6 +122,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					String OemMail = user.get().getEmail();
 					String[] ccEmails = {};
 					String sendMail = "";
+					String userName="";
 
 					String mailSubject = "";
 					String mailHeading = "";
@@ -131,6 +132,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						mailSubject = "OEM Recommendation Request";
 						mailHeading = "OEM Recommendation Request";
 						sendMail = agmEmail;
+						userName=userDepartment.get().getAgm().getUserName();
 						ccEmails = new String[] { applicationOwnerEmail };
 
 					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
@@ -138,45 +140,61 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 						mailSubject = "OEM Recommendation Approved";
 						mailHeading = "OEM Recommendation Approved By AGM";
 						sendMail = OemMail;
+						userName=user.get().getUserName();
 						ccEmails = new String[] { applicationOwnerEmail };
 
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
 
-						mailSubject = "OEM Recommendation Updated";
+						mailSubject = "Your Reference Id "+ recommendation.getReferenceId() + "Status has been Changed";
 						mailHeading = "OEM Recommendation Update";
 						sendMail = agmEmail;
+						userName=userDepartment.get().getAgm().getUserName();
 						ccEmails = new String[] { agmEmail };
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_RELEASED)) {
 
-						mailSubject = "OEM Recommendation Released";
+						mailSubject = "Your Reference Id "+ recommendation.getReferenceId() + "- OEM Recommendation "
+								+ " has been Released";
 						mailHeading = "OEM Recommendation Released";
 						sendMail = OemMail;
+						userName=user.get().getUserName();
 						ccEmails = new String[] { agmEmail };
 
 					}
 
-					if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
+					if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED) || status.equals(RecommendationStatusEnum.RECOMMENDATION_RELEASED)) {
 
-						String content = String.format("<div style='background-color: #f4f4f4; padding: 20px;'>"
-								+ "<div style='max-width: 1600px; margin: 0 auto; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
-								+ "<div style='background-image: url(https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg);"
-								+ "background-size: 150px; background-position: top right; background-repeat: no-repeat;  background-color: rgba(255, 255, 255, 01); height: auto;'>"
-								+ "<h1 style='font-size: 24px; color: #333; font-weight: bold;'> %s </h1>" + "<br>"
-								+ "<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear User,</p>"
-								+ "<p style='font-size: 16px; color: #333;'>We would like to bring to your attention for the updated recommendation with the following details:</p>"
-								+ "<p style='font-size: 16px; color: #333;'><b> Reference Id : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;'><b> Status : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;'><b> Recommendation Type : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;'><b> Priority Type : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;'><b> Descriptions : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;'><b> Department Name :</b> %s</p>"
-								+ "<p style='font-size: 16px; color: #333;'><b> Component Name : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;'><b> Recommend Date : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;'><b> Expected Impact : </b>%s</p>" + "<br>"
-								+ "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
-								+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
-								+ "<p style='font-size: 16px; color: #333;'>OEM Team</p>" + "</div>" + "</div>"
-								+ "</div>", mailHeading, recommendation.getReferenceId(),
+						String content = String.format("<div style='background-color: #f4f4f4; padding: 20px; max-width: 100vw;'>"
+						        + "<div style='max-width: 100vw; margin: 0 auto; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>"
+						        + "<div class='header-container' style='display:flex; justify-content: space-between; padding:15px ; background-color: #af1111'>"
+						        + "<div>"
+						        +        "<h1 class='header-title'>%s</h1>"
+						        + "</div>"
+						        + "<div class='header-image'>"
+						        +         "<img style='max-height:10vh;max-width:10vw;background-repeat: no-repeat;' "
+						        +          "src='https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg'/>"
+						        + "</div>"
+						        + "</div>"
+						        + "<div>"
+						        + String.format("<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear %s,</p>", userName)
+						        + "<p style='font-size: 16px; color: #333;'>We would like to bring to your attention for the updated recommendation with the following details:</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b> Reference Id : </b>%s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b> Status : </b>%s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b> Recommendation Type : </b>%s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b> Priority Type : </b>%s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b> Descriptions : </b>%s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b> Department Name :</b> %s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b> Component Name : </b>%s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b> Recommend Date : </b>%s</p>"
+						        + "<p style='font-size: 16px; color: #333;'><b> Expected Impact : </b>%s</p>" + "<br>"
+						        + "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
+						        + "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
+						        + "</div>"
+						        + "</div>"
+						        + "</div>"
+						        + "<style>"
+						        ,
+								
+								mailHeading, recommendation.getReferenceId(),
 								RecommendationStatus !=null ? RecommendationStatus :"NA",
 								userRecommendationType.get().getName() != null ? userRecommendationType.get().getName()
 										: "NA",
@@ -251,6 +269,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 
 		return new Response<>(HttpStatus.OK.value(), "Mail Send Successfully", null);
 	}
+
 
 	@Override
 	public Response<?> sendMailRecommendationDeplyomentDetails(RecommendationDeplyomentDetails details,
