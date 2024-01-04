@@ -1077,8 +1077,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 											.collect(Collectors.toList());
 									Collections.sort(updatedMessageList,
 											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
-									String message = updatedMessageList.get(0).getRejectionReason();
-									responseDto.setPastExperienceComment(message);
+									if (updatedMessageList != null && updatedMessageList.size() > 0) {
+										String message = updatedMessageList.get(0).getRejectionReason();
+										responseDto.setPastExperienceComment(message);
+									}
+
 								}
 								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
 									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));

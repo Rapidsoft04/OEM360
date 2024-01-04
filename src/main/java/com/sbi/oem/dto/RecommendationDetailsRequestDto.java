@@ -1,9 +1,11 @@
 package com.sbi.oem.dto;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.sbi.oem.model.Department;
 import com.sbi.oem.model.RecommendationDeplyomentDetails;
 import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.User;
@@ -35,6 +37,8 @@ public class RecommendationDetailsRequestDto {
 	private String description;
 
 	private RecommendationStatus recommendationStatus;
+
+	private List<Department> departmentList;
 
 	public Long getId() {
 		return id;
@@ -122,6 +126,14 @@ public class RecommendationDetailsRequestDto {
 
 	public void setRecommendationStatus(RecommendationStatus recommendationStatus) {
 		this.recommendationStatus = recommendationStatus;
+	}
+
+	public List<Department> getDepartmentList() {
+		return departmentList;
+	}
+
+	public void setDepartmentList(List<Department> departmentList) {
+		this.departmentList = departmentList;
 	}
 
 	public RecommendationDeplyomentDetails convertToEntity() {
