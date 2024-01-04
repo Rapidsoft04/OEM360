@@ -22,4 +22,10 @@ public class RecommendationStatusController {
 		Response<?> response=recommendationService.getAllRecommendedStatus();
 		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
+	
+	@GetMapping("/list/for/implementation")
+	public ResponseEntity<?> getAllStatusListToBeImplement(){
+		Response<?> response=recommendationService.getAllStatusListToBeImplement();
+		return new ResponseEntity<>(response,HttpStatus.OK);
+	}
 }

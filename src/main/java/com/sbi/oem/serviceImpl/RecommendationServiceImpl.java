@@ -2381,4 +2381,16 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 	}
 
+	@Override
+	public Response<?> getAllStatusListToBeImplement() {
+		List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+		List<RecommendationStatus> updatedStatusList = statusList.stream()
+				.filter(e -> e.getStatusName().equals(StatusEnum.Department_implementation.getName())
+						|| e.getStatusName().equals(StatusEnum.UAT_testing.getName())
+						|| e.getStatusName().equals(StatusEnum.Released.getName()))
+				.collect(Collectors.toList());
+
+		return new Response<>(HttpStatus.OK.value(), "Status List.", updatedStatusList);
+	}
+
 }
