@@ -178,12 +178,9 @@ public class NotificationServiceImpl implements NotificationService {
 							.findAllByDepartmentId(recommendation.getDepartment().getId());
 					if (departmentApprover != null && !departmentApprover.isEmpty()) {
 						if (status.equals(RecommendationStatusEnum.CREATED)) {
-							List<User> userList = Arrays.asList(departmentApprover.get().getAgm(),
-									departmentApprover.get().getApplicationOwner());
+							User appOwner = departmentApprover.get().getApplicationOwner();
 							String text = "New recommendation request has been created.";
-							for (User user : userList) {
-								createNotification(recommendation.getReferenceId(), text, user);
-							}
+							createNotification(recommendation.getReferenceId(), text, appOwner);
 						} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {
 							User agm = departmentApprover.get().getAgm();
 							String text = "App owner has accepted a new recommendation.";
