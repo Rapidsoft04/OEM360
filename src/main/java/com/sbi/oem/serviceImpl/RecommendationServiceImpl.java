@@ -1799,9 +1799,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 
 					}
-					responseDtos.setRecommendations(recommendations);
+					responseDtos.setPendingRecommendation(recommendations);
 
-					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", responseDtos);
+					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation List AGM.", responseDtos);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
 				}
