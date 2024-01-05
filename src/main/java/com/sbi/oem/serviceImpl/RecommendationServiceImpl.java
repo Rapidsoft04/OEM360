@@ -664,8 +664,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 						notificationService.save(recommendation.get(),
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
-						
-						
+
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 
@@ -936,9 +935,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 						notificationService.save(recommendation.get(),
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
-						
+
 						System.out.println("mail send !!");
-						
+
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 
@@ -1702,7 +1701,119 @@ public class RecommendationServiceImpl implements RecommendationService {
 					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
 					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner",
 							pendingRecommendationResponseDto);
-				} else {
+				} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+					List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+					RecommendationResponseDto pendingRecommendationResponseDto = new RecommendationResponseDto();
+					List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
+					List<DepartmentApprover> departmentList = departmentApproverRepository
+							.findAllByUserId(master.get().getUserId().getId());
+
+					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());
+
+					if (departmentIds != null && departmentIds.size() > 0) {
+						for (Long departmentId : departmentIds) {
+							searchDto.setDepartmentId(departmentId);
+							List<Recommendation> recommendationList = recommendationRepository
+									.findAllPendingRecommendationsOfAgmBySearchDto(searchDto);
+							for (Recommendation rcmnd : recommendationList) {
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+
+								responseDto.setMessageList(messageList);
+								if (messageList != null && messageList.size() > 0) {
+									List<RecommendationMessages> updatedMessageList = messageList.stream()
+											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+													.longValue() == master.get().getUserId().getId().longValue())
+											.collect(Collectors.toList());
+									Collections.sort(updatedMessageList,
+											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+									if (updatedMessageList != null && updatedMessageList.size() > 0) {
+										String message = updatedMessageList.get(0).getRejectionReason();
+										responseDto.setPastExperienceComment(message);
+									}
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
+								}
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(responseDto.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(null);
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
+								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+										.findAllByDepartmentId(rcmnd.getDepartment().getId());
+								responseDto.setApprover(departmentApprover.get().getAgm());
+								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+								pendingRecommendation.add(responseDto);
+							}
+						}
+					}
+					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
+					return new Response<>(HttpStatus.OK.value(), "Pending Recommendations of Agm",
+							pendingRecommendationResponseDto);
+				}
+				else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
 				}
 			} else {
