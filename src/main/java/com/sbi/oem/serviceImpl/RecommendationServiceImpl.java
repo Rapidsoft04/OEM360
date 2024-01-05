@@ -1590,6 +1590,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
+				RecommendationResponseDto responseDtos = new RecommendationResponseDto();
+				List<RecommendationResponseDto> recommendations = new ArrayList<>();
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 					List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
 					RecommendationResponseDto pendingRecommendationResponseDto = new RecommendationResponseDto();
@@ -1701,10 +1703,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
 					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner",
 							pendingRecommendationResponseDto);
-				} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
-					List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
-					RecommendationResponseDto pendingRecommendationResponseDto = new RecommendationResponseDto();
-					List<RecommendationResponseDto> pendingRecommendation = new ArrayList<>();
+				}
+				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
 					List<DepartmentApprover> departmentList = departmentApproverRepository
 							.findAllByUserId(master.get().getUserId().getId());
 
@@ -1715,13 +1715,23 @@ public class RecommendationServiceImpl implements RecommendationService {
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
 							List<Recommendation> recommendationList = recommendationRepository
-									.findAllPendingRecommendationsOfAgmBySearchDto(searchDto);
+									.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
+							List<DepartmentApprover> departmentApproverList = departmentApproverRepository
+									.findAllByDepartmentIdIn(departmentIds);
+							Map<Long, DepartmentApprover> departmentApproverMap = new HashMap<>();
+							if (departmentApproverList != null && departmentApproverList.size() > 0) {
+								for (DepartmentApprover approver : departmentApproverList) {
+									if (!departmentApproverMap
+											.containsKey(approver.getDepartment().getId().longValue())) {
+										departmentApproverMap.put(approver.getDepartment().getId(), approver);
+									}
+								}
+							}
 							for (Recommendation rcmnd : recommendationList) {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
 
-								responseDto.setMessageList(messageList);
 								if (messageList != null && messageList.size() > 0) {
 									List<RecommendationMessages> updatedMessageList = messageList.stream()
 											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
@@ -1737,42 +1747,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 								} else {
 									responseDto.setMessageList(null);
 								}
-								List<RecommendationTrail> trailList = recommendationTrailRepository
-										.findAllByReferenceId(responseDto.getReferenceId());
-								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
-								for (RecommendationTrail trail : trailList) {
-									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
-								}
-								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
-										.sorted(Map.Entry.comparingByKey())
-										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
-
-								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
-									for (Long key : sortedMap.keySet()) {
-										RecommendationTrail trail = sortedMap.get(key);
-										RecommendationTrailResponseDto response = trail.convertToDto();
-										response.setIsStatusDone(true);
-										trailResponseList.add(response);
-									}
-								} else {
-									for (RecommendationStatus status : statusList) {
-										if (sortedMap.containsKey(status.getId().longValue())) {
-											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
-											RecommendationTrailResponseDto response = trail.convertToDto();
-											response.setIsStatusDone(true);
-											trailResponseList.add(response);
-										} else {
-											RecommendationTrail trail = new RecommendationTrail();
-											trail.setRecommendationStatus(status);
-											RecommendationTrailResponseDto response = trail.convertToDto();
-											response.setIsStatusDone(false);
-											trailResponseList.add(response);
-										}
-									}
-								}
-								responseDto.setTrailResponse(null);
 								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
 									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
 								} else {
@@ -1801,19 +1775,34 @@ public class RecommendationServiceImpl implements RecommendationService {
 								} else {
 									responseDto.setRecommendationDeploymentDetails(null);
 								}
-								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-										.findAllByDepartmentId(rcmnd.getDepartment().getId());
-								responseDto.setApprover(departmentApprover.get().getAgm());
-								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
-								pendingRecommendation.add(responseDto);
+								if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+									DepartmentApprover approverObj = departmentApproverMap
+											.get(rcmnd.getDepartment().getId().longValue());
+									responseDto.setAppOwner(approverObj.getApplicationOwner());
+									responseDto.setApprover(approverObj.getAgm());
+								}
+								if (rcmnd.getIsAppOwnerApproved() != null
+										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+										&& (rcmnd.getIsAgmApproved() == null || rcmnd.getIsAgmApproved() != true)) {
+									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+									recommendations.add(responseDto);
+								}
+								if (rcmnd.getIsAppOwnerRejected() != null
+										&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+										&& (rcmnd.getIsAgmRejected() == null
+												|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+									recommendations.add(responseDto);
+								}
+
 							}
 						}
+
 					}
-					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
-					return new Response<>(HttpStatus.OK.value(), "Pending Recommendations of Agm",
-							pendingRecommendationResponseDto);
-				}
-				else {
+					responseDtos.setRecommendations(recommendations);
+
+					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", responseDtos);
+				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
 				}
 			} else {
