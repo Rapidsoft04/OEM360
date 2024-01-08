@@ -1839,16 +1839,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
 								responseDto.setMessageList(messageList);
-//								if (messageList != null && messageList.size() > 0) {
-//									List<RecommendationMessages> updatedMessageList = messageList.stream()
-//											.filter(e -> e.getCreatedBy() != null && 
-//											e.getCreatedBy().getId().longValue() == master.get().getUserId().getId().longValue())
-//											.collect(Collectors.toList());
-//									Collections.sort(updatedMessageList,
-//											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
-//									String message = updatedMessageList.get(0).getRejectionReason();
-//									responseDto.setPastExperienceComment(message);
-//								}
 								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 										.findAllByDepartmentId(rcmnd.getDepartment().getId());
 								responseDto.setApprover(departmentApprover.get().getAgm());
@@ -2706,6 +2696,70 @@ public class RecommendationServiceImpl implements RecommendationService {
 				.collect(Collectors.toList());
 
 		return new Response<>(HttpStatus.OK.value(), "Status List.", updatedStatusList);
+	}
+
+	@Override
+	public Response<?> updateRecommendation(RecommendationAddRequestDto recommendationAddRequestDto) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master != null && master.isPresent()) {
+				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
+					if (recommendationAddRequestDto.getReferenceId() != null
+							&& !recommendationAddRequestDto.getReferenceId().toString().isBlank()
+							&& !recommendationAddRequestDto.getReferenceId().toString().isEmpty()) {
+
+						Optional<Recommendation> rcmd = recommendationRepository
+								.findByReferenceId(recommendationAddRequestDto.getReferenceId());
+						
+						if (rcmd.get() != null && rcmd.isPresent()) {
+							if (rcmd.get().getRecommendationStatus().getId()
+									.longValue() == StatusEnum.OEM_recommendation.getId().longValue()) {
+
+								String fileUrl = null;
+								if (recommendationAddRequestDto.getFile() != null
+										&& recommendationAddRequestDto.getFile().getSize() > 1048576) {
+									return new Response<>(HttpStatus.BAD_REQUEST.value(),
+											"File size can't be above 1MB.", null);
+								} else {
+									if (recommendationAddRequestDto.getFile() != null) {
+										fileUrl = fileSystemStorageService
+												.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
+									}
+									Recommendation recommendation = rcmd.get();
+									recommendation.setFileUrl(fileUrl);
+									recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
+									recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
+									recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
+									recommendation
+											.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
+									recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
+									recommendation.setRecommendationType(
+											new RecommendationType(recommendationAddRequestDto.getTypeId()));
+									recommendation.setUpdatedAt(new Date());
+									recommendationRepository.save(recommendation);
+									return new Response<>(HttpStatus.OK.value(),
+											"Recommendation updated successfully.", null);
+								}
+							} else {
+								return new Response<>(HttpStatus.BAD_REQUEST.value(),
+										"Recommendation cannot be updated now.", null);
+							}
+						} else {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation not found", null);
+						}
+
+					} else {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Reference ID is required.", null);
+					}
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+			}
+		} catch (Exception e) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
+		}
 	}
 
 }

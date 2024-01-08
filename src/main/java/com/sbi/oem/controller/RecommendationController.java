@@ -323,4 +323,17 @@ public class RecommendationController {
 			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
 		}
 	}
+	
+	@PostMapping("/update")
+	public ResponseEntity<?> updateRecommendation(
+			@ModelAttribute RecommendationAddRequestDto recommendationAddRequestDto) {
+		Response<?> validationResponse = validationService
+				.checkForRecommendationAddPayload(recommendationAddRequestDto);
+		if (validationResponse.getResponseCode() == HttpStatus.OK.value()) {
+			Response<?> response = recommendationService.updateRecommendation(recommendationAddRequestDto);
+			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+		} else {
+			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
+		}
+	}
 }

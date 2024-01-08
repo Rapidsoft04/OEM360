@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class RecommendationAddRequestDto {
 
+	private String referenceId;
 	private String description;
 	private Long typeId;
 	private Long priorityId;
@@ -21,6 +22,14 @@ public class RecommendationAddRequestDto {
 	private Long createdBy;
 	private String expectedImpact;
 	private List<Long> departmentIds;
+
+	public String getReferenceId() {
+		return referenceId;
+	}
+
+	public void setReferenceId(String referenceId) {
+		this.referenceId = referenceId;
+	}
 
 	public String getDescription() {
 		return description;
