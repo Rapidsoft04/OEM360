@@ -2,6 +2,7 @@ package com.sbi.oem.dto;
 
 import java.util.Date;
 
+import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.model.Department;
 
 public class SearchDto {
@@ -25,6 +26,20 @@ public class SearchDto {
 	private Date updatedAt;
 	
 	private Department department;
+	
+	private StatusEnum status;
+	
+	
+	
+	
+
+	public StatusEnum getStatus() {
+		return status;
+	}
+
+	public void setStatus(StatusEnum status) {
+		this.status = status;
+	}
 
 	public Long getRecommendationType() {
 		return recommendationType;

@@ -4,7 +4,8 @@ public enum StatusEnum {
 
 	OEM_recommendation(1L, "OEM recommendation"), Review_process(2L, "Review process"), Approved(3L, "Approved"),
 	Rejected(4L, "Rejected"), Department_implementation(5L, "Department implementation"),
-	UAT_testing(6L, "UAT testing"), Released(7L, "Released");
+	UAT_testing(6L, "UAT testing"), Released(7L, "Released") , Planned(8L ,"Planned"), On_time(9L,"On time") ,
+	Delayed(10L ,"Delayed");
 
 	private Long id;
 	private String name;

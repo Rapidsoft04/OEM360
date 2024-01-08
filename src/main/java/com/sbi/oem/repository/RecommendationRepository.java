@@ -17,6 +17,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.sbi.oem.dto.SearchDto;
+import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.util.DateUtil;
 
@@ -335,12 +336,10 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 		return new PageImpl<>(recommendationPage.getContent(), pageable, totalElements);
 
 	}
-	
-	default Page<Recommendation> findAllPendingRecommendationsForAgmBySearchDtoPagination(SearchDto searchDto, long pageNumber,
-			long pageSize){
-		
-		
-		
+
+	default Page<Recommendation> findAllPendingRecommendationsForAgmBySearchDtoPagination(SearchDto searchDto,
+			long pageNumber, long pageSize) {
+
 		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
@@ -393,17 +392,17 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
-		
-		Pageable pageable = PageRequest.of((int)pageNumber, (int)pageSize);
+
+		Pageable pageable = PageRequest.of((int) pageNumber, (int) pageSize);
 		Page<Recommendation> recommendationPage = findAll(specification, pageable);
 		long totalElements = recommendationPage.getTotalElements();
 		return new PageImpl<>(recommendationPage.getContent(), pageable, totalElements);
-		
+
 	}
 
 	default Page<Recommendation> findAllRecommendationsForGmBySearchDtoPagination(SearchDto searchDto, long pageNumber,
-			long pageSize){
-		
+			long pageSize) {
+
 		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
@@ -461,7 +460,6 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 		long totalElements = recommendationPage.getTotalElements();
 		return new PageImpl<>(recommendationPage.getContent(), pageable, totalElements);
 	}
-
 
 	default List<Recommendation> findAllRecommendationsOemAndAgmBySearchDto(Long id, SearchDto searchDto) {
 
@@ -671,9 +669,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
 			}
 
-			if (searchDto.getStatusId() != null) {
+			if (searchDto.getStatusId() != null && searchDto.getStatusId() <= StatusEnum.Released.getId()) {
+
 				predicates.add(
 						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
+
 			}
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
