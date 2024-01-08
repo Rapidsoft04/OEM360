@@ -176,6 +176,15 @@ public class DashboardServiceImpl implements DashboardService {
 							dashboardResponse
 									.setImplementationDoneRecommendations(implementationDoneRecommendationCount);
 							dashboardResponse.setTestingDoneRecommendations(testingDoneRecommendationCount);
+						} else {
+							dashboardResponse.setTotalRecommendation(0L);
+							dashboardResponse.setReleasedRecommendations(0L);
+							dashboardResponse.setPendingForApproval(0L);
+							dashboardResponse.setApprovedRecommendationNotYetReleased(0L);
+							dashboardResponse.setRejectedRecommendation(0L);
+							dashboardResponse.setApprovedRecommendationsToBeImplement(0L);
+							dashboardResponse.setImplementationDoneRecommendations(0L);
+							dashboardResponse.setTestingDoneRecommendations(0L);
 						}
 						return new Response<>(HttpStatus.OK.value(), "Dashboard Details.", dashboardResponse);
 					} else {
