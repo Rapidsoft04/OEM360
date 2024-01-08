@@ -53,4 +53,6 @@ public interface RecommendationService {
 	Response<?> updateRecommendationStatus(RecommendationDetailsRequestDto recommendationRequestDto);
 
 	Response<?> getAllStatusListToBeImplement();
+	
+	Response<?> updateRecommendation(RecommendationAddRequestDto recommendationAddRequestDto);
 }
