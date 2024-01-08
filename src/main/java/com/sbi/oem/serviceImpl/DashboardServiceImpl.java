@@ -94,8 +94,6 @@ public class DashboardServiceImpl implements DashboardService {
 				String formattedLastMonthEndDate = dateFormat.format(lastMonthEndDate);
 				fromDate = formattedLastMonthStartDate + " " + addedFromTime;
 				toDate = formattedLastMonthEndDate + " " + addedToTime;
-				System.out.println(fromDate);
-				System.out.println(toDate);
 			} else {
 				Date todayDate = new Date();
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
