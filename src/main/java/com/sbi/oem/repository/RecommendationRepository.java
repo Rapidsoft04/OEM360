@@ -339,7 +339,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 	default Page<Recommendation> findAllPendingRecommendationsForAgmBySearchDtoPagination(SearchDto searchDto, long pageNumber,
 			long pageSize){
 		
-		Pageable pageable = PageRequest.of((int)pageNumber, (int)pageSize);
+		
 		
 		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
@@ -394,8 +394,10 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 		
+		Pageable pageable = PageRequest.of((int)pageNumber, (int)pageSize);
 		Page<Recommendation> recommendationPage = findAll(specification, pageable);
-		return recommendationPage;
+		long totalElements = recommendationPage.getTotalElements();
+		return new PageImpl<>(recommendationPage.getContent(), pageable, totalElements);
 		
 	}
 
