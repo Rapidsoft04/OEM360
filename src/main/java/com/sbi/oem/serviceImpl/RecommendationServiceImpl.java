@@ -2082,7 +2082,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 												List<RecommendationTrail> trail = recommendationTrailRepository
 														.findAllByReferenceId(rcmnd.getReferenceId());
 
-												if (deploymentDetails.isPresent() && trail != null) {
+												if (deploymentDetails.isPresent() && trail != null
+														&& searchDto.getStatusId() == StatusEnum.On_time.getId()) {
 													boolean checkDate = false;
 													Date trailDate = null;
 
@@ -2104,31 +2105,39 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 													for (RecommendationTrail x : collect) {
 														if (x.getReferenceId().equals(rcmnd.getReferenceId())) {
-															if (x.getRecommendationStatus()
-																	.getId() == StatusEnum.Department_implementation
-																			.getId()) {
+															if (x.getRecommendationStatus().getId() == x
+																	.getRecommendationStatus().getId()) {
 																trailDate = x.getCreatedAt();
-																checkDate = trailDate != null
-																		&& trailDate.after(developementEndDate);
-																System.out.println(
-																		"developementEndDate =" + developementEndDate
-																				+ " " + "trailDate =" + trailDate);
-															} else if (x.getRecommendationStatus()
-																	.getId() == StatusEnum.UAT_testing.getId()) {
-																trailDate = x.getCreatedAt();
-																checkDate = trailDate != null
-																		&& trailDate.after(testCompletionDate);
-																System.out.println(
-																		"testCompletionDate =" + testCompletionDate
-																				+ " " + "trailDate =" + trailDate);
+
+																if (x.getRecommendationStatus()
+																		.getId() == StatusEnum.Department_implementation
+																				.getId()) {
+
+																	checkDate = trailDate != null
+																			&& trailDate.before(developementEndDate);
+																	System.out.println(
+																			"devCompletionDate =" + developementEndDate
+																					+ " " + "trailDate =" + trailDate);
+
+																} else if (x.getRecommendationStatus()
+																		.getId() == StatusEnum.UAT_testing.getId()) {
+
+																	checkDate = trailDate != null
+																			&& trailDate.before(testCompletionDate);
+																	System.out.println(
+																			"testCompletionDate =" + testCompletionDate
+																					+ " " + "trailDate =" + trailDate);
+
+																}
+
 															}
 														}
+
+														System.out.println("value = " + checkDate);
+
+														return checkDate;
+
 													}
-
-													System.out
-															.println("value = " + trailDate.after(developementEndDate));
-
-													return checkDate;
 
 												} else if (deploymentDetails.isPresent() && trail != null
 														&& searchDto.getStatusId() == StatusEnum.Delayed.getId()) {
@@ -2153,26 +2162,36 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 													for (RecommendationTrail x : collect) {
 														if (x.getReferenceId().equals(rcmnd.getReferenceId())) {
-															if (x.getRecommendationStatus()
-																	.getId() == StatusEnum.Department_implementation
-																			.getId()) {
+															if (x.getRecommendationStatus().getId() == x
+																	.getRecommendationStatus().getId()) {
 																trailDate = x.getCreatedAt();
-																checkDate = trailDate != null
-																		&& trailDate.before(developementEndDate);
-																System.out.println(
-																		"developementEndDate =" + developementEndDate
-																				+ " " + "trailDate =" + trailDate);
-															} else if (x.getRecommendationStatus()
-																	.getId() == StatusEnum.UAT_testing.getId()) {
-																trailDate = x.getCreatedAt();
-																checkDate = trailDate != null
-																		&& trailDate.before(testCompletionDate);
-																System.out.println(
-																		"testCompletionDate =" + testCompletionDate
-																				+ " " + "trailDate =" + trailDate);
+
+																if (x.getRecommendationStatus()
+																		.getId() == StatusEnum.Department_implementation
+																				.getId()) {
+
+																	checkDate = trailDate != null
+																			&& trailDate.after(developementEndDate);
+																	System.out.println(
+																			"devCompletionDate =" + developementEndDate
+																					+ " " + "trailDate =" + trailDate);
+
+																} else if (x.getRecommendationStatus()
+																		.getId() == StatusEnum.UAT_testing.getId()) {
+
+																	checkDate = trailDate != null
+																			&& trailDate.after(testCompletionDate);
+																	System.out.println(
+																			"testCompletionDate =" + testCompletionDate
+																					+ " " + "trailDate =" + trailDate);
+
+																}
+
 															}
 														}
 													}
+
+													System.out.println("value = " + checkDate);
 
 													return checkDate;
 
