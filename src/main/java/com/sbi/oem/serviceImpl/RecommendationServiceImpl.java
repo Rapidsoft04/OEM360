@@ -1916,9 +1916,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 					return new Response<>(HttpStatus.OK.value(), "Approved Recommendation of App Owner",
 							approvedRecommendationResponseDto);
 				} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
-					
+
 					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();
-					
+
 					List<RecommendationResponseDto> approvedRecommendations = new ArrayList<>();
 					List<DepartmentApprover> departmentList = departmentApproverRepository
 							.findAllByUserId(master.get().getUserId().getId());
@@ -1931,42 +1931,237 @@ public class RecommendationServiceImpl implements RecommendationService {
 							List<Recommendation> recommendationList = recommendationRepository
 									.findAllApprovedRecommendationsOfAgmBySearchDto(searchDto);
 
-							if (searchDto.getStatusId() >= StatusEnum.Planned.getId()) {
-								
-								if(searchDto.getStatusId() == StatusEnum.Planned.getId()) {
-									
+							if (searchDto.getStatusId() != null
+									&& searchDto.getStatusId() >= StatusEnum.Planned.getId()) {
+
+								if (searchDto.getStatusId() != null
+										&& searchDto.getStatusId() == StatusEnum.Planned.getId()) {
+
 									List<Recommendation> recommendationListFilter = recommendationList.stream()
-											.filter(rcmnd -> rcmnd.getRecommendationStatus().getId() == StatusEnum.Approved.getId()
-							                                 )
-													.filter(rcmnd -> {
+											.filter(rcmnd -> rcmnd.getRecommendationStatus()
+													.getId() == StatusEnum.Approved.getId())
+											.filter(rcmnd -> {
 
-														Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-																.findByRecommendRefId(rcmnd.getReferenceId());
-														
-														List<RecommendationTrail> trail = recommendationTrailRepository
-																.findAllByReferenceId(rcmnd.getReferenceId());
+												Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+														.findByRecommendRefId(rcmnd.getReferenceId());
 
-														if (deploymentDetails != null && trail != null && searchDto.getStatusId() == StatusEnum.Planned.getId()) {
+												List<RecommendationTrail> trail = recommendationTrailRepository
+														.findAllByReferenceId(rcmnd.getReferenceId());
 
-															 Date endDate = deploymentDetails.get().getDevelopementEndDate();
-															
-															 List<RecommendationTrail> collect = trail.stream()
-														    .filter(rt -> rt.getReferenceId().equals(rcmnd.getReferenceId()))
-														    .sorted(Comparator.comparing(RecommendationTrail::getCreatedAt).reversed())
-														    .collect(Collectors.toList());
-															 
-															 RecommendationTrail latestTrailEntry = collect.get(0);
-															 Date trailDate = latestTrailEntry.getCreatedAt();	
-														
+												if (deploymentDetails != null && trail != null
+														&& searchDto.getStatusId() == StatusEnum.Planned.getId()) {
 
-															return trailDate != null && trailDate.after(endDate);
-															
+													Date endDate = deploymentDetails.get().getDevelopementEndDate();
+
+													List<RecommendationTrail> collect = trail.stream().filter(
+															rt -> rt.getReferenceId().equals(rcmnd.getReferenceId()))
+															.sorted(Comparator
+																	.comparing(RecommendationTrail::getCreatedAt)
+																	.reversed())
+															.collect(Collectors.toList());
+
+													RecommendationTrail latestTrailEntry = collect.get(0);
+													Date trailDate = latestTrailEntry.getCreatedAt();
+
+													return trailDate != null && trailDate.after(endDate);
+
+												}
+												return false;
+
+											}).collect(Collectors.toList());
+
+									for (Recommendation rcmnd : recommendationListFilter) {
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+										responseDto.setMessageList(messageList);
+
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(trailResponseList);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										approvedRecommendations.add(responseDto);
+
+									}
+
+								} else {
+
+									List<Recommendation> recommendationListFilter = recommendationList.stream()
+											.filter(rcmnd -> rcmnd.getRecommendationStatus()
+													.getId() >= StatusEnum.Department_implementation.getId()
+													&& rcmnd.getRecommendationStatus().getId() < StatusEnum.Released
+															.getId())
+											.filter(rcmnd -> {
+												Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+														.findByRecommendRefId(rcmnd.getReferenceId());
+
+												List<RecommendationTrail> trail = recommendationTrailRepository
+														.findAllByReferenceId(rcmnd.getReferenceId());
+
+												if (deploymentDetails.isPresent() && trail != null) {
+													boolean checkDate = false;
+													Date trailDate = null;
+
+													Date developementEndDate = deploymentDetails.get()
+															.getDevelopementEndDate();
+													Date testCompletionDate = deploymentDetails.get()
+															.getTestCompletionDate();
+
+													List<RecommendationTrail> collect = trail.stream().filter(
+															rt -> rt.getReferenceId().equals(rcmnd.getReferenceId()))
+															.sorted(Comparator
+																	.comparing(RecommendationTrail::getCreatedAt)
+																	.reversed())
+															.collect(Collectors.toList());
+
+													System.out.println(
+															"Ref Id:" + rcmnd.getReferenceId() + "    status ID ="
+																	+ rcmnd.getRecommendationStatus().getStatusName());
+
+													for (RecommendationTrail x : collect) {
+														if (x.getReferenceId().equals(rcmnd.getReferenceId())) {
+															if (x.getRecommendationStatus()
+																	.getId() == StatusEnum.Department_implementation
+																			.getId()) {
+																trailDate = x.getCreatedAt();
+																checkDate = trailDate != null
+																		&& trailDate.after(developementEndDate);
+																System.out.println(
+																		"developementEndDate =" + developementEndDate
+																				+ " " + "trailDate =" + trailDate);
+															} else if (x.getRecommendationStatus()
+																	.getId() == StatusEnum.UAT_testing.getId()) {
+																trailDate = x.getCreatedAt();
+																checkDate = trailDate != null
+																		&& trailDate.after(testCompletionDate);
+																System.out.println(
+																		"testCompletionDate =" + testCompletionDate
+																				+ " " + "trailDate =" + trailDate);
+															}
 														}
-														return false; 
+													}
 
-														
-													}).collect(Collectors.toList());
-									
+													System.out
+															.println("value = " + trailDate.after(developementEndDate));
+
+													return checkDate;
+
+												} else if (deploymentDetails.isPresent() && trail != null
+														&& searchDto.getStatusId() == StatusEnum.Delayed.getId()) {
+													boolean checkDate = false;
+													Date trailDate = null;
+
+													Date developementEndDate = deploymentDetails.get()
+															.getDevelopementEndDate();
+													Date testCompletionDate = deploymentDetails.get()
+															.getTestCompletionDate();
+
+													List<RecommendationTrail> collect = trail.stream().filter(
+															rt -> rt.getReferenceId().equals(rcmnd.getReferenceId()))
+															.sorted(Comparator
+																	.comparing(RecommendationTrail::getCreatedAt)
+																	.reversed())
+															.collect(Collectors.toList());
+
+													System.out.println(
+															"Ref Id:" + rcmnd.getReferenceId() + "    status ID ="
+																	+ rcmnd.getRecommendationStatus().getStatusName());
+
+													for (RecommendationTrail x : collect) {
+														if (x.getReferenceId().equals(rcmnd.getReferenceId())) {
+															if (x.getRecommendationStatus()
+																	.getId() == StatusEnum.Department_implementation
+																			.getId()) {
+																trailDate = x.getCreatedAt();
+																checkDate = trailDate != null
+																		&& trailDate.before(developementEndDate);
+																System.out.println(
+																		"developementEndDate =" + developementEndDate
+																				+ " " + "trailDate =" + trailDate);
+															} else if (x.getRecommendationStatus()
+																	.getId() == StatusEnum.UAT_testing.getId()) {
+																trailDate = x.getCreatedAt();
+																checkDate = trailDate != null
+																		&& trailDate.before(testCompletionDate);
+																System.out.println(
+																		"testCompletionDate =" + testCompletionDate
+																				+ " " + "trailDate =" + trailDate);
+															}
+														}
+													}
+
+													return checkDate;
+
+												}
+												return false;
+
+											}).collect(Collectors.toList());
+
 									for (Recommendation rcmnd : recommendationListFilter) {
 										RecommendationResponseDto responseDto = rcmnd.convertToDto();
 										List<RecommendationMessages> messageList = recommendationMessagesRepository
@@ -2045,171 +2240,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 										approvedRecommendations.add(responseDto);
 
 									}
-									
-									
-									
-								}else {
-									
-									List<Recommendation> recommendationListFilter = recommendationList.stream()
-									        .filter(rcmnd -> rcmnd.getRecommendationStatus().getId() >= StatusEnum.Department_implementation.getId() &&
-									                rcmnd.getRecommendationStatus().getId() < StatusEnum.Released.getId())
-									        .filter(rcmnd -> {
-									            Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-									                    .findByRecommendRefId(rcmnd.getReferenceId());
 
-									            List<RecommendationTrail> trail = recommendationTrailRepository
-									                    .findAllByReferenceId(rcmnd.getReferenceId());
-
-									            if (deploymentDetails.isPresent() && trail != null) {
-									                boolean checkDate = false;
-									                Date trailDate = null;
-
-									                Date developementEndDate = deploymentDetails.get().getDevelopementEndDate();
-									                Date testCompletionDate = deploymentDetails.get().getTestCompletionDate();
-
-									                List<RecommendationTrail> collect = trail.stream()
-									                        .filter(rt -> rt.getReferenceId().equals(rcmnd.getReferenceId()))
-									                        .sorted(Comparator.comparing(RecommendationTrail::getCreatedAt).reversed())
-									                        .collect(Collectors.toList());
-
-									                System.out.println("Ref Id:" + rcmnd.getReferenceId() + "    status ID =" + rcmnd.getRecommendationStatus().getStatusName());
-
-									                for (RecommendationTrail x : collect) {
-									                    if (x.getReferenceId().equals(rcmnd.getReferenceId())) {
-									                        if (x.getRecommendationStatus().getId() == StatusEnum.Department_implementation.getId()) {
-									                            trailDate = x.getCreatedAt();
-									                            checkDate = trailDate != null && trailDate.after(developementEndDate);
-									                            System.out.println("developementEndDate =" + developementEndDate + " " + "trailDate =" + trailDate);
-									                        } else if (x.getRecommendationStatus().getId() == StatusEnum.UAT_testing.getId()) {
-									                            trailDate = x.getCreatedAt();
-									                            checkDate = trailDate != null && trailDate.after(testCompletionDate);
-									                            System.out.println("testCompletionDate =" + testCompletionDate + " " + "trailDate =" + trailDate);
-									                        }
-									                    }
-									                }
-
-									                System.out.println("value = " + trailDate.after(developementEndDate));
-
-									                return checkDate;
-
-									            } else if (deploymentDetails.isPresent() && trail != null && searchDto.getStatusId() == StatusEnum.Delayed.getId()) {
-									                boolean checkDate = false;
-									                Date trailDate = null;
-
-									                Date developementEndDate = deploymentDetails.get().getDevelopementEndDate();
-									                Date testCompletionDate = deploymentDetails.get().getTestCompletionDate();
-
-									                List<RecommendationTrail> collect = trail.stream()
-									                        .filter(rt -> rt.getReferenceId().equals(rcmnd.getReferenceId()))
-									                        .sorted(Comparator.comparing(RecommendationTrail::getCreatedAt).reversed())
-									                        .collect(Collectors.toList());
-
-									                System.out.println("Ref Id:" + rcmnd.getReferenceId() + "    status ID =" + rcmnd.getRecommendationStatus().getStatusName());
-
-									                for (RecommendationTrail x : collect) {
-									                    if (x.getReferenceId().equals(rcmnd.getReferenceId())) {
-									                        if (x.getRecommendationStatus().getId() == StatusEnum.Department_implementation.getId()) {
-									                            trailDate = x.getCreatedAt();
-									                            checkDate = trailDate != null && trailDate.before(developementEndDate);
-									                            System.out.println("developementEndDate =" + developementEndDate + " " + "trailDate =" + trailDate);
-									                        } else if (x.getRecommendationStatus().getId() == StatusEnum.UAT_testing.getId()) {
-									                            trailDate = x.getCreatedAt();
-									                            checkDate = trailDate != null && trailDate.before(testCompletionDate);
-									                            System.out.println("testCompletionDate =" + testCompletionDate + " " + "trailDate =" + trailDate);
-									                        }
-									                    }
-									                }
-
-									                return checkDate;
-
-									            }
-									            return false;
-
-									        }).collect(Collectors.toList());
-
-									
-									
-									for (Recommendation rcmnd : recommendationListFilter) {
-										RecommendationResponseDto responseDto = rcmnd.convertToDto();
-										List<RecommendationMessages> messageList = recommendationMessagesRepository
-												.findAllByReferenceId(rcmnd.getReferenceId());
-										responseDto.setMessageList(messageList);
-
-										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-												.findAllByDepartmentId(rcmnd.getDepartment().getId());
-										responseDto.setApprover(departmentApprover.get().getAgm());
-										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
-										List<RecommendationTrail> trailList = recommendationTrailRepository
-												.findAllByReferenceId(responseDto.getReferenceId());
-										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
-										for (RecommendationTrail trail : trailList) {
-											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
-										}
-										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
-												.stream().sorted(Map.Entry.comparingByKey())
-												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
-
-										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
-											for (Long key : sortedMap.keySet()) {
-												RecommendationTrail trail = sortedMap.get(key);
-												RecommendationTrailResponseDto response = trail.convertToDto();
-												response.setIsStatusDone(true);
-												trailResponseList.add(response);
-											}
-										} else {
-											for (RecommendationStatus status : statusList) {
-												if (sortedMap.containsKey(status.getId().longValue())) {
-													RecommendationTrail trail = sortedMap
-															.get(status.getId().longValue());
-													RecommendationTrailResponseDto response = trail.convertToDto();
-													response.setIsStatusDone(true);
-													trailResponseList.add(response);
-												} else {
-													RecommendationTrail trail = new RecommendationTrail();
-													trail.setRecommendationStatus(status);
-													RecommendationTrailResponseDto response = trail.convertToDto();
-													response.setIsStatusDone(false);
-													trailResponseList.add(response);
-												}
-											}
-										}
-										responseDto.setTrailResponse(trailResponseList);
-										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
-											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
-										} else {
-											String priority = "";
-											if (rcmnd.getPriorityId().longValue() == 1) {
-												priority = PriorityEnum.High.getName();
-												priorityMap.put(PriorityEnum.High.getId().longValue(),
-														PriorityEnum.High.name());
-												responseDto.setPriority(priority);
-											} else if (rcmnd.getPriorityId().longValue() == 2) {
-												priority = PriorityEnum.Medium.getName();
-												priorityMap.put(PriorityEnum.High.getId().longValue(),
-														PriorityEnum.High.name());
-												responseDto.setPriority(priority);
-											} else {
-												priority = PriorityEnum.Low.getName();
-												priorityMap.put(PriorityEnum.High.getId().longValue(),
-														PriorityEnum.High.name());
-												responseDto.setPriority(priority);
-											}
-										}
-										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-												.findByRecommendRefId(rcmnd.getReferenceId());
-										if (deploymentDetails != null && deploymentDetails.isPresent()) {
-											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
-										} else {
-											responseDto.setRecommendationDeploymentDetails(null);
-										}
-										approvedRecommendations.add(responseDto);
-
-									}
-									
-									
-								   }
+								}
 
 							} else {
 
