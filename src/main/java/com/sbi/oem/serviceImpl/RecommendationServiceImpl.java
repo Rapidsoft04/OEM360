@@ -763,7 +763,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.AGM.name()) || master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
+						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					RecommendationMessages messages = new RecommendationMessages();
 					messages.setCreatedBy(recommendationRejectionRequestDto.getCreatedBy());
 					messages.setAdditionalMessage(recommendationRejectionRequestDto.getDescription());
@@ -800,7 +801,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.AGM.name()) || master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
+						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					if (recommendObj != null && recommendObj.isPresent()) {
@@ -1705,6 +1707,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 										.findAllByDepartmentId(rcmnd.getDepartment().getId());
 								responseDto.setApprover(departmentApprover.get().getAgm());
 								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+								if (responseDto.getStatus().getId().longValue() == StatusEnum.OEM_recommendation.getId()
+										.longValue()) {
+									responseDto.setStatus(new RecommendationStatus(Constant.RECOMMENDATION_CREATED));
+								}
+								if (responseDto.getStatus().getId().longValue() == StatusEnum.Review_process.getId()
+										.longValue() && rcmnd.getIsAgmRejected() != null
+										&& rcmnd.getIsAgmRejected().booleanValue() == true) {
+									responseDto.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REJECTED));
+								}
 								pendingRecommendation.add(responseDto);
 							}
 						}
