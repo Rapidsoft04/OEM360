@@ -10,11 +10,11 @@ public class DashboardResponseDto {
 
 	private Long approvedRecommendationsToBeImplement;
 
-	private Long implementationDoneRecommendations;
+	private Long onTimeDoneRecommendationCount;
 
 	private Long releasedRecommendations;
 
-	private Long testingDoneRecommendations;
+	private Long delayRecommendationsCount;
 
 	private Long approvedRecommendationNotYetReleased;
 
@@ -50,12 +50,20 @@ public class DashboardResponseDto {
 		this.approvedRecommendationsToBeImplement = approvedRecommendationsToBeImplement;
 	}
 
-	public Long getImplementationDoneRecommendations() {
-		return implementationDoneRecommendations;
+	public Long getOnTimeDoneRecommendationCount() {
+		return onTimeDoneRecommendationCount;
 	}
 
-	public void setImplementationDoneRecommendations(Long implementationDoneRecommendations) {
-		this.implementationDoneRecommendations = implementationDoneRecommendations;
+	public void setOnTimeDoneRecommendationCount(Long onTimeDoneRecommendationCount) {
+		this.onTimeDoneRecommendationCount = onTimeDoneRecommendationCount;
+	}
+
+	public Long getDelayRecommendationsCount() {
+		return delayRecommendationsCount;
+	}
+
+	public void setDelayRecommendationsCount(Long delayRecommendationsCount) {
+		this.delayRecommendationsCount = delayRecommendationsCount;
 	}
 
 	public Long getReleasedRecommendations() {
@@ -64,14 +72,6 @@ public class DashboardResponseDto {
 
 	public void setReleasedRecommendations(Long releasedRecommendations) {
 		this.releasedRecommendations = releasedRecommendations;
-	}
-
-	public Long getTestingDoneRecommendations() {
-		return testingDoneRecommendations;
-	}
-
-	public void setTestingDoneRecommendations(Long testingDoneRecommendations) {
-		this.testingDoneRecommendations = testingDoneRecommendations;
 	}
 
 	public Long getApprovedRecommendationNotYetReleased() {

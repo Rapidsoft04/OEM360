@@ -19,8 +19,12 @@ import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
+import com.sbi.oem.model.RecommendationDeplyomentDetails;
+import com.sbi.oem.model.RecommendationTrail;
 import com.sbi.oem.repository.DepartmentApproverRepository;
+import com.sbi.oem.repository.RecommendationDeplyomentDetailsRepository;
 import com.sbi.oem.repository.RecommendationRepository;
+import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.DashboardService;
 
@@ -35,6 +39,12 @@ public class DashboardServiceImpl implements DashboardService {
 
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
+
+	@Autowired
+	private RecommendationDeplyomentDetailsRepository recommendationDeplyomentDetailsRepository;
+
+	@Autowired
+	private RecommendationTrailRepository recommendationTrailRepository;
 
 	@Override
 	public Response<?> getDashboardDetails(String value) {
@@ -123,8 +133,8 @@ public class DashboardServiceImpl implements DashboardService {
 							Long rejectedRecommendationCount = 0L;
 							Long approvedRecommendationToBeImplementCount = 0L;
 							Long releasedRecommendationCount = 0L;
-							Long implementationDoneRecommendationCount = 0L;
-							Long testingDoneRecommendationCount = 0L;
+							Long onTimeDoneRecommendationCount = 0L;
+							Long delayRecommendationCount = 0L;
 							Long approvedRecommendationNotYetReleasedCount = 0L;
 							for (Recommendation recommendation : recommendationList) {
 								if (recommendation.getRecommendationStatus().getId().longValue() < StatusEnum.Approved
@@ -134,6 +144,17 @@ public class DashboardServiceImpl implements DashboardService {
 								if (recommendation.getRecommendationStatus().getId().longValue() == StatusEnum.Released
 										.getId().longValue()) {
 									releasedRecommendationCount = releasedRecommendationCount + 1L;
+									Optional<RecommendationDeplyomentDetails> recommendationDeploymentDetails = recommendationDeplyomentDetailsRepository
+											.findByRecommendRefId(recommendation.getReferenceId());
+									Optional<RecommendationTrail> trailObj = recommendationTrailRepository
+											.findAllByReferenceIdAndStatusId(recommendation.getReferenceId(),
+													StatusEnum.Released.getId());
+									if (trailObj.get().getCreatedAt()
+											.before(recommendationDeploymentDetails.get().getDeploymentDate())) {
+										onTimeDoneRecommendationCount = onTimeDoneRecommendationCount + 1L;
+									} else {
+										delayRecommendationCount = delayRecommendationCount + 1L;
+									}
 								}
 								if (recommendation.getIsAgmApproved() != null
 										&& recommendation.getIsAgmApproved().booleanValue() == true
@@ -154,15 +175,6 @@ public class DashboardServiceImpl implements DashboardService {
 											+ 1L;
 								}
 
-								if (recommendation.getRecommendationStatus().getId()
-										.longValue() == StatusEnum.Department_implementation.getId().longValue()) {
-									implementationDoneRecommendationCount = implementationDoneRecommendationCount + 1L;
-								}
-								if (recommendation.getRecommendationStatus().getId()
-										.longValue() == StatusEnum.UAT_testing.getId().longValue()) {
-									testingDoneRecommendationCount = testingDoneRecommendationCount + 1L;
-								}
-
 							}
 							dashboardResponse.setReleasedRecommendations(releasedRecommendationCount);
 							dashboardResponse.setPendingForApproval(pendingForApprovalCount);
@@ -171,9 +183,8 @@ public class DashboardServiceImpl implements DashboardService {
 							dashboardResponse.setRejectedRecommendation(rejectedRecommendationCount);
 							dashboardResponse
 									.setApprovedRecommendationsToBeImplement(approvedRecommendationToBeImplementCount);
-							dashboardResponse
-									.setImplementationDoneRecommendations(implementationDoneRecommendationCount);
-							dashboardResponse.setTestingDoneRecommendations(testingDoneRecommendationCount);
+							dashboardResponse.setOnTimeDoneRecommendationCount(onTimeDoneRecommendationCount);
+							dashboardResponse.setDelayRecommendationsCount(delayRecommendationCount);
 						} else {
 							dashboardResponse.setTotalRecommendation(0L);
 							dashboardResponse.setReleasedRecommendations(0L);
@@ -181,8 +192,8 @@ public class DashboardServiceImpl implements DashboardService {
 							dashboardResponse.setApprovedRecommendationNotYetReleased(0L);
 							dashboardResponse.setRejectedRecommendation(0L);
 							dashboardResponse.setApprovedRecommendationsToBeImplement(0L);
-							dashboardResponse.setImplementationDoneRecommendations(0L);
-							dashboardResponse.setTestingDoneRecommendations(0L);
+							dashboardResponse.setOnTimeDoneRecommendationCount(0L);
+							dashboardResponse.setDelayRecommendationsCount(0L);
 						}
 						return new Response<>(HttpStatus.OK.value(), "Dashboard Details.", dashboardResponse);
 					} else {
@@ -204,8 +215,8 @@ public class DashboardServiceImpl implements DashboardService {
 						Long rejectedRecommendationCount = 0L;
 						Long approvedRecommendationToBeImplementCount = 0L;
 						Long releasedRecommendationCount = 0L;
-						Long implementationDoneRecommendationCount = 0L;
-						Long testingDoneRecommendationCount = 0L;
+						Long onTimeDoneRecommendationCount = 0L;
+						Long delayRecommendationCount = 0L;
 						Long approvedRecommendationNotYetReleasedCount = 0L;
 						for (Recommendation recommendation : recommendationList) {
 							if (recommendation.getRecommendationStatus().getId().longValue() < StatusEnum.Approved
@@ -215,6 +226,17 @@ public class DashboardServiceImpl implements DashboardService {
 							if (recommendation.getRecommendationStatus().getId().longValue() == StatusEnum.Released
 									.getId().longValue()) {
 								releasedRecommendationCount = releasedRecommendationCount + 1L;
+								Optional<RecommendationDeplyomentDetails> recommendationDeploymentDetails = recommendationDeplyomentDetailsRepository
+										.findByRecommendRefId(recommendation.getReferenceId());
+								Optional<RecommendationTrail> trailObj = recommendationTrailRepository
+										.findAllByReferenceIdAndStatusId(recommendation.getReferenceId(),
+												StatusEnum.Released.getId());
+								if (trailObj.get().getCreatedAt()
+										.before(recommendationDeploymentDetails.get().getDeploymentDate())) {
+									onTimeDoneRecommendationCount = onTimeDoneRecommendationCount + 1L;
+								} else {
+									delayRecommendationCount = delayRecommendationCount + 1L;
+								}
 							}
 							if (recommendation.getIsAgmApproved() != null
 									&& recommendation.getIsAgmApproved().booleanValue() == true
@@ -235,15 +257,6 @@ public class DashboardServiceImpl implements DashboardService {
 										+ 1L;
 							}
 
-							if (recommendation.getRecommendationStatus().getId()
-									.longValue() == StatusEnum.Department_implementation.getId().longValue()) {
-								implementationDoneRecommendationCount = implementationDoneRecommendationCount + 1L;
-							}
-							if (recommendation.getRecommendationStatus().getId().longValue() == StatusEnum.UAT_testing
-									.getId().longValue()) {
-								testingDoneRecommendationCount = testingDoneRecommendationCount + 1L;
-							}
-
 						}
 						dashboardResponse.setReleasedRecommendations(releasedRecommendationCount);
 						dashboardResponse.setPendingForApproval(pendingForApprovalCount);
@@ -252,8 +265,8 @@ public class DashboardServiceImpl implements DashboardService {
 						dashboardResponse.setRejectedRecommendation(rejectedRecommendationCount);
 						dashboardResponse
 								.setApprovedRecommendationsToBeImplement(approvedRecommendationToBeImplementCount);
-						dashboardResponse.setImplementationDoneRecommendations(implementationDoneRecommendationCount);
-						dashboardResponse.setTestingDoneRecommendations(testingDoneRecommendationCount);
+						dashboardResponse.setOnTimeDoneRecommendationCount(onTimeDoneRecommendationCount);
+						dashboardResponse.setDelayRecommendationsCount(delayRecommendationCount);
 						return new Response<>(HttpStatus.OK.value(), "Dashboard Details.", dashboardResponse);
 					} else {
 						return new Response<>(HttpStatus.OK.value(), "Dashboard response.", dashboardResponse);
