@@ -403,86 +403,92 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 				e.printStackTrace();
 			}
 
-			List<Department> departmentList = details.getDepartmentList();
+			if(details.getDepartmentList() != null) {
+				
 
-			StringJoiner joiner = new StringJoiner(", ");
+				List<Department> departmentList = details.getDepartmentList();
 
-			departmentList.forEach(department -> {
-				joiner.add(department.getName());
-			});
+				StringJoiner joiner = new StringJoiner(", ");
 
-			String impactedDepartment = joiner.toString();
+				departmentList.forEach(department -> {
+					joiner.add(department.getName());
+				});
 
-			departmentList.forEach(eachDept -> {
+				String impactedDepartment = joiner.toString();
 
-				Optional<DepartmentApprover> userDepartment2 = departmentApproverRepository
-						.findAllByDepartmentId(eachDept.getId());
+				departmentList.forEach(eachDept -> {
 
-				User agm = userDepartment2.get().getAgm();
+					Optional<DepartmentApprover> userDepartment2 = departmentApproverRepository
+							.findAllByDepartmentId(eachDept.getId());
 
-				String sendEmail = agm.getEmail();
-				String userName = agm.getUserName();
-				String[] ccEmails = { sendEmail };
+					User agm = userDepartment2.get().getAgm();
 
-				String mailSubject = "Your Reference Id " + details.getRecommendRefId() + "- "
-						+ "Impacted Department(s)";
-				String mailHeading = "Department Impacted";
+					String sendEmail = agm.getEmail();
+					String userName = agm.getUserName();
+					String[] ccEmails = { sendEmail };
 
-				String content = String.format(
-						"<div style='background-color: #f4f4f4; padding: 20px; max-width: 100vw;'>"
-								+ "<div style='max-width: 100vw; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow: auto;'>"
-								+ "<img style='max-height: 15vh; max-width: 15vw; background-repeat: no-repeat; float: right;' src='https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg'/>"
-								+ "<h1 class='header-title' style='font-size: 30px; margin: 0;'>%s</h1>"
-								+ "<div style='clear: both;'></div>" + "<div>"
-								+ String.format(
-										"<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear %s,</p>",
-										userName + " (" + eachDept.getName() + ")")
-								+ "<p style='font-size: 16px; color: #333;'><b> With Reference Id:</b> %s</p>"
-								+ "<p style='font-size: 16px; color: #333;'><b> These are the Impacted Department(s):</b> %s</p>"
-								+ "<p style='font-size: 16px; color: #333;  '><b> Development Start Date : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;  '><b> Development End Date : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;  '><b> Test Completion Date : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;  '><b> Deployment Date : </b>%s</p>"
-								+ "<p style='font-size: 16px; color: #333;  '><b> Global Support Number : </b>%s</p>"
-								+ "<br>"
-								+ "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
-								+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>" + "</div>" + "</div>"
-								+ "</div>" + "<style>" + "@media screen and (max-width: 600px) {"
-								+ ".header-image img {" + "margin-left: 10px; " + "}" + "}" + "</style>",
-						mailHeading, details.getRecommendRefId(),
-						impactedDepartment != null ? impactedDepartment : "NA",
-						details.getDevelopmentStartDate() != null ? formatDate(details.getDevelopmentStartDate())
-								: "NA",
-						details.getDevelopementEndDate() != null ? formatDate(details.getDevelopementEndDate()) : "NA",
-						details.getTestCompletionDate() != null ? formatDate(details.getTestCompletionDate()) : "NA",
-						details.getDeploymentDate() != null ? formatDate(details.getDeploymentDate()) : "NA",
+					String mailSubject = "Your Reference Id " + details.getRecommendRefId() + "- "
+							+ "Impacted Department(s)";
+					String mailHeading = "Department Impacted";
 
-						details.getGlobalSupportNumber() != null ? details.getGlobalSupportNumber() : "NA"
+					String content = String.format(
+							"<div style='background-color: #f4f4f4; padding: 20px; max-width: 100vw;'>"
+									+ "<div style='max-width: 100vw; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow: auto;'>"
+									+ "<img style='max-height: 15vh; max-width: 15vw; background-repeat: no-repeat; float: right;' src='https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg'/>"
+									+ "<h1 class='header-title' style='font-size: 30px; margin: 0;'>%s</h1>"
+									+ "<div style='clear: both;'></div>" + "<div>"
+									+ String.format(
+											"<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear %s,</p>",
+											userName + " (" + eachDept.getName() + ")")
+									+ "<p style='font-size: 16px; color: #333;'><b> With Reference Id:</b> %s</p>"
+									+ "<p style='font-size: 16px; color: #333;'><b> These are the Impacted Department(s):</b> %s</p>"
+									+ "<p style='font-size: 16px; color: #333;  '><b> Development Start Date : </b>%s</p>"
+									+ "<p style='font-size: 16px; color: #333;  '><b> Development End Date : </b>%s</p>"
+									+ "<p style='font-size: 16px; color: #333;  '><b> Test Completion Date : </b>%s</p>"
+									+ "<p style='font-size: 16px; color: #333;  '><b> Deployment Date : </b>%s</p>"
+									+ "<p style='font-size: 16px; color: #333;  '><b> Global Support Number : </b>%s</p>"
+									+ "<br>"
+									+ "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
+									+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>" + "</div>" + "</div>"
+									+ "</div>" + "<style>" + "@media screen and (max-width: 600px) {"
+									+ ".header-image img {" + "margin-left: 10px; " + "}" + "}" + "</style>",
+							mailHeading, details.getRecommendRefId(),
+							impactedDepartment != null ? impactedDepartment : "NA",
+							details.getDevelopmentStartDate() != null ? formatDate(details.getDevelopmentStartDate())
+									: "NA",
+							details.getDevelopementEndDate() != null ? formatDate(details.getDevelopementEndDate()) : "NA",
+							details.getTestCompletionDate() != null ? formatDate(details.getTestCompletionDate()) : "NA",
+							details.getDeploymentDate() != null ? formatDate(details.getDeploymentDate()) : "NA",
 
-				);
+							details.getGlobalSupportNumber() != null ? details.getGlobalSupportNumber() : "NA"
 
-				try {
+					);
 
-//					emailService.sendMail(sendEmail, ccEmails, mailSubject, content);
-					helper.setTo(sendEmail);
-					helper.setCc(ccEmails);
-					helper.setSubject(mailSubject);
-					helper.setText(content, true);
-					EmailThread sendMail = new EmailThread(javaMailService, mimeMsg);
-					Thread parallelThread = new Thread(sendMail);
-					parallelThread.setPriority(Thread.MAX_PRIORITY);
-					parallelThread.start();
+					try {
 
-				} catch (MessagingException e) {
+//						emailService.sendMail(sendEmail, ccEmails, mailSubject, content);
+						helper.setTo(sendEmail);
+						helper.setCc(ccEmails);
+						helper.setSubject(mailSubject);
+						helper.setText(content, true);
+						EmailThread sendMail = new EmailThread(javaMailService, mimeMsg);
+						Thread parallelThread = new Thread(sendMail);
+						parallelThread.setPriority(Thread.MAX_PRIORITY);
+						parallelThread.start();
 
-					e.printStackTrace();
-					System.out.println("mail not send");
+					} catch (MessagingException e) {
 
-				}
+						e.printStackTrace();
+						System.out.println("mail not send");
 
-				System.out.println("mail send");
+					}
 
-			});
+					System.out.println("mail send");
+
+				});
+				
+			}
+			
 
 		} catch (Exception e) {
 
