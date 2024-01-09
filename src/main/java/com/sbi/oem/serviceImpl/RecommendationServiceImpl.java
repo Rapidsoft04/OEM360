@@ -763,7 +763,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.AGM.name()) || master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					RecommendationMessages messages = new RecommendationMessages();
 					messages.setCreatedBy(recommendationRejectionRequestDto.getCreatedBy());
 					messages.setAdditionalMessage(recommendationRejectionRequestDto.getDescription());
@@ -800,7 +800,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.AGM.name()) || master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					if (recommendObj != null && recommendObj.isPresent()) {
@@ -1031,6 +1031,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
 								responseDto.setPriority(priority);
 							}
+						}
+						List<RecommendationMessages> messageList = recommendationMessagesRepository
+								.findAllByReferenceId(rcmnd.getReferenceId());
+
+						if (messageList != null && messageList.size() > 0) {
+							responseDto.setMessageList(messageList);
+						} else {
+							responseDto.setMessageList(null);
 						}
 						Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
 								.findByRecommendRefId(rcmnd.getReferenceId());

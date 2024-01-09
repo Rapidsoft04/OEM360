@@ -62,6 +62,9 @@ public class Utility {
 						else if (userType.equalsIgnoreCase(UserType.GM_IT_INFRA.name())) {
 							return true;
 						}
+						else if(userType.equalsIgnoreCase(UserType.DGM.name())) {
+							return true;
+						}
 					}
 				}
 			}
