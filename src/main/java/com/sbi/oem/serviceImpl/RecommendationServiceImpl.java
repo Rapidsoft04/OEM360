@@ -815,6 +815,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							emailTemplateService.sendMailRecommendationMessages(messages,
 									RecommendationStatusEnum.REJECTED_BY_AGM);
 							recommendObj.get().setIsAppOwnerApproved(false);
+							recommendObj.get().setIsAgmRejected(true);
 							recommendObj.get().setUpdatedAt(new Date());
 							recommendationRepository.save(recommendObj.get());
 							return new Response<>(HttpStatus.OK.value(),
@@ -1707,12 +1708,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 										.findAllByDepartmentId(rcmnd.getDepartment().getId());
 								responseDto.setApprover(departmentApprover.get().getAgm());
 								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
-								if (responseDto.getStatus().getId().longValue() == StatusEnum.OEM_recommendation.getId()
-										.longValue()) {
+								if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.OEM_recommendation
+										.getId().longValue()) {
 									responseDto.setStatus(new RecommendationStatus(Constant.RECOMMENDATION_CREATED));
 								}
-								if (responseDto.getStatus().getId().longValue() == StatusEnum.Review_process.getId()
-										.longValue() && rcmnd.getIsAgmRejected() != null
+								if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Review_process
+										.getId().longValue() && rcmnd.getIsAgmRejected() != null
 										&& rcmnd.getIsAgmRejected().booleanValue() == true) {
 									responseDto.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REJECTED));
 								}
