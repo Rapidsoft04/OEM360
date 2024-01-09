@@ -16,13 +16,13 @@ public interface EmailTemplateService {
 
 	Response<?> sendMailRecommendation(Recommendation recommendation, RecommendationStatusEnum status);
 
-	Response<?> sendMailRecommendationDeplyomentDetails(RecommendationDetailsRequestDto recommendationDetailsRequestDto,
+	void sendMailRecommendationDeplyomentDetails(RecommendationDetailsRequestDto recommendationDetailsRequestDto,
 			RecommendationStatusEnum recommendation);
 
-	Response<?> sendMailRecommendationMessages(RecommendationMessages messages,
+	void sendMailRecommendationMessages(RecommendationMessages messages,
 			RecommendationStatusEnum rejectedByAppowner);
 
-	Response<?> sendMailBuldRecommendation(List<Recommendation> recommendationList);
+	void sendMailBuldRecommendation(List<Recommendation> recommendationList);
 
 	void sendAllMailForRecommendation(List<Recommendation> recommendationList, RecommendationStatusEnum created);
 

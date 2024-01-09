@@ -1,91 +1,32 @@
 package com.sbi.oem.serviceImpl;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.google.gson.Gson;
-import com.sbi.oem.config.FileUploadProperties;
 import com.sbi.oem.dto.FileUrlResponse;
-import com.sbi.oem.dto.Response;
 
 @Service
 public class FileSystemStorageService {
 
-	private Path dirLocation;
 
 	@Value("${fileAccessUrl}")
 	private String fileAccessUrl;
 	@Value("${imageUrlToken}")
 	private String imageUrlToken;
 
-	@Autowired
-	public FileSystemStorageService(FileUploadProperties fileUploadProperties) {
-		this.dirLocation = Paths.get(fileUploadProperties.getLocation()).toAbsolutePath().normalize();
-	}
 
-	@PostConstruct
-	public void init() throws Throwable {
-		try {
-			Files.createDirectories(this.dirLocation);
-		} catch (Exception ex) {
-			throw new Throwable("Could not create upload dir!");
-		}
 
-	}
 
-	public Response<?> storeFileInLocalDirectoryResponseIsDownloadUrl(MultipartFile file, Long currentDate) {
-		String fileName = StringUtils.cleanPath(currentDate + file.getOriginalFilename());
-
-		try {
-			Path targetLocation = this.dirLocation.resolve(fileName);
-			Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-			String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/download/")
-					.path(fileName).toUriString();
-			return new Response<>(HttpStatus.OK.value(), "File successfull uploaded", fileDownloadUri);
-		} catch (IOException ex) {
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), "File fail to uploaded", null);
-		}
-	}
-
-	public Resource downloadDocument(String fileName) {
-
-		try {
-
-			Path file = this.dirLocation.resolve(fileName).normalize();
-			Resource resource = new UrlResource(file.toUri());
-
-			if (resource.exists() || resource.isReadable()) {
-				return resource;
-			} else {
-				throw new RuntimeException("Could not find file");
-			}
-		} catch (MalformedURLException e) {
-			throw new RuntimeException("Could not download file");
-		}
-
-	}
 
 	public String getUserExpenseFileUrl(MultipartFile file) {
 		String fileUrl = null;
