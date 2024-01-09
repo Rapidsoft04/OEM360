@@ -4,6 +4,7 @@ public class Constant {
 
 	public static final String APPLICATION_ACCEPTED = "Recommendation accepted";
 	public static final String APPLICATION_REJECTED = "Recommendation rejected";
+	public static final String RECOMMENDATION_CREATED = "Recommendation created";
 	public static final String TODAY = "Today";
 	public static final String YESTERDAY = "Yesterday";
 	public static final String THIS_MONTH = "This Month";
