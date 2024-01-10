@@ -842,7 +842,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
-					if (recommendObj != null && recommendObj.isPresent()) {
+					if (recommendObj != null && recommendObj.isPresent()
+							&& recommendObj.get().getPriorityId() < PriorityEnum.High.getId()) {
 						if (recommendObj.get().getIsAppOwnerApproved() != null
 								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
 							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
@@ -851,6 +852,51 @@ public class RecommendationServiceImpl implements RecommendationService {
 							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM);
 							emailTemplateService.sendMailRecommendationMessages(messages,
 									RecommendationStatusEnum.REJECTED_BY_AGM);
+							recommendObj.get().setIsAppOwnerApproved(false);
+							recommendObj.get().setIsAgmRejected(true);
+							recommendObj.get().setUpdatedAt(new Date());
+							recommendationRepository.save(recommendObj.get());
+							return new Response<>(HttpStatus.OK.value(),
+									"Recommendation reject request sent successfully.", null);
+						} else {
+							if (recommendObj.get().getRecommendationStatus().getId() != StatusEnum.Rejected.getId()
+									.longValue()) {
+								recommendObj.get().setIsAgmApproved(false);
+								recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
+								recommendObj.get().setIsAgmRejected(true);
+								recommendationRepository.save(recommendObj.get());
+								RecommendationTrail trailData = new RecommendationTrail();
+								trailData.setCreatedAt(new Date());
+								trailData.setRecommendationStatus(
+										new RecommendationStatus(StatusEnum.Rejected.getId().longValue()));
+								trailData.setReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
+								recommendationTrailRepository.save(trailData);
+								RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+								messages.setCreatedAt(new Date());
+								recommendationMessagesRepository.save(messages);
+								
+								notificationService.save(recommendObj.get(),
+										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
+								
+								emailTemplateService.sendMailRecommendationMessages(messages,
+										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
+								return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.",
+										null);
+							} else {
+								return new Response<>(HttpStatus.OK.value(), "Recommendation already rejected.", null);
+							}
+						}
+					} else if (recommendObj != null && recommendObj.isPresent()
+							&& recommendObj.get().getPriorityId() == PriorityEnum.High.getId()) {
+
+						if (recommendObj.get().getIsAppOwnerApproved() != null
+								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
+							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+							messages.setCreatedAt(new Date());
+							recommendationMessagesRepository.save(messages);
+							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM);
+							emailTemplateService.sendMailRecommendationMessages(messages,
+									RecommendationStatusEnum.REJECTED_BY_DGM);
 							recommendObj.get().setIsAppOwnerApproved(false);
 							recommendObj.get().setIsAgmRejected(true);
 							recommendObj.get().setUpdatedAt(new Date());
@@ -883,7 +929,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 								return new Response<>(HttpStatus.OK.value(), "Recommendation already rejected.", null);
 							}
 						}
-					} else {
+
+					}
+
+					else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found", null);
 					}
 				} else {

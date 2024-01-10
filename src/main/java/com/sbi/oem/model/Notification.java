@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -28,6 +29,9 @@ public class Notification {
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;
+	
+	@Column(name = "status_id")
+	private Long recommendationStatus;
 
 	@Column(name = "is_seen")
 	private Boolean isSeen;
@@ -37,6 +41,9 @@ public class Notification {
 
 	@Column(name = "updated_at")
 	private Date updatedAt;
+	
+	@Column(name = "descriptions")
+	private String descriptions;
 
 	public Long getId() {
 		return id;
@@ -92,6 +99,22 @@ public class Notification {
 
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public Long getRecommendationStatus() {
+		return recommendationStatus;
+	}
+
+	public void setRecommendationStatus(Long recommendationStatus) {
+		this.recommendationStatus = recommendationStatus;
+	}
+
+	public String getDescriptions() {
+		return descriptions;
+	}
+
+	public void setDescriptions(String descriptions) {
+		this.descriptions = descriptions;
 	}
 
 	public Notification(Long id, String message, String referenceId, User user, Boolean isSeen, Date createdAt,
