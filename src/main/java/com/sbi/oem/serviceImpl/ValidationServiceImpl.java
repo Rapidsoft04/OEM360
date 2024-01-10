@@ -7,6 +7,7 @@ import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.service.ValidationService;
 
 @Service
@@ -95,6 +96,36 @@ public class ValidationServiceImpl implements ValidationService {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the status.", null);
 		} else {
 			return new Response<>(HttpStatus.OK.value(), "OK", null);
+		}
+	}
+
+	@Override
+	public Response<?> checkForDepartmentApproverAddPayload(DepartmentApprover departmentApprover) {
+		try {
+			if (departmentApprover.getDepartment() == null || departmentApprover.getDepartment().getId() == null) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the department id", null);
+			} else if (departmentApprover.getAgm() == null || departmentApprover.getAgm().getId() == null) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the agm id", null);
+			} else if (departmentApprover.getApplicationOwner() == null
+					|| departmentApprover.getApplicationOwner().getId() == null) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Pleae provide the app owner id", null);
+			} else if (departmentApprover.getDgm() == null || departmentApprover.getDgm().getId() == null) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the dgm id", null);
+			} else if (departmentApprover.getAgm().getId().longValue() == departmentApprover.getApplicationOwner()
+					.getId().longValue()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "AGM and Appowner cannot be the same user", null);
+			} else if (departmentApprover.getAgm().getId().longValue() == departmentApprover.getDgm().getId()
+					.longValue()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "AGM and DGM cannot be the same user", null);
+			} else if (departmentApprover.getApplicationOwner().getId().longValue() == departmentApprover.getDgm()
+					.getId().longValue()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Appowner and DGM cannot be the same user", null);
+			} else {
+				return new Response<>(HttpStatus.OK.value(), "OK", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 	}
 
