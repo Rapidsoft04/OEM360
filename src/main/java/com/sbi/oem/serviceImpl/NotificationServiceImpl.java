@@ -81,20 +81,22 @@ public class NotificationServiceImpl implements NotificationService {
 						String text = "App owner has accepted a new recommendation.";
 						
 						
-						String descriptions ="your recommendation with referenceId = "+recommendation.getReferenceId() +
-								" created on "+ formatDate(recommendation.getCreatedAt()) != null ?  formatDate(recommendation.getCreatedAt()) :"NA"
-								+". It has been approved By Application Owner having DeplyomentDetails as"+ 
-								"Development Dates - " + formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) != null ? 
-										formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA" +"-"+
-										formatDate(DeplyomentDetails.get().getDevelopementEndDate()) != null ? 
-												formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA" +" , with Test Completion Date - "+
-												formatDate(DeplyomentDetails.get().getTestCompletionDate()) != null ? 
-														formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA" + ", with Developement Complete Date - " +
-														formatDate(DeplyomentDetails.get().getDeploymentDate()) != null ? 
-																formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA"
-																+". The expected impact and affected department are succinctly conveyed "
-																+ DeplyomentDetails.get().getImpactedDepartment() != null ?  DeplyomentDetails.get().getImpactedDepartment() :"NA" +
-                                "These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
+						        ". Recommendation deployment details has been updated as " +
+						        "Development Dates - " + (DeplyomentDetails.get().getDevelopmentStartDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA") + "-" +
+						        (DeplyomentDetails.get().getDevelopementEndDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA") +
+						        " , with Test Completion Date - " +
+						        (DeplyomentDetails.get().getTestCompletionDate() != null ?
+						                formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA") +
+						        ", with Development Complete Date - " +
+						        (DeplyomentDetails.get().getDeploymentDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA") +
+						        ". The expected impact and affected department are succinctly conveyed " +
+						        (DeplyomentDetails.get().getImpactedDepartment() != null ?
+						                DeplyomentDetails.get().getImpactedDepartment() : "NA") +
+						        " These are the updated overview of the Recommendation.";
 						
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						
@@ -103,20 +105,22 @@ public class NotificationServiceImpl implements NotificationService {
 						User agm = departmentApprover.get().getAgm();
 						String text = "App owner has rejected a recommendation.";
 						
-						String descriptions ="your recommendation with referenceId = "+recommendation.getReferenceId() +
-								" created on "+ formatDate(recommendation.getCreatedAt()) != null ?  formatDate(recommendation.getCreatedAt()) :"NA"
-								+". It has been approved By Application Owner having DeplyomentDetails as"+ 
-								"Development Dates - " + formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) != null ? 
-										formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA" +"-"+
-										formatDate(DeplyomentDetails.get().getDevelopementEndDate()) != null ? 
-												formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA" +" , with Test Completion Date - "+
-												formatDate(DeplyomentDetails.get().getTestCompletionDate()) != null ? 
-														formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA" + ", with Developement Complete Date - " +
-														formatDate(DeplyomentDetails.get().getDeploymentDate()) != null ? 
-																formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA"
-																+". The expected impact and affected department are succinctly conveyed "
-																+ DeplyomentDetails.get().getImpactedDepartment() != null ?  DeplyomentDetails.get().getImpactedDepartment() :"NA" +
-                                "These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
+						        ". Recommendation deployment details has been updated as " +
+						        "Development Dates - " + (DeplyomentDetails.get().getDevelopmentStartDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA") + "-" +
+						        (DeplyomentDetails.get().getDevelopementEndDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA") +
+						        " , with Test Completion Date - " +
+						        (DeplyomentDetails.get().getTestCompletionDate() != null ?
+						                formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA") +
+						        ", with Development Complete Date - " +
+						        (DeplyomentDetails.get().getDeploymentDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA") +
+						        ". The expected impact and affected department are succinctly conveyed " +
+						        (DeplyomentDetails.get().getImpactedDepartment() != null ?
+						                DeplyomentDetails.get().getImpactedDepartment() : "NA") +
+						        " These are the updated overview of the Recommendation.";
 						
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						
@@ -126,20 +130,22 @@ public class NotificationServiceImpl implements NotificationService {
 								departmentApprover.get().getApplicationOwner());
 						String text = "Your recommendation request has been approved by AGM.";
 						
-						String descriptions ="your recommendation with referenceId = "+recommendation.getReferenceId() +
-								" created on "+ formatDate(recommendation.getCreatedAt()) != null ?  formatDate(recommendation.getCreatedAt()) :"NA"
-								+". It has been approved By Application Owner having DeplyomentDetails as"+ 
-								"Development Dates - " + formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) != null ? 
-										formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA" +"-"+
-										formatDate(DeplyomentDetails.get().getDevelopementEndDate()) != null ? 
-												formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA" +" , with Test Completion Date - "+
-												formatDate(DeplyomentDetails.get().getTestCompletionDate()) != null ? 
-														formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA" + ", with Developement Complete Date - " +
-														formatDate(DeplyomentDetails.get().getDeploymentDate()) != null ? 
-																formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA"
-																+". The expected impact and affected department are succinctly conveyed "
-																+ DeplyomentDetails.get().getImpactedDepartment() != null ?  DeplyomentDetails.get().getImpactedDepartment() :"NA" +
-                                "These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
+						        ". Recommendation deployment details has been updated as " +
+						        "Development Dates - " + (DeplyomentDetails.get().getDevelopmentStartDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA") + "-" +
+						        (DeplyomentDetails.get().getDevelopementEndDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA") +
+						        " , with Test Completion Date - " +
+						        (DeplyomentDetails.get().getTestCompletionDate() != null ?
+						                formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA") +
+						        ", with Development Complete Date - " +
+						        (DeplyomentDetails.get().getDeploymentDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA") +
+						        ". The expected impact and affected department are succinctly conveyed " +
+						        (DeplyomentDetails.get().getImpactedDepartment() != null ?
+						                DeplyomentDetails.get().getImpactedDepartment() : "NA") +
+						        " These are the updated overview of the Recommendation.";
 						
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						
@@ -150,20 +156,22 @@ public class NotificationServiceImpl implements NotificationService {
 						User appOwner = departmentApprover.get().getApplicationOwner();
 						String text = "AGM has commented on your recommendation";
 						
-						String descriptions ="your recommendation with referenceId = "+recommendation.getReferenceId() +
-								" created on "+ formatDate(recommendation.getCreatedAt()) != null ?  formatDate(recommendation.getCreatedAt()) :"NA"
-								+". It has been approved By Application Owner having DeplyomentDetails as"+ 
-								"Development Dates - " + formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) != null ? 
-										formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA" +"-"+
-										formatDate(DeplyomentDetails.get().getDevelopementEndDate()) != null ? 
-												formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA" +" , with Test Completion Date - "+
-												formatDate(DeplyomentDetails.get().getTestCompletionDate()) != null ? 
-														formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA" + ", with Developement Complete Date - " +
-														formatDate(DeplyomentDetails.get().getDeploymentDate()) != null ? 
-																formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA"
-																+". The expected impact and affected department are succinctly conveyed "
-																+ DeplyomentDetails.get().getImpactedDepartment() != null ?  DeplyomentDetails.get().getImpactedDepartment() :"NA" +
-                                "These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
+						        ". Recommendation deployment details has been updated as " +
+						        "Development Dates - " + (DeplyomentDetails.get().getDevelopmentStartDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA") + "-" +
+						        (DeplyomentDetails.get().getDevelopementEndDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA") +
+						        " , with Test Completion Date - " +
+						        (DeplyomentDetails.get().getTestCompletionDate() != null ?
+						                formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA") +
+						        ", with Development Complete Date - " +
+						        (DeplyomentDetails.get().getDeploymentDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA") +
+						        ". The expected impact and affected department are succinctly conveyed " +
+						        (DeplyomentDetails.get().getImpactedDepartment() != null ?
+						                DeplyomentDetails.get().getImpactedDepartment() : "NA") +
+						        " These are the updated overview of the Recommendation.";
 						
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						
@@ -172,20 +180,22 @@ public class NotificationServiceImpl implements NotificationService {
 						User appOwner = departmentApprover.get().getApplicationOwner();
 						String text = "Your recommendation request has been rejected by AGM.";
 						
-						String descriptions ="your recommendation with referenceId = "+recommendation.getReferenceId() +
-								" created on "+ formatDate(recommendation.getCreatedAt()) != null ?  formatDate(recommendation.getCreatedAt()) :"NA"
-								+". It has been approved By Application Owner having DeplyomentDetails as"+ 
-								"Development Dates - " + formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) != null ? 
-										formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA" +"-"+
-										formatDate(DeplyomentDetails.get().getDevelopementEndDate()) != null ? 
-												formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA" +" , with Test Completion Date - "+
-												formatDate(DeplyomentDetails.get().getTestCompletionDate()) != null ? 
-														formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA" + ", with Developement Complete Date - " +
-														formatDate(DeplyomentDetails.get().getDeploymentDate()) != null ? 
-																formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA"
-																+". The expected impact and affected department are succinctly conveyed "
-																+ DeplyomentDetails.get().getImpactedDepartment() != null ?  DeplyomentDetails.get().getImpactedDepartment() :"NA" +
-                                "These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
+						        ". Recommendation deployment details has been updated as " +
+						        "Development Dates - " + (DeplyomentDetails.get().getDevelopmentStartDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA") + "-" +
+						        (DeplyomentDetails.get().getDevelopementEndDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA") +
+						        " , with Test Completion Date - " +
+						        (DeplyomentDetails.get().getTestCompletionDate() != null ?
+						                formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA") +
+						        ", with Development Complete Date - " +
+						        (DeplyomentDetails.get().getDeploymentDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA") +
+						        ". The expected impact and affected department are succinctly conveyed " +
+						        (DeplyomentDetails.get().getImpactedDepartment() != null ?
+						                DeplyomentDetails.get().getImpactedDepartment() : "NA") +
+						        " These are the updated overview of the Recommendation.";
 						
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						createNotification(recommendation.getReferenceId(), text,descriptions ,appOwner,recommendationStatus);
@@ -193,20 +203,22 @@ public class NotificationServiceImpl implements NotificationService {
 						User oem = recommendation.getCreatedBy();
 						String text = "AGM has Rejected the recommendation";
 						
-						String descriptions ="your recommendation with referenceId = "+recommendation.getReferenceId() +
-								" created on "+ formatDate(recommendation.getCreatedAt()) != null ?  formatDate(recommendation.getCreatedAt()) :"NA"
-								+". It has been approved By Application Owner having DeplyomentDetails as"+ 
-								"Development Dates - " + formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) != null ? 
-										formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA" +"-"+
-										formatDate(DeplyomentDetails.get().getDevelopementEndDate()) != null ? 
-												formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA" +" , with Test Completion Date - "+
-												formatDate(DeplyomentDetails.get().getTestCompletionDate()) != null ? 
-														formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA" + ", with Developement Complete Date - " +
-														formatDate(DeplyomentDetails.get().getDeploymentDate()) != null ? 
-																formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA"
-																+". The expected impact and affected department are succinctly conveyed "
-																+ DeplyomentDetails.get().getImpactedDepartment() != null ?  DeplyomentDetails.get().getImpactedDepartment() :"NA" +
-                                "These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
+						        ". Recommendation deployment details has been updated as " +
+						        "Development Dates - " + (DeplyomentDetails.get().getDevelopmentStartDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA") + "-" +
+						        (DeplyomentDetails.get().getDevelopementEndDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA") +
+						        " , with Test Completion Date - " +
+						        (DeplyomentDetails.get().getTestCompletionDate() != null ?
+						                formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA") +
+						        ", with Development Complete Date - " +
+						        (DeplyomentDetails.get().getDeploymentDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA") +
+						        ". The expected impact and affected department are succinctly conveyed " +
+						        (DeplyomentDetails.get().getImpactedDepartment() != null ?
+						                DeplyomentDetails.get().getImpactedDepartment() : "NA") +
+						        " These are the updated overview of the Recommendation.";
 						
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						
@@ -215,42 +227,49 @@ public class NotificationServiceImpl implements NotificationService {
 						User agm = departmentApprover.get().getAgm();
 						String text = "Recommendation deployment details has been updated";
 						
-						String descriptions ="your recommendation with referenceId = "+recommendation.getReferenceId() +
-								" created on "+ formatDate(recommendation.getCreatedAt()) != null ?  formatDate(recommendation.getCreatedAt()) :"NA"
-								+". It has been approved By Application Owner having DeplyomentDetails as"+ 
-								"Development Dates - " + formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) != null ? 
-										formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA" +"-"+
-										formatDate(DeplyomentDetails.get().getDevelopementEndDate()) != null ? 
-												formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA" +" , with Test Completion Date - "+
-												formatDate(DeplyomentDetails.get().getTestCompletionDate()) != null ? 
-														formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA" + ", with Developement Complete Date - " +
-														formatDate(DeplyomentDetails.get().getDeploymentDate()) != null ? 
-																formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA"
-																+". The expected impact and affected department are succinctly conveyed "
-																+ DeplyomentDetails.get().getImpactedDepartment() != null ?  DeplyomentDetails.get().getImpactedDepartment() :"NA" +
-                                "These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
+						        ". Recommendation deployment details has been updated as " +
+						        "Development Dates - " + (DeplyomentDetails.get().getDevelopmentStartDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA") + "-" +
+						        (DeplyomentDetails.get().getDevelopementEndDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA") +
+						        " , with Test Completion Date - " +
+						        (DeplyomentDetails.get().getTestCompletionDate() != null ?
+						                formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA") +
+						        ", with Development Complete Date - " +
+						        (DeplyomentDetails.get().getDeploymentDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA") +
+						        ". The expected impact and affected department are succinctly conveyed " +
+						        (DeplyomentDetails.get().getImpactedDepartment() != null ?
+						                DeplyomentDetails.get().getImpactedDepartment() : "NA") +
+						        " These are the updated overview of the Recommendation.";
+						
+						System.out.println("descriptions = " + descriptions);
+
 						
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						
-						createNotification(recommendation.getReferenceId(), text,descriptions ,agm,recommendationStatus);
+						createNotification(recommendation.getReferenceId(), text, descriptions ,agm,recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
 						User agm = departmentApprover.get().getAgm();
 						String text = "Recommendation status has been changed";
 						
-						String descriptions ="your recommendation with referenceId = "+recommendation.getReferenceId() +
-								" created on "+ formatDate(recommendation.getCreatedAt()) != null ?  formatDate(recommendation.getCreatedAt()) :"NA"
-								+". It has been approved By Application Owner having DeplyomentDetails as"+ 
-								"Development Dates - " + formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) != null ? 
-										formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA" +"-"+
-										formatDate(DeplyomentDetails.get().getDevelopementEndDate()) != null ? 
-												formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA" +" , with Test Completion Date - "+
-												formatDate(DeplyomentDetails.get().getTestCompletionDate()) != null ? 
-														formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA" + ", with Developement Complete Date - " +
-														formatDate(DeplyomentDetails.get().getDeploymentDate()) != null ? 
-																formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA"
-																+". The expected impact and affected department are succinctly conveyed "
-																+ DeplyomentDetails.get().getImpactedDepartment() != null ?  DeplyomentDetails.get().getImpactedDepartment() :"NA" +
-                                "These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
+						        ". Recommendation deployment details has been updated as " +
+						        "Development Dates - " + (DeplyomentDetails.get().getDevelopmentStartDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA") + "-" +
+						        (DeplyomentDetails.get().getDevelopementEndDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA") +
+						        " , with Test Completion Date - " +
+						        (DeplyomentDetails.get().getTestCompletionDate() != null ?
+						                formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA") +
+						        ", with Development Complete Date - " +
+						        (DeplyomentDetails.get().getDeploymentDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA") +
+						        ". The expected impact and affected department are succinctly conveyed " +
+						        (DeplyomentDetails.get().getImpactedDepartment() != null ?
+						                DeplyomentDetails.get().getImpactedDepartment() : "NA") +
+						        " These are the updated overview of the Recommendation.";
 						
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						
@@ -260,20 +279,22 @@ public class NotificationServiceImpl implements NotificationService {
 								departmentApprover.get().getAgm());
 						String text = "Recommendation has been released.";
 						
-						String descriptions ="your recommendation with referenceId = "+recommendation.getReferenceId() +
-								" created on "+ formatDate(recommendation.getCreatedAt()) != null ?  formatDate(recommendation.getCreatedAt()) :"NA"
-								+". It has been approved By Application Owner having DeplyomentDetails as"+ 
-								"Development Dates - " + formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) != null ? 
-										formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA" +"-"+
-										formatDate(DeplyomentDetails.get().getDevelopementEndDate()) != null ? 
-												formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA" +" , with Test Completion Date - "+
-												formatDate(DeplyomentDetails.get().getTestCompletionDate()) != null ? 
-														formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA" + ", with Developement Complete Date - " +
-														formatDate(DeplyomentDetails.get().getDeploymentDate()) != null ? 
-																formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA"
-																+". The expected impact and affected department are succinctly conveyed "
-																+ DeplyomentDetails.get().getImpactedDepartment() != null ?  DeplyomentDetails.get().getImpactedDepartment() :"NA" +
-                                "These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
+						        ". Recommendation deployment details has been updated as " +
+						        "Development Dates - " + (DeplyomentDetails.get().getDevelopmentStartDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopmentStartDate()) : "NA") + "-" +
+						        (DeplyomentDetails.get().getDevelopementEndDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDevelopementEndDate()) : "NA") +
+						        " , with Test Completion Date - " +
+						        (DeplyomentDetails.get().getTestCompletionDate() != null ?
+						                formatDate(DeplyomentDetails.get().getTestCompletionDate()) : "NA") +
+						        ", with Development Complete Date - " +
+						        (DeplyomentDetails.get().getDeploymentDate() != null ?
+						                formatDate(DeplyomentDetails.get().getDeploymentDate()) : "NA") +
+						        ". The expected impact and affected department are succinctly conveyed " +
+						        (DeplyomentDetails.get().getImpactedDepartment() != null ?
+						                DeplyomentDetails.get().getImpactedDepartment() : "NA") +
+						        " These are the updated overview of the Recommendation.";
 						
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						
