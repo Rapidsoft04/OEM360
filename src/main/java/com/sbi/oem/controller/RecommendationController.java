@@ -93,9 +93,15 @@ public class RecommendationController {
 	@PostMapping("/reject/request/revert/by/agm")
 	public ResponseEntity<?> revertApprovalRequestToAppOwnerForApproval(
 			@RequestBody RecommendationDetailsRequestDto recommendationRejectionRequestDto) {
-		Response<?> response = recommendationService
-				.revertApprovalRequestToAppOwnerForApproval(recommendationRejectionRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+		Response<?> validationResponse = validationService
+				.checkForRevertRequestByAgmOrDgm(recommendationRejectionRequestDto);
+		if (validationResponse.getResponseCode() == HttpStatus.OK.value()) {
+			Response<?> response = recommendationService
+					.revertApprovalRequestToAppOwnerForApproval(recommendationRejectionRequestDto);
+			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+		} else {
+			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
+		}
 	}
 
 	@PostMapping("/reject/by/agm")
@@ -175,8 +181,7 @@ public class RecommendationController {
 			@RequestParam(name = "fromDate", required = false) Date fromDate,
 			@RequestParam(name = "toDate", required = false) Date toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
-			@RequestParam(name = "updatedAt", required = false) Date updatedAt
-			) {
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
 		SearchDto newSearchDto = new SearchDto();
 		newSearchDto.setRecommendationType(recommendationType);
 		newSearchDto.setPriorityId(priorityId);
@@ -324,7 +329,7 @@ public class RecommendationController {
 			return new ResponseEntity<>(validationResponse, HttpStatus.valueOf(validationResponse.getResponseCode()));
 		}
 	}
-	
+
 	@PostMapping("/update")
 	public ResponseEntity<?> updateRecommendation(
 			@ModelAttribute RecommendationAddRequestDto recommendationAddRequestDto) {

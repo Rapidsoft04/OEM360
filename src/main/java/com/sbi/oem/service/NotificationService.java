@@ -8,7 +8,8 @@ import com.sbi.oem.model.Recommendation;
 
 public interface NotificationService {
 
-	public void save(Recommendation recommendation, RecommendationStatusEnum status);
+	public void save(Recommendation recommendation, RecommendationStatusEnum status, String rejectionMessage,
+			String additionalInformation);
 
 	public Response<?> getNotificationByUserId(Long userId);
 
@@ -19,4 +20,5 @@ public interface NotificationService {
 	public void getRecommendationByReferenceId(String referenceId, RecommendationStatusEnum status);
 
 	public void saveAllNotification(List<Recommendation> recommendationList, RecommendationStatusEnum created);
+
 }

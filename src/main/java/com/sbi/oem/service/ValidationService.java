@@ -18,4 +18,6 @@ public interface ValidationService {
 
 	Response<?> checkForDepartmentApproverAddPayload(DepartmentApprover departmentApprover);
 
+	Response<?> checkForRevertRequestByAgmOrDgm(RecommendationDetailsRequestDto recommendationRejectionRequestDto);
+
 }

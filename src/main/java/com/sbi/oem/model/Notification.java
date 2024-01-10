@@ -29,9 +29,10 @@ public class Notification {
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;
-	
-	@Column(name = "status_id")
-	private Long recommendationStatus;
+
+	@OneToOne
+	@JoinColumn(name = "status_id")
+	private RecommendationStatus recommendationStatus;
 
 	@Column(name = "is_seen")
 	private Boolean isSeen;
@@ -41,7 +42,7 @@ public class Notification {
 
 	@Column(name = "updated_at")
 	private Date updatedAt;
-	
+
 	@Column(name = "descriptions")
 	private String descriptions;
 
@@ -101,11 +102,11 @@ public class Notification {
 		this.updatedAt = updatedAt;
 	}
 
-	public Long getRecommendationStatus() {
+	public RecommendationStatus getRecommendationStatus() {
 		return recommendationStatus;
 	}
 
-	public void setRecommendationStatus(Long recommendationStatus) {
+	public void setRecommendationStatus(RecommendationStatus recommendationStatus) {
 		this.recommendationStatus = recommendationStatus;
 	}
 

@@ -129,4 +129,16 @@ public class ValidationServiceImpl implements ValidationService {
 		}
 	}
 
+	@Override
+	public Response<?> checkForRevertRequestByAgmOrDgm(
+			RecommendationDetailsRequestDto recommendationRejectionRequestDto) {
+		if (recommendationRejectionRequestDto.getDescription() == null
+				|| recommendationRejectionRequestDto.getDescription().isBlank()
+				|| recommendationRejectionRequestDto.getDescription().equals("")) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Plese provide the description details.", null);
+		} else {
+			return new Response<>(HttpStatus.OK.value(), "OK", null);
+		}
+	}
+
 }

@@ -24,7 +24,7 @@ public class NotificationController {
 
 	@PostMapping("/save")
 	public ResponseEntity<?> save(@RequestBody Recommendation recommendation) {
-		notificationService.save(recommendation, RecommendationStatusEnum.CREATED);
+		notificationService.save(recommendation, RecommendationStatusEnum.CREATED,null,null);
 		return new ResponseEntity<>("success", HttpStatus.OK);
 	}
 
