@@ -474,24 +474,22 @@ public class NotificationServiceImpl implements NotificationService {
 	@Override
 	public void markAsSeenV2(Long id) {
 
-		Thread notificationThread = new Thread(() -> {
-			try {
-				Optional<Notification> notification = notificationRepository.findById(id);
-				if (notification != null && notification.isPresent()) {
-					notification.get().setIsSeen(true);
-					notification.get().setUpdatedAt(new Date());
-					notificationRepository.save(notification.get());
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
+		try {
+			Optional<Notification> notification = notificationRepository.findById(id);
+			if (notification != null && notification.isPresent()) {
+				notification.get().setIsSeen(true);
+				notification.get().setUpdatedAt(new Date());
+				notificationRepository.save(notification.get());
 			}
-		});
-		notificationThread.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
 	@Override
-	public void getRecommendationByReferenceId(String referenceId, RecommendationStatusEnum status,String rejectionMesasge, String additionalInformation) {
+	public void getRecommendationByReferenceId(String referenceId, RecommendationStatusEnum status,
+			String rejectionMesasge, String additionalInformation) {
 		try {
 			Optional<Recommendation> recommendation = recommendationRepository.findByReferenceId(referenceId);
 			if (recommendation != null && recommendation.isPresent()) {

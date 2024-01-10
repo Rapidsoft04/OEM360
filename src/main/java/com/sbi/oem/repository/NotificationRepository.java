@@ -14,7 +14,7 @@ import com.sbi.oem.model.Notification;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 	
-	@Query(value = "SELECT * FROM notification where user_id = :userId and is_seen = false ORDER BY created_at DESC", nativeQuery = true)
+	@Query(value = "SELECT * FROM notification where user_id = ?1 and is_seen = 0 ORDER BY created_at DESC", nativeQuery = true)
 	List<Notification> findByUserId(Long userId);
 	
 	@Modifying
