@@ -185,7 +185,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							fileUrl = fileSystemStorageService
 									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
 						}
-						String responseText = "Recommendation created successfully. An email will be sent to the application owner";
+						String responseText = "Recommendation created successfully. An email will be sent to the application owner.";
 						Recommendation savedRecommendation = new Recommendation();
 						List<Recommendation> recommendationList = new ArrayList<>();
 						List<RecommendationTrail> recommendatioTrailList = new ArrayList<>();
@@ -240,7 +240,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						if (approver != null && approver.isPresent()) {
 							if (approver.get().getApplicationOwner() != null
 									&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-								responseText += ". " + approver.get().getApplicationOwner().getEmail();
+								responseText += "(" + approver.get().getApplicationOwner().getEmail()+")";
 								return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 							}
 						}
@@ -656,7 +656,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
 							.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
 					if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
-						String responseText = "Deployment details updated successfully. An email will be sent to the AGM.";
+						String responseText = "Deployment details updated successfully. An email will be sent to the AGM";
 						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
 						details.setId(recommendDeployDetails.get().getId());
 						RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
@@ -687,16 +687,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 						if (approver != null && approver.isPresent()) {
-							if (approver.get().getAgm() != null
-									&& !approver.get().getAgm().getEmail().isBlank()) {
-								responseText += ". " + approver.get().getAgm().getEmail();
+							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+								responseText += "(" + approver.get().getAgm().getEmail() +")";
 								return new Response<>(HttpStatus.OK.value(), responseText, null);
 							}
 						}
 						return new Response<>(HttpStatus.OK.value(), responseText, null);
 
 					} else {
-						String responseText = "Deployment details added successfully. An email will be sent to the AGM.";
+						String responseText = "Deployment details added successfully. An email will be sent to the AGM";
 						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
 						details.setCreatedAt(new Date());
 						deplyomentDetailsRepository.save(details);
@@ -716,7 +715,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
 						trail.setReferenceId(details.getRecommendRefId());
 						recommendationTrailRepository.save(trail);
-						
+
 						Department rcmdDepartment = updateRecommendation.getDepartment();
 						Optional<DepartmentApprover> approver = departmentApproverRepository
 								.findAllByDepartmentId(rcmdDepartment.getId());
@@ -725,13 +724,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.APPROVED_BY_APPOWNER);
 						if (approver != null && approver.isPresent()) {
-							if (approver.get().getAgm() != null
-									&& !approver.get().getAgm().getEmail().isBlank()) {
-								responseText += ". " + approver.get().getAgm().getEmail();
+							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+								responseText += "(" + approver.get().getAgm().getEmail()+")";
 								return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 							}
 						}
-						return new Response<>(HttpStatus.OK.value(), responseText, null);
+						return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 					}
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(),
@@ -754,7 +752,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
-					String responseText = "Recommendation rejected successfully. An email will be sent to the AGM.";
+					String responseText = "Recommendation rejected successfully. An email will be sent to the AGM";
 
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendation.getRecommendRefId());
@@ -776,10 +774,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 					if (recommendDeploymentDetails != null && recommendDeploymentDetails.isPresent()) {
 						deplyomentDetailsRepository.delete(recommendDeploymentDetails.get());
 					}
+					Department rcmdDepartment = updateRecommendation.getDepartment();
+					Optional<DepartmentApprover> approver = departmentApproverRepository
+							.findAllByDepartmentId(rcmdDepartment.getId());
 					notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_APPOWNER);
 					emailTemplateService.sendMailRecommendationMessages(messages,
 							RecommendationStatusEnum.REJECTED_BY_APPOWNER);
-					return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.", null);
+					if (approver != null && approver.isPresent()) {
+						if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+							responseText += "(" + approver.get().getAgm().getEmail()+")";
+							return new Response<>(HttpStatus.OK.value(), responseText, null);
+						}
+					}
+					return new Response<>(HttpStatus.OK.value(), responseText, null);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access to reject.", null);
 				}
@@ -801,6 +808,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+					String responseText = "Approval request reverted successfully. An email will be sent to the Appowner";
 					RecommendationMessages messages = new RecommendationMessages();
 					messages.setCreatedBy(recommendationRejectionRequestDto.getCreatedBy());
 					messages.setAdditionalMessage(recommendationRejectionRequestDto.getDescription());
@@ -817,8 +825,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 					recommendationObj.get().setIsAppOwnerRejected(false);
 					recommendationObj.get().setIsAppOwnerApproved(false);
 					recommendationObj.get().setIsAgmRejected(false);
-					recommendationRepository.save(recommendationObj.get());
-					return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
+					Recommendation updateRecommendation = recommendationRepository.save(recommendationObj.get());
+					Department rcmdDepartment = updateRecommendation.getDepartment();
+					Optional<DepartmentApprover> approver = departmentApproverRepository
+							.findAllByDepartmentId(rcmdDepartment.getId());
+					if (approver != null && approver.isPresent()) {
+						if (approver.get().getApplicationOwner() != null
+								&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+							responseText += "(" + approver.get().getApplicationOwner().getEmail()+")";
+							return new Response<>(HttpStatus.OK.value(), responseText, null);
+						}
+					}
+					return new Response<>(HttpStatus.OK.value(), responseText, null);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(),
 							"You have no access revert recommendation request.", null);
@@ -842,10 +860,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
-					if (recommendObj != null && recommendObj.isPresent()
-							&& recommendObj.get().getPriorityId() < PriorityEnum.High.getId()) {
+					if (recommendObj != null && recommendObj.isPresent()) {
 						if (recommendObj.get().getIsAppOwnerApproved() != null
 								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
+							String responseText = "Recommendation reject request sent successfully. An email will be sent to the Appowner";
 							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 							messages.setCreatedAt(new Date());
 							recommendationMessagesRepository.save(messages);
@@ -855,61 +873,26 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendObj.get().setIsAppOwnerApproved(false);
 							recommendObj.get().setIsAgmRejected(true);
 							recommendObj.get().setUpdatedAt(new Date());
-							recommendationRepository.save(recommendObj.get());
-							return new Response<>(HttpStatus.OK.value(),
-									"Recommendation reject request sent successfully.", null);
-						} else {
-							if (recommendObj.get().getRecommendationStatus().getId() != StatusEnum.Rejected.getId()
-									.longValue()) {
-								recommendObj.get().setIsAgmApproved(false);
-								recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
-								recommendObj.get().setIsAgmRejected(true);
-								recommendationRepository.save(recommendObj.get());
-								RecommendationTrail trailData = new RecommendationTrail();
-								trailData.setCreatedAt(new Date());
-								trailData.setRecommendationStatus(
-										new RecommendationStatus(StatusEnum.Rejected.getId().longValue()));
-								trailData.setReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
-								recommendationTrailRepository.save(trailData);
-								RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
-								messages.setCreatedAt(new Date());
-								recommendationMessagesRepository.save(messages);
-								
-								notificationService.save(recommendObj.get(),
-										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
-								
-								emailTemplateService.sendMailRecommendationMessages(messages,
-										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
-								return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.",
-										null);
-							} else {
-								return new Response<>(HttpStatus.OK.value(), "Recommendation already rejected.", null);
+							Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
+							Department rcmdDepartment = updateRecommendation.getDepartment();
+							Optional<DepartmentApprover> approver = departmentApproverRepository
+									.findAllByDepartmentId(rcmdDepartment.getId());
+							if (approver != null && approver.isPresent()) {
+								if (approver.get().getApplicationOwner() != null
+										&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+									responseText += "(" + approver.get().getApplicationOwner().getEmail()+")";
+									return new Response<>(HttpStatus.OK.value(), responseText, null);
+								}
 							}
-						}
-					} else if (recommendObj != null && recommendObj.isPresent()
-							&& recommendObj.get().getPriorityId() == PriorityEnum.High.getId()) {
-
-						if (recommendObj.get().getIsAppOwnerApproved() != null
-								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
-							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
-							messages.setCreatedAt(new Date());
-							recommendationMessagesRepository.save(messages);
-							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM);
-							emailTemplateService.sendMailRecommendationMessages(messages,
-									RecommendationStatusEnum.REJECTED_BY_DGM);
-							recommendObj.get().setIsAppOwnerApproved(false);
-							recommendObj.get().setIsAgmRejected(true);
-							recommendObj.get().setUpdatedAt(new Date());
-							recommendationRepository.save(recommendObj.get());
-							return new Response<>(HttpStatus.OK.value(),
-									"Recommendation reject request sent successfully.", null);
+							return new Response<>(HttpStatus.OK.value(), responseText, null);
 						} else {
 							if (recommendObj.get().getRecommendationStatus().getId() != StatusEnum.Rejected.getId()
 									.longValue()) {
+								String responseText = "Recommendation rejected successfully. An email will be sent to the oem";
 								recommendObj.get().setIsAgmApproved(false);
 								recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
 								recommendObj.get().setIsAgmRejected(true);
-								recommendationRepository.save(recommendObj.get());
+								Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
 								RecommendationTrail trailData = new RecommendationTrail();
 								trailData.setCreatedAt(new Date());
 								trailData.setRecommendationStatus(
@@ -923,16 +906,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
 								emailTemplateService.sendMailRecommendationMessages(messages,
 										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
-								return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.",
-										null);
+								if (recommendObj != null && recommendObj.isPresent()) {
+									if (recommendObj.get().getCreatedBy() != null
+											&& !recommendObj.get().getCreatedBy().getEmail().isBlank()) {
+										responseText += "(" + recommendObj.get().getCreatedBy().getEmail()+")";
+										return new Response<>(HttpStatus.OK.value(), responseText, null);
+									}
+								}
+								return new Response<>(HttpStatus.OK.value(), responseText, null);
 							} else {
 								return new Response<>(HttpStatus.OK.value(), "Recommendation already rejected.", null);
 							}
 						}
-
-					}
-
-					else {
+					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found", null);
 					}
 				} else {
@@ -959,10 +945,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					if (recommendObj.get().getIsAppOwnerApproved() != null
 							&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
+						String responseText = "Recommendation request accepted";
 						recommendObj.get().setIsAgmApproved(true);
 						recommendObj.get().setRecommendationStatus(
 								new RecommendationStatus(StatusEnum.Approved.getId().longValue()));
-						recommendationRepository.save(recommendObj.get());
+						Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
 						RecommendationTrail trailData = new RecommendationTrail();
 						trailData.setCreatedAt(new Date());
 						trailData.setRecommendationStatus(
@@ -980,7 +967,21 @@ public class RecommendationServiceImpl implements RecommendationService {
 						notificationService.save(recommendObj.get(), RecommendationStatusEnum.APPROVED_BY_AGM);
 						emailTemplateService.sendMailRecommendation(recommendObj.get(),
 								RecommendationStatusEnum.APPROVED_BY_AGM);
-						return new Response<>(HttpStatus.OK.value(), "Recommendation request accepted.", null);
+
+						Department rcmdDepartment = updateRecommendation.getDepartment();
+						Optional<DepartmentApprover> approver = departmentApproverRepository
+								.findAllByDepartmentId(rcmdDepartment.getId());
+						if (approver != null && approver.isPresent()) {
+							if (approver.get().getApplicationOwner() != null
+									&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+								responseText += "Email will be sent to both Appowner("
+										+ approver.get().getApplicationOwner().getEmail() + ") and OEM("
+										+ recommendObj.get().getCreatedBy().getEmail() + ")";
+								return new Response<>(HttpStatus.OK.value(), responseText, null);
+							}
+						}
+
+						return new Response<>(HttpStatus.OK.value(), responseText, null);
 					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(),
 								"Recommendation is not yet approved by app owner.", null);
@@ -1006,6 +1007,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
 							.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
 					if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
+						String responseText = "Deployment details updated successfully";
 						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
 						details.setId(recommendDeployDetails.get().getId());
 						RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
@@ -1013,7 +1015,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						Optional<Recommendation> recommendation = recommendationRepository
 								.findByReferenceId(details.getRecommendRefId());
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
-						recommendationRepository.save(recommendation.get());
+						Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
 						if (recommendationDetailsRequestDto.getDescription() != null
 								|| !recommendationDetailsRequestDto.getDescription().equals("")) {
 							RecommendationMessages messages = new RecommendationMessages();
@@ -1030,9 +1032,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
+						Department rcmdDepartment = updateRecommendation.getDepartment();
+						Optional<DepartmentApprover> approver = departmentApproverRepository
+								.findAllByDepartmentId(rcmdDepartment.getId());
+						if (approver != null && approver.isPresent()) {
+							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+								responseText += "(" + approver.get().getAgm().getEmail()+")";
+								return new Response<>(HttpStatus.OK.value(), responseText, null);
+							}
+						}
+						return new Response<>(HttpStatus.OK.value(), responseText, null);
 
-						return new Response<>(HttpStatus.BAD_REQUEST.value(),
-								"Deployment details updated successfully.", null);
 					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found.", null);
 					}
@@ -3611,6 +3621,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<Recommendation> recommendationObj = recommendationRepository
 							.findByReferenceId(recommendationRequestDto.getRecommendRefId());
 					if (recommendationObj != null && recommendationObj.isPresent()) {
+						String responseText = "Recommendation status updated successfully";
 						if (recommendationObj.get().getRecommendationStatus() != null && recommendationObj.get()
 								.getRecommendationStatus().getId() == StatusEnum.Rejected.getId()) {
 							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation already rejected.",
@@ -3645,21 +3656,36 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendationTrailRepository.save(trailData);
 							Recommendation updatedRecommendation = recommendationRepository
 									.save(recommendationObj.get());
+							Department rcmdDepartment = updatedRecommendation.getDepartment();
+							Optional<DepartmentApprover> approver = departmentApproverRepository
+									.findAllByDepartmentId(rcmdDepartment.getId());
 							if (updatedRecommendation.getRecommendationStatus().getId() == StatusEnum.Released
 									.getId()) {
+								if(approver != null && approver.isPresent()) {
+									if(approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+										responseText += "Email will be sent to both AGM("
+												+ approver.get().getAgm().getEmail() + ") and OEM("
+												+ updatedRecommendation.getCreatedBy().getEmail() + ")";
+									}
+								}
 								notificationService.save(updatedRecommendation,
 										RecommendationStatusEnum.RECOMMENDATION_RELEASED);
 
 								emailTemplateService.sendMailRecommendation(updatedRecommendation,
 										RecommendationStatusEnum.RECOMMENDATION_RELEASED);
 							} else {
+								if (approver != null && approver.isPresent()) {
+									if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+										responseText += ". Email will be sent to AGM(" + approver.get().getAgm().getEmail()+")";
+									}
+								}
 								notificationService.save(updatedRecommendation,
 										RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED);
 
 								emailTemplateService.sendMailRecommendation(updatedRecommendation,
 										RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED);
 							}
-							return new Response<>(HttpStatus.OK.value(), "Recommendation status updated successfully.",
+							return new Response<>(HttpStatus.OK.value(), responseText,
 									null);
 						}
 					} else {
