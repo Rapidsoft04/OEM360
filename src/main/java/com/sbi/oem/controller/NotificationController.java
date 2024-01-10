@@ -34,11 +34,6 @@ public class NotificationController {
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 	
-	@PostMapping("/mark-seen")
-	public ResponseEntity<?> markAsSeen(@RequestParam("userId") Long userId) {
-		notificationService.markAsSeen(userId);
-		return new ResponseEntity<>("success", HttpStatus.OK);
-	}
 	
 	@PostMapping("/mark/seen")
 	public ResponseEntity<?> markAsSeenV2(@RequestParam("id") Long id) {
