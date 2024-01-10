@@ -240,7 +240,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						if (approver != null && approver.isPresent()) {
 							if (approver.get().getApplicationOwner() != null
 									&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-								responseText += "(" + approver.get().getApplicationOwner().getEmail()+")";
+								responseText += "(" + approver.get().getApplicationOwner().getEmail() + ")";
 								return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 							}
 						}
@@ -688,7 +688,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 						if (approver != null && approver.isPresent()) {
 							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-								responseText += "(" + approver.get().getAgm().getEmail() +")";
+								responseText += "(" + approver.get().getAgm().getEmail() + ")";
 								return new Response<>(HttpStatus.OK.value(), responseText, null);
 							}
 						}
@@ -726,7 +726,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								RecommendationStatusEnum.APPROVED_BY_APPOWNER);
 						if (approver != null && approver.isPresent()) {
 							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-								responseText += "(" + approver.get().getAgm().getEmail()+")";
+								responseText += "(" + approver.get().getAgm().getEmail() + ")";
 								return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 							}
 						}
@@ -775,7 +775,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					if (recommendDeploymentDetails != null && recommendDeploymentDetails.isPresent()) {
 						deplyomentDetailsRepository.delete(recommendDeploymentDetails.get());
 					}
-					
+
 					Department rcmdDepartment = updateRecommendation.getDepartment();
 					Optional<DepartmentApprover> approver = departmentApproverRepository
 							.findAllByDepartmentId(rcmdDepartment.getId());
@@ -785,7 +785,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							RecommendationStatusEnum.REJECTED_BY_APPOWNER);
 					if (approver != null && approver.isPresent()) {
 						if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-							responseText += "(" + approver.get().getAgm().getEmail()+")";
+							responseText += "(" + approver.get().getAgm().getEmail() + ")";
 							return new Response<>(HttpStatus.OK.value(), responseText, null);
 						}
 					}
@@ -819,7 +819,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 					messages.setCreatedAt(new Date());
 					recommendationMessagesRepository.save(messages);
 					notificationService.getRecommendationByReferenceId(messages.getReferenceId(),
-							RecommendationStatusEnum.REVERTED_BY_AGM);
+							RecommendationStatusEnum.REVERTED_BY_AGM, null,
+							recommendationRejectionRequestDto.getDescription());
 					emailTemplateService.sendMailRecommendationMessages(messages,
 							RecommendationStatusEnum.REVERTED_BY_AGM);
 					Optional<Recommendation> recommendationObj = recommendationRepository
@@ -835,7 +836,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					if (approver != null && approver.isPresent()) {
 						if (approver.get().getApplicationOwner() != null
 								&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-							responseText += "(" + approver.get().getApplicationOwner().getEmail()+")";
+							responseText += "(" + approver.get().getApplicationOwner().getEmail() + ")";
 							return new Response<>(HttpStatus.OK.value(), responseText, null);
 						}
 					}
@@ -858,6 +859,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 	public Response<?> rejectRecommendationByAgm(RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			String responseText = "";
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
@@ -866,7 +868,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					if (recommendObj != null && recommendObj.isPresent()) {
 						if (recommendObj.get().getIsAppOwnerApproved() != null
 								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
-							String responseText = "Recommendation reject request sent successfully. An email will be sent to the Appowner";
+							responseText = "Recommendation reject request sent successfully. An email will be sent to the Appowner";
 							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 							messages.setCreatedAt(new Date());
 							recommendationMessagesRepository.save(messages);
@@ -924,8 +926,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendObj.get().setIsAgmRejected(true);
 							recommendObj.get().setUpdatedAt(new Date());
 							recommendationRepository.save(recommendObj.get());
-							return new Response<>(HttpStatus.OK.value(),
-									"Recommendation reject request sent successfully.", null);
 							Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
 							Department rcmdDepartment = updateRecommendation.getDepartment();
 							Optional<DepartmentApprover> approver = departmentApproverRepository
@@ -933,7 +933,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getApplicationOwner() != null
 										&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-									responseText += "(" + approver.get().getApplicationOwner().getEmail()+")";
+									responseText += "(" + approver.get().getApplicationOwner().getEmail() + ")";
 									return new Response<>(HttpStatus.OK.value(), responseText, null);
 								}
 							}
@@ -941,7 +941,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						} else {
 							if (recommendObj.get().getRecommendationStatus().getId() != StatusEnum.Rejected.getId()
 									.longValue()) {
-								String responseText = "Recommendation rejected successfully. An email will be sent to the oem";
+								responseText = "Recommendation rejected successfully. An email will be sent to the oem";
 								recommendObj.get().setIsAgmApproved(false);
 								recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
 								recommendObj.get().setIsAgmRejected(true);
@@ -962,7 +962,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								if (recommendObj != null && recommendObj.isPresent()) {
 									if (recommendObj.get().getCreatedBy() != null
 											&& !recommendObj.get().getCreatedBy().getEmail().isBlank()) {
-										responseText += "(" + recommendObj.get().getCreatedBy().getEmail()+")";
+										responseText += "(" + recommendObj.get().getCreatedBy().getEmail() + ")";
 										return new Response<>(HttpStatus.OK.value(), responseText, null);
 									}
 								}
@@ -1091,7 +1091,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findAllByDepartmentId(rcmdDepartment.getId());
 						if (approver != null && approver.isPresent()) {
 							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-								responseText += "(" + approver.get().getAgm().getEmail()+")";
+								responseText += "(" + approver.get().getAgm().getEmail() + ")";
 								return new Response<>(HttpStatus.OK.value(), responseText, null);
 							}
 						}
@@ -3715,8 +3715,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 									.findAllByDepartmentId(rcmdDepartment.getId());
 							if (updatedRecommendation.getRecommendationStatus().getId() == StatusEnum.Released
 									.getId()) {
-								if(approver != null && approver.isPresent()) {
-									if(approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+								if (approver != null && approver.isPresent()) {
+									if (approver.get().getAgm() != null
+											&& !approver.get().getAgm().getEmail().isBlank()) {
 										responseText += "Email will be sent to both AGM("
 												+ approver.get().getAgm().getEmail() + ") and OEM("
 												+ updatedRecommendation.getCreatedBy().getEmail() + ")";
@@ -3729,8 +3730,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 										RecommendationStatusEnum.RECOMMENDATION_RELEASED);
 							} else {
 								if (approver != null && approver.isPresent()) {
-									if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-										responseText += ". Email will be sent to AGM(" + approver.get().getAgm().getEmail()+")";
+									if (approver.get().getAgm() != null
+											&& !approver.get().getAgm().getEmail().isBlank()) {
+										responseText += ". Email will be sent to AGM("
+												+ approver.get().getAgm().getEmail() + ")";
 									}
 								}
 								notificationService.save(updatedRecommendation,
@@ -3739,8 +3742,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								emailTemplateService.sendMailRecommendation(updatedRecommendation,
 										RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED);
 							}
-							return new Response<>(HttpStatus.OK.value(), responseText,
-									null);
+							return new Response<>(HttpStatus.OK.value(), responseText, null);
 						}
 					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found.", null);

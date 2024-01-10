@@ -17,7 +17,7 @@ public interface NotificationService {
 
 	public void markAsSeenV2(Long notificationId);
 
-	public void getRecommendationByReferenceId(String referenceId, RecommendationStatusEnum status);
+	public void getRecommendationByReferenceId(String referenceId, RecommendationStatusEnum status, String object, String string);
 
 	public void saveAllNotification(List<Recommendation> recommendationList, RecommendationStatusEnum created);
 
