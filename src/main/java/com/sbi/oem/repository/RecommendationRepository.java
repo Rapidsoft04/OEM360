@@ -649,6 +649,63 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 	}
 
 	default List<Recommendation> findAllApprovedRecommendationsOfAgmBySearchDto(SearchDto searchDto) {
+
+		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
+
+			if (searchDto.getRecommendationType() != null) {
+				predicates
+						.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
+			}
+
+			if (searchDto.getPriorityId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
+			}
+
+			if (searchDto.getReferenceId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
+			}
+
+			if (searchDto.getDepartmentId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
+			}
+
+			if (searchDto.getStatusId() != null) {
+				predicates.add(
+						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
+			}
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+
+			}
+
+			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+				Date fromDate = DateUtil.convertISTtoUTC(searchDto.getFromDate());
+				Date currentDate = DateUtil.convertISTtoUTC(new Date());
+				predicates
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+			}
+
+			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+			}
+
+			if (searchDto.getCreatedBy() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
+			}
+
+			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
+
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+		};
+		return findAll(specification);
+	}
+
+	default List<Recommendation> findAllApprovedRecommendationsOfDgmBySearchDto(SearchDto searchDto){
 		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 

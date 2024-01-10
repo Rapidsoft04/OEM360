@@ -200,7 +200,8 @@ public class DashboardServiceImpl implements DashboardService {
 
 						return new Response<>(HttpStatus.OK.value(), "Dashboard response.", dashboardResponse);
 					}
-				} else if (master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name())) {
+				} else if (master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name())
+						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					List<Recommendation> recommendationList = new ArrayList<>();
 					if (!value.equals(Constant.TILL_TODAY)) {
 						recommendationList = recommendationRepository.getAllDataForGMAndUpdatedAtBetween(fromDate,
