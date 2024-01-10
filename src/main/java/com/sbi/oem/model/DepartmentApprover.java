@@ -22,6 +22,10 @@ public class DepartmentApprover {
 	private User agm;
 
 	@OneToOne
+	@JoinColumn(name = "dgm_id")
+	private User dgm;
+
+	@OneToOne
 	@JoinColumn(name = "app_owner_id")
 	private User applicationOwner;
 
@@ -70,6 +74,14 @@ public class DepartmentApprover {
 
 	public void setDepartment(Department department) {
 		this.department = department;
+	}
+
+	public User getDgm() {
+		return dgm;
+	}
+
+	public void setDgm(User dgm) {
+		this.dgm = dgm;
 	}
 
 	public DepartmentApprover() {
