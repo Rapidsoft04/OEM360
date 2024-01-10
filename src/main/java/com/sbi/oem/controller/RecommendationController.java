@@ -19,7 +19,6 @@ import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.dto.SearchDto;
-import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.service.RecommendationService;
 import com.sbi.oem.service.ValidationService;
 

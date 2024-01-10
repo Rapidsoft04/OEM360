@@ -158,8 +158,10 @@ public class DashboardServiceImpl implements DashboardService {
 								}
 								if (recommendation.getIsAgmApproved() != null
 										&& recommendation.getIsAgmApproved().booleanValue() == true
-										&& recommendation.getRecommendationStatus().getId()
-												.longValue() < StatusEnum.Released.getId().longValue()) {
+										&& (recommendation.getRecommendationStatus().getId()
+												.longValue() >= StatusEnum.Approved.getId().longValue()
+												&& recommendation.getRecommendationStatus().getId()
+														.longValue() < StatusEnum.Released.getId().longValue())) {
 									approvedRecommendationNotYetReleasedCount = approvedRecommendationNotYetReleasedCount
 											+ 1L;
 								}
