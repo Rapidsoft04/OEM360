@@ -780,6 +780,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					recommendationObj.get().setUpdatedAt(new Date());
 					recommendationObj.get().setIsAppOwnerRejected(false);
 					recommendationObj.get().setIsAppOwnerApproved(false);
+					recommendationObj.get().setIsAgmRejected(false);
 					recommendationRepository.save(recommendationObj.get());
 					return new Response<>(HttpStatus.OK.value(), "Approval request reverted successfully.", null);
 				} else {
@@ -1765,6 +1766,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 										.getId().longValue() && rcmnd.getIsAgmRejected() != null
 										&& rcmnd.getIsAgmRejected().booleanValue() == true) {
 									responseDto.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REJECTED));
+								}
+								if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Review_process
+										.getId().longValue() && rcmnd.getIsAgmRejected() != null
+										&& rcmnd.getIsAgmRejected().booleanValue() == false) {
+									responseDto.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REVERTED));
 								}
 								pendingRecommendation.add(responseDto);
 							}
