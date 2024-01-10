@@ -185,6 +185,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 							fileUrl = fileSystemStorageService
 									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
 						}
+						String responseText = "Recommendation created successfully. An email will be sent to the application owner";
+						Recommendation savedRecommendation = new Recommendation();
 						List<Recommendation> recommendationList = new ArrayList<>();
 						List<RecommendationTrail> recommendatioTrailList = new ArrayList<>();
 						if (recommendationAddRequestDto.getDepartmentIds() != null
@@ -220,10 +222,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 										new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
 								trailData.setReferenceId(refId);
 								recommendatioTrailList.add(trailData);
-								recommendationRepository.save(recommendation);
+								savedRecommendation = recommendationRepository.save(recommendation);
 								recommendationTrailRepository.save(trailData);
 							}
 						}
+
+						Department rcmdDepartment = savedRecommendation.getDepartment();
+						Optional<DepartmentApprover> approver = departmentApproverRepository
+								.findAllByDepartmentId(rcmdDepartment.getId());
 
 //						notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
 						notificationService.saveAllNotification(recommendationList, RecommendationStatusEnum.CREATED);
@@ -231,7 +237,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 						emailTemplateService.sendAllMailForRecommendation(recommendationList,
 								RecommendationStatusEnum.CREATED);
 
-						return new Response<>(HttpStatus.CREATED.value(), "Recommendation created successfully.", null);
+						if (approver != null && approver.isPresent()) {
+							if (approver.get().getApplicationOwner() != null
+									&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+								responseText += ". " + approver.get().getApplicationOwner().getEmail();
+								return new Response<>(HttpStatus.CREATED.value(), responseText, null);
+							}
+						}
+						return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 					}
 
 				} else {
@@ -643,6 +656,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
 							.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
 					if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
+						String responseText = "Deployment details updated successfully. An email will be sent to the AGM.";
 						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
 						details.setId(recommendDeployDetails.get().getId());
 						RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
@@ -652,7 +666,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get().setIsAppOwnerApproved(true);
 						recommendation.get().setUpdatedAt(new Date());
-						recommendationRepository.save(recommendation.get());
+						Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
 						if (recommendationDetailsRequestDto.getDescription() != null
 								&& (recommendationDetailsRequestDto.getDescription() != "")
 								&& (!recommendationDetailsRequestDto.getDescription().equals(""))) {
@@ -663,15 +677,26 @@ public class RecommendationServiceImpl implements RecommendationService {
 							messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
 							recommendationMessagesRepository.save(messages);
 						}
+						Department rcmdDepartment = updateRecommendation.getDepartment();
+						Optional<DepartmentApprover> approver = departmentApproverRepository
+								.findAllByDepartmentId(rcmdDepartment.getId());
+
 						notificationService.save(recommendation.get(),
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
-
-						return new Response<>(HttpStatus.OK.value(), "Deployment details updated successfully.", null);
+						if (approver != null && approver.isPresent()) {
+							if (approver.get().getAgm() != null
+									&& !approver.get().getAgm().getEmail().isBlank()) {
+								responseText += ". " + approver.get().getAgm().getEmail();
+								return new Response<>(HttpStatus.OK.value(), responseText, null);
+							}
+						}
+						return new Response<>(HttpStatus.OK.value(), responseText, null);
 
 					} else {
+						String responseText = "Deployment details added successfully. An email will be sent to the AGM.";
 						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
 						details.setCreatedAt(new Date());
 						deplyomentDetailsRepository.save(details);
@@ -684,19 +709,29 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendation.get()
 								.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
 						recommendation.get().setUpdatedAt(new Date());
-						recommendationRepository.save(recommendation.get());
+						Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
 						RecommendationTrail trail = new RecommendationTrail();
 						trail.setCreatedAt(new Date());
 						trail.setRecommendationStatus(
 								new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
 						trail.setReferenceId(details.getRecommendRefId());
 						recommendationTrailRepository.save(trail);
+						
+						Department rcmdDepartment = updateRecommendation.getDepartment();
+						Optional<DepartmentApprover> approver = departmentApproverRepository
+								.findAllByDepartmentId(rcmdDepartment.getId());
 
 						notificationService.save(recommendation.get(), RecommendationStatusEnum.APPROVED_BY_APPOWNER);
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.APPROVED_BY_APPOWNER);
-						return new Response<>(HttpStatus.CREATED.value(), "Deployment details added successfully.",
-								null);
+						if (approver != null && approver.isPresent()) {
+							if (approver.get().getAgm() != null
+									&& !approver.get().getAgm().getEmail().isBlank()) {
+								responseText += ". " + approver.get().getAgm().getEmail();
+								return new Response<>(HttpStatus.CREATED.value(), responseText, null);
+							}
+						}
+						return new Response<>(HttpStatus.OK.value(), responseText, null);
 					}
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(),
@@ -719,6 +754,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+					String responseText = "Recommendation rejected successfully. An email will be sent to the AGM.";
 
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendation.getRecommendRefId());
@@ -729,7 +765,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					recommendObj.get().setIsAppOwnerRejected(true);
 					recommendObj.get()
 							.setRecommendationStatus(new RecommendationStatus(StatusEnum.Review_process.getId()));
-					recommendationRepository.save(recommendObj.get());
+					Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
 					RecommendationTrail recommendTrail = new RecommendationTrail();
 					recommendTrail.setCreatedAt(new Date());
 					recommendTrail.setRecommendationStatus(new RecommendationStatus(StatusEnum.Review_process.getId()));
