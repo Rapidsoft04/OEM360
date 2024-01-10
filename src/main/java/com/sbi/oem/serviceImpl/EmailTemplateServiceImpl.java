@@ -556,6 +556,12 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					// OEM mail
 					sendEmail = userRecommendation.get().getCreatedBy().getEmail();
 					userName = userRecommendation.get().getCreatedBy().getUserName();
+				} else if(status.equals(RecommendationStatusEnum.REJECTED_BY_DGM)){
+					
+					mailSubject = "OEM Recommendation Rejected ";
+					mailHeading = "OEM Recommendation Rejected by DGM";
+					userName = userDepartment.get().getApplicationOwner().getUserName();
+					sendEmail = userDepartment.get().getApplicationOwner().getEmail();	
 				}
 
 				String content = String.format(
