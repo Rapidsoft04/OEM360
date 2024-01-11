@@ -821,8 +821,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 					notificationService.getRecommendationByReferenceId(messages.getReferenceId(),
 							RecommendationStatusEnum.REVERTED_BY_AGM, null,
 							recommendationRejectionRequestDto.getDescription());
+					
 					emailTemplateService.sendMailRecommendationMessages(messages,
 							RecommendationStatusEnum.REVERTED_BY_AGM);
+					
+					
 					Optional<Recommendation> recommendationObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					recommendationObj.get().setUpdatedAt(new Date());
@@ -872,8 +875,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 							messages.setCreatedAt(new Date());
 							recommendationMessagesRepository.save(messages);
-							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM, null,
-									null);
+							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM, messages.getRejectionReason(),
+									messages.getAdditionalMessage()
+									);
 							emailTemplateService.sendMailRecommendationMessages(messages,
 									RecommendationStatusEnum.REJECTED_BY_AGM);
 							recommendObj.get().setIsAppOwnerApproved(false);
@@ -900,7 +904,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								recommendationMessagesRepository.save(messages);
 
 								notificationService.save(recommendObj.get(),
-										RecommendationStatusEnum.RECCOMENDATION_REJECTED, null, null);
+										RecommendationStatusEnum.RECCOMENDATION_REJECTED, messages.getRejectionReason(), messages.getAdditionalMessage());
 
 								emailTemplateService.sendMailRecommendationMessages(messages,
 										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
@@ -956,7 +960,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								messages.setCreatedAt(new Date());
 								recommendationMessagesRepository.save(messages);
 								notificationService.save(recommendObj.get(),
-										RecommendationStatusEnum.RECCOMENDATION_REJECTED, null, null);
+										RecommendationStatusEnum.RECCOMENDATION_REJECTED, messages.getRejectionReason(), messages.getAdditionalMessage());
 								emailTemplateService.sendMailRecommendationMessages(messages,
 										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
 								if (recommendObj != null && recommendObj.isPresent()) {
@@ -1086,6 +1090,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
+						
 						Department rcmdDepartment = updateRecommendation.getDepartment();
 						Optional<DepartmentApprover> approver = departmentApproverRepository
 								.findAllByDepartmentId(rcmdDepartment.getId());
