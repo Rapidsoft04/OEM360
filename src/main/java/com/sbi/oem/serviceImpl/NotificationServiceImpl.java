@@ -61,10 +61,10 @@ public class NotificationServiceImpl implements NotificationService {
 
 				Optional<RecommendationDeplyomentDetails> deplyomentDetails = recommendationdeplyomentDetailsRepository
 						.findByRecommendRefId(recommendation.getReferenceId());
-				
-				 rejectionMessage = (rejectionMessage != null) ? rejectionMessage : "NA";
-			   additionalInformation = (additionalInformation != null) ? additionalInformation : "NA";
-				
+
+				rejectionMessage = (rejectionMessage != null) ? rejectionMessage : "NA";
+				additionalInformation = (additionalInformation != null) ? additionalInformation : "NA";
+
 				String RecommendationStatus = "";
 				if (recommendation.getRecommendationStatus().getId() == 1) {
 					RecommendationStatus = StatusEnum.OEM_recommendation.getName();
@@ -95,12 +95,11 @@ public class NotificationServiceImpl implements NotificationService {
 										: "NA" + ". with recommended date as - "
 												+ formatDate(recommendation.getRecommendDate()) != null
 														? formatDate(recommendation.getRecommendDate())
-														: "NA" + " RecommendationStatus is "+RecommendationStatus +
-								                           ". The expected impact and affected department are succinctly conveyed "
+														: "NA" + " RecommendationStatus is " + RecommendationStatus
+																+ ". The expected impact and affected department are succinctly conveyed "
 																+ recommendation.getExpectedImpact() != null
 																		? recommendation.getExpectedImpact()
-																		: "NA" 
-							+ "These are the systemic overview of the new Recommendation.";
+																		: "NA" + "These are the systemic overview of the new Recommendation.";
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
@@ -175,8 +174,10 @@ public class NotificationServiceImpl implements NotificationService {
 											: "NA")
 									+ " These are the updated overview of the Recommendation.";
 						} else {
-							descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() + " with Current Status as (" +RecommendationStatus+
-									") Recommendation has been REJECTED , Rejection message as- " + rejectionMessage + " and additional Information -" + additionalInformation;
+							descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId()
+									+ " with Current Status as (" + RecommendationStatus
+									+ ") Recommendation has been REJECTED , Rejection message as- " + rejectionMessage
+									+ " and additional Information -" + additionalInformation;
 						}
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
@@ -189,7 +190,8 @@ public class NotificationServiceImpl implements NotificationService {
 
 						String descriptions = "Your recommendation with referenceId = "
 								+ recommendation.getReferenceId()
-								+ ". Recommendation deployment details has been Approved by AGM " + "Development Dates - "
+								+ ". Recommendation deployment details has been Approved by AGM "
+								+ "Development Dates - "
 								+ (deplyomentDetails.get().getDevelopmentStartDate() != null
 										? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
 										: "NA")
@@ -234,12 +236,12 @@ public class NotificationServiceImpl implements NotificationService {
 									+ (deplyomentDetails.get().getDevelopmentStartDate() != null
 											? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
 											: "NA")
-									+ "-"
-									 + "Rejection message as " + rejectionMessage + " and additionalInformation -" + additionalInformation
-									+ " These are the updated overview of the Recommendation.";
+									+ "-" + "Rejection message as " + rejectionMessage + " and additionalInformation -"
+									+ additionalInformation + " These are the updated overview of the Recommendation.";
 						} else {
-							descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
-									" Recommendation has been REVERTED . Added information as- " + additionalInformation ;
+							descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId()
+									+ " Recommendation has been REVERTED . Added information as- "
+									+ additionalInformation;
 						}
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
@@ -258,13 +260,13 @@ public class NotificationServiceImpl implements NotificationService {
 
 						String descriptions = "Your recommendation with referenceId = "
 								+ recommendation.getReferenceId()
-								+ ". Recommendation deployment details been rejected by AGM as- " + "Development Dates - "
+								+ ". Recommendation deployment details been rejected by AGM as- "
+								+ "Development Dates - "
 								+ (deplyomentDetails.get().getDevelopmentStartDate() != null
 										? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
 										: "NA")
-								+ "-"
-						        + "Rejection message as " + rejectionMessage + " and additionalInformation -" + additionalInformation
-								+ " These are the updated overview of the Recommendation.";
+								+ "-" + "Rejection message as " + rejectionMessage + " and additionalInformation -"
+								+ additionalInformation + " These are the updated overview of the Recommendation.";
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
@@ -284,18 +286,17 @@ public class NotificationServiceImpl implements NotificationService {
 						}
 						String descriptions = "";
 						if (deplyomentDetails != null && deplyomentDetails.isPresent()) {
-						  descriptions = "Your recommendation with referenceId = "
-									+ recommendation.getReferenceId()
+							descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId()
 									+ ". Recommendation deployment details been rejected  as- " + "Development Dates - "
 									+ (deplyomentDetails.get().getDevelopmentStartDate() != null
 											? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
 											: "NA")
-									+ "-"
-							        + "Rejection message as " + rejectionMessage + " and additionalInformation -" + additionalInformation
-									+ " These are the updated overview of the Recommendation.";
+									+ "-" + "Rejection message as " + rejectionMessage + " and additionalInformation -"
+									+ additionalInformation + " These are the updated overview of the Recommendation.";
 						} else {
-							descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId() +
-									" Recommendation has been REJECTED , Rejection message as- " + rejectionMessage + " and additionalInformation -" + additionalInformation;
+							descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId()
+									+ " Recommendation has been REJECTED , Rejection message as- " + rejectionMessage
+									+ " and additionalInformation -" + additionalInformation;
 						}
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
@@ -346,20 +347,15 @@ public class NotificationServiceImpl implements NotificationService {
 						userList.add(oem);
 						String text = "Recommendation status has been changed";
 
-						String descriptions = "Your recommendation with referenceId = " +
-						        recommendation.getReferenceId() +
-						        ". Recommendation deployment details has been updated as " +
-						        "Development Dates - " +
-						        (deplyomentDetails.get().getDevelopmentStartDate() != null ?
-						                formatDate(deplyomentDetails.get().getDevelopmentStartDate()) :
-						                "NA") +
-						        "-" +
-						        "Recommendation status has been changed to " +
-						        (recommendation.getRecommendationStatus() != null ?
-						        		RecommendationStatus :
-						                "NA") +
-						        ". These are the updated overview of the Recommendation.";
-
+						String descriptions = "Your recommendation with referenceId = "
+								+ recommendation.getReferenceId()
+								+ ". Recommendation deployment details has been updated as " + "Development Dates - "
+								+ (deplyomentDetails.get().getDevelopmentStartDate() != null
+										? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
+										: "NA")
+								+ "-" + "Recommendation status has been changed to "
+								+ (recommendation.getRecommendationStatus() != null ? RecommendationStatus : "NA")
+								+ ". These are the updated overview of the Recommendation.";
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						for (User user : userList) {
@@ -372,19 +368,16 @@ public class NotificationServiceImpl implements NotificationService {
 								departmentApprover.get().getAgm());
 						String text = "Recommendation has been released.";
 
-						String descriptions = "Your recommendation with referenceId = " +
-						        recommendation.getReferenceId() +
-						        ". Recommendation has been released , deployment details has been updated as " +
-						        "Development Dates - " +
-						        (deplyomentDetails.get().getDevelopmentStartDate() != null ?
-						                formatDate(deplyomentDetails.get().getDevelopmentStartDate()) :
-						                "NA") +
-						        "-" +
-						        "Recommendation status has been changed to " +
-						        (recommendation.getRecommendationStatus() != null ?
-						        		RecommendationStatus :
-						                "NA") +
-						        ". These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation with referenceId = "
+								+ recommendation.getReferenceId()
+								+ ". Recommendation has been released , deployment details has been updated as "
+								+ "Development Dates - "
+								+ (deplyomentDetails.get().getDevelopmentStartDate() != null
+										? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
+										: "NA")
+								+ "-" + "Recommendation status has been changed to "
+								+ (recommendation.getRecommendationStatus() != null ? RecommendationStatus : "NA")
+								+ ". These are the updated overview of the Recommendation.";
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
@@ -476,7 +469,7 @@ public class NotificationServiceImpl implements NotificationService {
 		try {
 			Optional<Recommendation> recommendation = recommendationRepository.findByReferenceId(referenceId);
 			if (recommendation != null && recommendation.isPresent()) {
-				System.out.println(" hhhh " +status.toString());
+				System.out.println(" hhhh " + status.toString());
 				save(recommendation.get(), status, rejectionMesasge, additionalInformation);
 			}
 		} catch (Exception e) {
@@ -487,198 +480,195 @@ public class NotificationServiceImpl implements NotificationService {
 	@Override
 	public void saveAllNotification(List<Recommendation> recommendationList, RecommendationStatusEnum status) {
 
-		Thread notificationThread = new Thread(() -> {
-			try {
+		try {
 
-				for (Recommendation recommendation : recommendationList) {
+			for (Recommendation recommendation : recommendationList) {
 
-					Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-							.findAllByDepartmentId(recommendation.getDepartment().getId());
-					
-					String RecommendationStatus = "";
-					if (recommendation.getRecommendationStatus().getId() == 1) {
-						RecommendationStatus = StatusEnum.OEM_recommendation.getName();
-					} else if (recommendation.getRecommendationStatus().getId() == 2) {
-						RecommendationStatus = StatusEnum.Review_process.getName();
-					} else if (recommendation.getRecommendationStatus().getId() == 3) {
-						RecommendationStatus = StatusEnum.Approved.getName();
-					} else if (recommendation.getRecommendationStatus().getId() == 4) {
-						RecommendationStatus = StatusEnum.Rejected.getName();
-					} else if (recommendation.getRecommendationStatus().getId() == 5) {
-						RecommendationStatus = StatusEnum.Department_implementation.getName();
-					} else if (recommendation.getRecommendationStatus().getId() == 6) {
-						RecommendationStatus = StatusEnum.UAT_testing.getName();
-					} else if (recommendation.getRecommendationStatus().getId() == 7) {
-						RecommendationStatus = StatusEnum.Released.getName();
-					}
+				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+						.findAllByDepartmentId(recommendation.getDepartment().getId());
 
-					if (departmentApprover != null && !departmentApprover.isEmpty()) {
-						if (status.equals(RecommendationStatusEnum.CREATED)) {
+				String RecommendationStatus = "";
+				if (recommendation.getRecommendationStatus().getId() == 1) {
+					RecommendationStatus = StatusEnum.OEM_recommendation.getName();
+				} else if (recommendation.getRecommendationStatus().getId() == 2) {
+					RecommendationStatus = StatusEnum.Review_process.getName();
+				} else if (recommendation.getRecommendationStatus().getId() == 3) {
+					RecommendationStatus = StatusEnum.Approved.getName();
+				} else if (recommendation.getRecommendationStatus().getId() == 4) {
+					RecommendationStatus = StatusEnum.Rejected.getName();
+				} else if (recommendation.getRecommendationStatus().getId() == 5) {
+					RecommendationStatus = StatusEnum.Department_implementation.getName();
+				} else if (recommendation.getRecommendationStatus().getId() == 6) {
+					RecommendationStatus = StatusEnum.UAT_testing.getName();
+				} else if (recommendation.getRecommendationStatus().getId() == 7) {
+					RecommendationStatus = StatusEnum.Released.getName();
+				}
 
-							User appOwner = departmentApprover.get().getApplicationOwner();
+				if (departmentApprover != null && !departmentApprover.isEmpty()) {
+					if (status.equals(RecommendationStatusEnum.CREATED)) {
 
-							String text = "New recommendation request has been created.";
+						User appOwner = departmentApprover.get().getApplicationOwner();
 
-							String descriptions = "New recommendation has been created with referenceId = "
-									+ recommendation.getReferenceId() + " created on "
-									 + ((formatDate(recommendation.getCreatedAt()) != null)
-							                ? formatDate(recommendation.getCreatedAt())
-							                : "NA") + ". with recommended date as - "
-							        + ((formatDate(recommendation.getRecommendDate()) != null)
-							                ? formatDate(recommendation.getRecommendDate())
-							                : "NA") + " RecommendationStatus is " + RecommendationStatus +
-							        ". The expected impact and affected department are succinctly conveyed "
-							if (recommendation.getExpectedImpact() == null
-									|| recommendation.getExpectedImpact().isBlank()
-									|| recommendation.getExpectedImpact().equals("")) {
-								descriptions = descriptions + "NA";
-							} else {
-								descriptions = descriptions + recommendation.getExpectedImpact();
-							}
-							descriptions = descriptions + " along with accessible documentation through URLs "
-									+ "These are the systemic overview of the new Recommendation.";
+						String text = "New recommendation request has been created.";
 
-							RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
+						String descriptions = "New recommendation has been created with referenceId = "
+								+ recommendation.getReferenceId() + " created on "
+								+ ((formatDate(recommendation.getCreatedAt()) != null)
+										? formatDate(recommendation.getCreatedAt())
+										: "NA")
+								+ ". with recommended date as - "
+								+ ((formatDate(recommendation.getRecommendDate()) != null)
+										? formatDate(recommendation.getRecommendDate())
+										: "NA")
+								+ " RecommendationStatus is " + RecommendationStatus
+								+ ". The expected impact and affected department are succinctly conveyed ";
+						if (recommendation.getExpectedImpact() == null || recommendation.getExpectedImpact().isBlank()
+								|| recommendation.getExpectedImpact().equals("")) {
+							descriptions = descriptions + "NA";
+						} else {
+							descriptions = descriptions + recommendation.getExpectedImpact();
+						}
+						descriptions = descriptions + " along with accessible documentation through URLs "
+								+ "These are the systemic overview of the new Recommendation.";
 
-							createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
-									recommendationStatus);
+						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
-						} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {
+						createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
+								recommendationStatus);
 
-							User agm = departmentApprover.get().getAgm();
+					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {
 
-							String text = "App owner has accepted a new recommendation.";
+						User agm = departmentApprover.get().getAgm();
 
-							String descriptions = "New recommendation has been created with referenceId = "
-									+ recommendation.getReferenceId() + " created on "
-									+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
-									+ formatDate(recommendation.getRecommendDate())
-									+ ". The expected impact and affected department are succinctly conveyed "
-									+ recommendation.getExpectedImpact()
-									+ " along with accessible documentation through URLs "
-									+ "These are the systemic overview of the new Recommendation.";
+						String text = "App owner has accepted a new recommendation.";
 
-							RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
+						String descriptions = "New recommendation has been created with referenceId = "
+								+ recommendation.getReferenceId() + " created on "
+								+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
+								+ formatDate(recommendation.getRecommendDate())
+								+ ". The expected impact and affected department are succinctly conveyed "
+								+ recommendation.getExpectedImpact()
+								+ " along with accessible documentation through URLs "
+								+ "These are the systemic overview of the new Recommendation.";
 
-							createNotification(recommendation.getReferenceId(), text, descriptions, agm,
-									recommendationStatus);
+						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
-						} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
-							User agm = departmentApprover.get().getAgm();
+						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
+								recommendationStatus);
 
-							String text = "App owner has rejected a recommendation.";
+					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
+						User agm = departmentApprover.get().getAgm();
 
-							String descriptions = "New recommendation has been created with referenceId = "
-									+ recommendation.getReferenceId() + " created on "
-									+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
-									+ formatDate(recommendation.getRecommendDate())
-									+ ". The expected impact and affected department are succinctly conveyed "
-									+ recommendation.getExpectedImpact()
-									+ " along with accessible documentation through URLs "
-									+ "These are the systemic overview of the new Recommendation.";
+						String text = "App owner has rejected a recommendation.";
 
-							RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
+						String descriptions = "New recommendation has been created with referenceId = "
+								+ recommendation.getReferenceId() + " created on "
+								+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
+								+ formatDate(recommendation.getRecommendDate())
+								+ ". The expected impact and affected department are succinctly conveyed "
+								+ recommendation.getExpectedImpact()
+								+ " along with accessible documentation through URLs "
+								+ "These are the systemic overview of the new Recommendation.";
 
-							createNotification(recommendation.getReferenceId(), text, descriptions, agm,
-									recommendationStatus);
-						} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
-							List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
-									departmentApprover.get().getApplicationOwner());
-							String text = "Your recommendation request has been approved by AGM.";
+						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
-							String descriptions = "New recommendation has been created with referenceId = "
-									+ recommendation.getReferenceId() + " created on "
-									+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
-									+ formatDate(recommendation.getRecommendDate())
-									+ ". The expected impact and affected department are succinctly conveyed "
-									+ recommendation.getExpectedImpact()
-									+ " along with accessible documentation through URLs "
-									+ "These are the systemic overview of the new Recommendation.";
+						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
+								recommendationStatus);
+					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
+						List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
+								departmentApprover.get().getApplicationOwner());
+						String text = "Your recommendation request has been approved by AGM.";
 
-							RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
+						String descriptions = "New recommendation has been created with referenceId = "
+								+ recommendation.getReferenceId() + " created on "
+								+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
+								+ formatDate(recommendation.getRecommendDate())
+								+ ". The expected impact and affected department are succinctly conveyed "
+								+ recommendation.getExpectedImpact()
+								+ " along with accessible documentation through URLs "
+								+ "These are the systemic overview of the new Recommendation.";
 
-							for (User user : userList) {
-								createNotification(recommendation.getReferenceId(), text, descriptions, user,
-										recommendationStatus);
-							}
-						} else if (status.equals(RecommendationStatusEnum.REVERTED_BY_AGM)) {
-							User appOwner = departmentApprover.get().getApplicationOwner();
-							String text = "AGM has commented on your recommendation";
+						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
-							String descriptions = "New recommendation has been created with referenceId = "
-									+ recommendation.getReferenceId() + " created on "
-									+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
-									+ formatDate(recommendation.getRecommendDate())
-									+ ". The expected impact and affected department are succinctly conveyed "
-									+ recommendation.getExpectedImpact()
-									+ " along with accessible documentation through URLs "
-									+ "These are the systemic overview of the new Recommendation.";
-
-							RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
-
-							createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
-									recommendationStatus);
-						} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_AGM)) {
-							User appOwner = departmentApprover.get().getApplicationOwner();
-							String text = "Your recommendation request has been rejected by AGM.";
-							String descriptions = "New recommendation has been created with referenceId = "
-									+ recommendation.getReferenceId() + " created on "
-									+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
-									+ formatDate(recommendation.getRecommendDate())
-									+ ". The expected impact and affected department are succinctly conveyed "
-									+ recommendation.getExpectedImpact()
-									+ " along with accessible documentation through URLs "
-									+ "These are the systemic overview of the new Recommendation.";
-
-							RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
-
-							createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
-									recommendationStatus);
-						} else if (status.equals(RecommendationStatusEnum.RECCOMENDATION_REJECTED)) {
-							User oem = recommendation.getCreatedBy();
-							String text = "AGM has Rejected the recommendation";
-
-							String descriptions = "New recommendation has been created with referenceId = "
-									+ recommendation.getReferenceId() + " created on "
-									+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
-									+ formatDate(recommendation.getRecommendDate())
-									+ ". The expected impact and affected department are succinctly conveyed "
-									+ recommendation.getExpectedImpact()
-									+ " along with accessible documentation through URLs "
-									+ "These are the systemic overview of the new Recommendation.";
-
-							RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
-							createNotification(recommendation.getReferenceId(), text, descriptions, oem,
-									recommendationStatus);
-
-						} else if (status.equals(RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS)) {
-							User agm = departmentApprover.get().getAgm();
-							String text = "Deployment Details have been updated";
-
-							String descriptions = "New recommendation has been created with referenceId = "
-									+ recommendation.getReferenceId() + " created on "
-									+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
-									+ formatDate(recommendation.getRecommendDate())
-									+ ". The expected impact and affected department are succinctly conveyed "
-									+ recommendation.getExpectedImpact()
-									+ " along with accessible documentation through URLs "
-									+ "These are the systemic overview of the new Recommendation.";
-
-							RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
-
-							createNotification(recommendation.getReferenceId(), text, descriptions, agm,
+						for (User user : userList) {
+							createNotification(recommendation.getReferenceId(), text, descriptions, user,
 									recommendationStatus);
 						}
+					} else if (status.equals(RecommendationStatusEnum.REVERTED_BY_AGM)) {
+						User appOwner = departmentApprover.get().getApplicationOwner();
+						String text = "AGM has commented on your recommendation";
+
+						String descriptions = "New recommendation has been created with referenceId = "
+								+ recommendation.getReferenceId() + " created on "
+								+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
+								+ formatDate(recommendation.getRecommendDate())
+								+ ". The expected impact and affected department are succinctly conveyed "
+								+ recommendation.getExpectedImpact()
+								+ " along with accessible documentation through URLs "
+								+ "These are the systemic overview of the new Recommendation.";
+
+						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
+
+						createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
+								recommendationStatus);
+					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_AGM)) {
+						User appOwner = departmentApprover.get().getApplicationOwner();
+						String text = "Your recommendation request has been rejected by AGM.";
+						String descriptions = "New recommendation has been created with referenceId = "
+								+ recommendation.getReferenceId() + " created on "
+								+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
+								+ formatDate(recommendation.getRecommendDate())
+								+ ". The expected impact and affected department are succinctly conveyed "
+								+ recommendation.getExpectedImpact()
+								+ " along with accessible documentation through URLs "
+								+ "These are the systemic overview of the new Recommendation.";
+
+						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
+
+						createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
+								recommendationStatus);
+					} else if (status.equals(RecommendationStatusEnum.RECCOMENDATION_REJECTED)) {
+						User oem = recommendation.getCreatedBy();
+						String text = "AGM has Rejected the recommendation";
+
+						String descriptions = "New recommendation has been created with referenceId = "
+								+ recommendation.getReferenceId() + " created on "
+								+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
+								+ formatDate(recommendation.getRecommendDate())
+								+ ". The expected impact and affected department are succinctly conveyed "
+								+ recommendation.getExpectedImpact()
+								+ " along with accessible documentation through URLs "
+								+ "These are the systemic overview of the new Recommendation.";
+
+						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
+						createNotification(recommendation.getReferenceId(), text, descriptions, oem,
+								recommendationStatus);
+
+					} else if (status.equals(RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS)) {
+						User agm = departmentApprover.get().getAgm();
+						String text = "Deployment Details have been updated";
+
+						String descriptions = "New recommendation has been created with referenceId = "
+								+ recommendation.getReferenceId() + " created on "
+								+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
+								+ formatDate(recommendation.getRecommendDate())
+								+ ". The expected impact and affected department are succinctly conveyed "
+								+ recommendation.getExpectedImpact()
+								+ " along with accessible documentation through URLs "
+								+ "These are the systemic overview of the new Recommendation.";
+
+						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
+
+						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
+								recommendationStatus);
 					}
-
 				}
-			} catch (Exception e) {
-				// TODO: handle exception
-				e.printStackTrace();
-			}
-		});
 
-		notificationThread.start();
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 
 	}
 
