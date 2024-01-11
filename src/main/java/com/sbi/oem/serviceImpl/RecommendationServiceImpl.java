@@ -821,11 +821,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 					notificationService.getRecommendationByReferenceId(messages.getReferenceId(),
 							RecommendationStatusEnum.REVERTED_BY_AGM, null,
 							recommendationRejectionRequestDto.getDescription());
-					
+
 					emailTemplateService.sendMailRecommendationMessages(messages,
 							RecommendationStatusEnum.REVERTED_BY_AGM);
-					
-					
+
 					Optional<Recommendation> recommendationObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					recommendationObj.get().setUpdatedAt(new Date());
@@ -868,16 +867,17 @@ public class RecommendationServiceImpl implements RecommendationService {
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
-					if (recommendObj != null && recommendObj.isPresent() && recommendObj.get().getPriorityId() != PriorityEnum.High.getId()) {
+					if (recommendObj != null && recommendObj.isPresent()
+							&& recommendObj.get().getIsAppOwnerApproved() == true) {
 						if (recommendObj.get().getIsAppOwnerApproved() != null
 								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
 							responseText = "Recommendation reject request sent successfully. An email will be sent to the Appowner";
 							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 							messages.setCreatedAt(new Date());
 							recommendationMessagesRepository.save(messages);
-							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM, messages.getRejectionReason(),
-									messages.getAdditionalMessage()
-									);
+							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM,
+									recommendationRejectionRequestDto.getRejectionMessage(),
+									recommendationRejectionRequestDto.getAddtionalInformation());
 							emailTemplateService.sendMailRecommendationMessages(messages,
 									RecommendationStatusEnum.REJECTED_BY_AGM);
 							recommendObj.get().setIsAppOwnerApproved(false);
@@ -904,7 +904,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 								recommendationMessagesRepository.save(messages);
 
 								notificationService.save(recommendObj.get(),
-										RecommendationStatusEnum.RECCOMENDATION_REJECTED, messages.getRejectionReason(), messages.getAdditionalMessage());
+										RecommendationStatusEnum.RECCOMENDATION_REJECTED,
+										recommendationRejectionRequestDto.getRejectionMessage(),
+										recommendationRejectionRequestDto.getAddtionalInformation());
 
 								emailTemplateService.sendMailRecommendationMessages(messages,
 										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
@@ -915,14 +917,16 @@ public class RecommendationServiceImpl implements RecommendationService {
 							}
 						}
 					} else if (recommendObj != null && recommendObj.isPresent()
-							&& recommendObj.get().getPriorityId() == PriorityEnum.High.getId()) {
+							&& recommendObj.get().getPriorityId() == PriorityEnum.High.getId()
+							&& recommendObj.get().getIsAppOwnerRejected().booleanValue() == true) {
 
 						if (recommendObj.get().getIsAppOwnerApproved() != null
 								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
 							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
 							messages.setCreatedAt(new Date());
 							recommendationMessagesRepository.save(messages);
-							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM, null,
+							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM,
+									recommendationRejectionRequestDto.getRejectionMessage(),
 									recommendationRejectionRequestDto.getAddtionalInformation());
 							emailTemplateService.sendMailRecommendationMessages(messages,
 									RecommendationStatusEnum.REJECTED_BY_DGM);
@@ -960,7 +964,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 								messages.setCreatedAt(new Date());
 								recommendationMessagesRepository.save(messages);
 								notificationService.save(recommendObj.get(),
-										RecommendationStatusEnum.RECCOMENDATION_REJECTED, messages.getRejectionReason(), messages.getAdditionalMessage());
+										RecommendationStatusEnum.RECCOMENDATION_REJECTED, messages.getRejectionReason(),
+										messages.getAdditionalMessage());
 								emailTemplateService.sendMailRecommendationMessages(messages,
 										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
 								if (recommendObj != null && recommendObj.isPresent()) {
@@ -1090,7 +1095,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
-						
+
 						Department rcmdDepartment = updateRecommendation.getDepartment();
 						Optional<DepartmentApprover> approver = departmentApproverRepository
 								.findAllByDepartmentId(rcmdDepartment.getId());
@@ -1897,6 +1902,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 							searchDto.setDepartmentId(departmentId);
 							List<Recommendation> recommendationList = recommendationRepository
 									.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
+
+							List<Recommendation> updatedRecommendationList = recommendationList.stream()
+									.filter(x -> x.getIsAppOwnerApproved().booleanValue() == true)
+									.collect(Collectors.toList());
 							List<DepartmentApprover> departmentApproverList = departmentApproverRepository
 									.findAllByDepartmentIdIn(departmentIds);
 							Map<Long, DepartmentApprover> departmentApproverMap = new HashMap<>();
@@ -1908,7 +1917,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 									}
 								}
 							}
-							for (Recommendation rcmnd : recommendationList) {
+							for (Recommendation rcmnd : updatedRecommendationList) {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());

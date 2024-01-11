@@ -230,18 +230,9 @@ public class NotificationServiceImpl implements NotificationService {
 						}
 						String descriptions = "";
 						if (deplyomentDetails != null && deplyomentDetails.isPresent()) {
-							descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId()
-									+ ". Recommendation deployment details has been REVERTED as "
-									+ "Development Dates - "
-									+ (deplyomentDetails.get().getDevelopmentStartDate() != null
-											? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
-											: "NA")
-									+ "-" + "Rejection message as " + rejectionMessage + " and additionalInformation -"
-									+ additionalInformation + " These are the updated overview of the Recommendation.";
+							descriptions = additionalInformation;
 						} else {
-							descriptions = "Your recommendation with referenceId = " + recommendation.getReferenceId()
-									+ " Recommendation has been REVERTED . Added information as- "
-									+ additionalInformation;
+							descriptions = additionalInformation;
 						}
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
@@ -251,22 +242,14 @@ public class NotificationServiceImpl implements NotificationService {
 					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_AGM)) {
 						User appOwner = departmentApprover.get().getApplicationOwner();
 						String text = "";
-						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId()
-								.longValue()) {
+						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId().longValue()
+								&& recommendationObj.get().getIsAppOwnerRejected().booleanValue() == true) {
 							text = "Your recommendation request has been rejected by DGM.";
 						} else {
 							text = "Your recommendation request has been rejected by AGM.";
 						}
 
-						String descriptions = "Your recommendation with referenceId = "
-								+ recommendation.getReferenceId()
-								+ ". Recommendation deployment details been rejected by AGM as- "
-								+ "Development Dates - "
-								+ (deplyomentDetails.get().getDevelopmentStartDate() != null
-										? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
-										: "NA")
-								+ "-" + "Rejection message as " + rejectionMessage + " and additionalInformation -"
-								+ additionalInformation + " These are the updated overview of the Recommendation.";
+						String descriptions = rejectionMessage;
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
@@ -278,8 +261,8 @@ public class NotificationServiceImpl implements NotificationService {
 						userList.add(appOwner);
 						userList.add(oem);
 						String text = "";
-						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId()
-								.longValue()) {
+						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId().longValue()
+								&& recommendationObj.get().getIsAppOwnerRejected().booleanValue() == true) {
 							text = "DGM has Rejected the recommendation";
 						} else {
 							text = "AGM has Rejected the recommendation";
@@ -469,7 +452,6 @@ public class NotificationServiceImpl implements NotificationService {
 		try {
 			Optional<Recommendation> recommendation = recommendationRepository.findByReferenceId(referenceId);
 			if (recommendation != null && recommendation.isPresent()) {
-				System.out.println(" hhhh " + status.toString());
 				save(recommendation.get(), status, rejectionMesasge, additionalInformation);
 			}
 		} catch (Exception e) {
