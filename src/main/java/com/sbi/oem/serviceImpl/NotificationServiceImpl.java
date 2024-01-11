@@ -133,6 +133,8 @@ public class NotificationServiceImpl implements NotificationService {
 								+ (deplyomentDetails.get().getImpactedDepartment() != null
 										? deplyomentDetails.get().getImpactedDepartment()
 										: "NA")
+								
+								+ " with descriptions as - " + additionalInformation
 								+ " These are the updated overview of the Recommendation.";
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
@@ -211,6 +213,9 @@ public class NotificationServiceImpl implements NotificationService {
 								+ (deplyomentDetails.get().getImpactedDepartment() != null
 										? deplyomentDetails.get().getImpactedDepartment()
 										: "NA")
+								
+								+ " with descriptions as - " + additionalInformation
+								
 								+ " These are the updated overview of the Recommendation.";
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
@@ -314,6 +319,9 @@ public class NotificationServiceImpl implements NotificationService {
 								+ (deplyomentDetails.get().getImpactedDepartment() != null
 										? deplyomentDetails.get().getImpactedDepartment()
 										: "NA")
+								
+								+ " with descriptions as - " + additionalInformation
+								
 								+ ". These are the updated overview of the Recommendation.";
 
 						System.out.println("descriptions = " + descriptions);

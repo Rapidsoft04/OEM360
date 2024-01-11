@@ -682,7 +682,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findAllByDepartmentId(rcmdDepartment.getId());
 
 						notificationService.save(recommendation.get(),
-								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null, null);
+								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null, recommendationDetailsRequestDto.getDescription());
 
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
@@ -1027,7 +1027,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 
 						notificationService.save(recommendObj.get(), RecommendationStatusEnum.APPROVED_BY_AGM, null,
-								null);
+								recommendationRejectionRequestDto.getAddtionalInformation());
+						
 						emailTemplateService.sendMailRecommendation(recommendObj.get(),
 								RecommendationStatusEnum.APPROVED_BY_AGM);
 
