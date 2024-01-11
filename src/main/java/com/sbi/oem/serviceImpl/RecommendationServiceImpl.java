@@ -185,7 +185,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							fileUrl = fileSystemStorageService
 									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
 						}
-						String responseText = "Recommendation created successfully. An email will be sent to the application owner.";
+						String responseText = "Recommendation created successfully. An email will be sent to the application owner";
 						Recommendation savedRecommendation = new Recommendation();
 						List<Recommendation> recommendationList = new ArrayList<>();
 						List<RecommendationTrail> recommendatioTrailList = new ArrayList<>();
@@ -865,7 +865,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
-					if (recommendObj != null && recommendObj.isPresent()) {
+					if (recommendObj != null && recommendObj.isPresent() && recommendObj.get().getPriorityId() != PriorityEnum.High.getId()) {
 						if (recommendObj.get().getIsAppOwnerApproved() != null
 								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
 							responseText = "Recommendation reject request sent successfully. An email will be sent to the Appowner";
@@ -919,7 +919,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							messages.setCreatedAt(new Date());
 							recommendationMessagesRepository.save(messages);
 							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM, null,
-									null);
+									recommendationRejectionRequestDto.getAddtionalInformation());
 							emailTemplateService.sendMailRecommendationMessages(messages,
 									RecommendationStatusEnum.REJECTED_BY_DGM);
 							recommendObj.get().setIsAppOwnerApproved(false);
@@ -3733,7 +3733,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 									if (approver.get().getAgm() != null
 											&& !approver.get().getAgm().getEmail().isBlank()) {
 										responseText += ". Email will be sent to AGM("
-												+ approver.get().getAgm().getEmail() + ")";
+												+ approver.get().getAgm().getEmail() + ")" + " " + "also send to OEM("
+												+ recommendationObj.get().getCreatedBy().getEmail() + ")";
 									}
 								}
 								notificationService.save(updatedRecommendation,

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -19,6 +20,7 @@ import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.RecommendationStatusEnum;
+import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Notification;
 import com.sbi.oem.model.Recommendation;
@@ -237,37 +239,25 @@ public class NotificationServiceImpl implements NotificationService {
 								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_AGM)) {
 						User appOwner = departmentApprover.get().getApplicationOwner();
-						String text = "Your recommendation request has been rejected by AGM.";
+						String text = "";
+						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId()
+								.longValue()) {
+							text = "Your recommendation request has been rejected by DGM.";
+						} else {
+							text = "Your recommendation request has been rejected by AGM.";
+						}
 
-						String descriptions = "Your recommendation with referenceId = "
-								+ recommendation.getReferenceId()
-								+ ". Recommendation deployment details has been updated as " + "Development Dates - "
-								+ (deplyomentDetails.get().getDevelopmentStartDate() != null
-										? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
-										: "NA")
-								+ "-"
-								+ (deplyomentDetails.get().getDevelopementEndDate() != null
-										? formatDate(deplyomentDetails.get().getDevelopementEndDate())
-										: "NA")
-								+ " , with Test Completion Date - "
-								+ (deplyomentDetails.get().getTestCompletionDate() != null
-										? formatDate(deplyomentDetails.get().getTestCompletionDate())
-										: "NA")
-								+ ", with Development Complete Date - "
-								+ (deplyomentDetails.get().getDeploymentDate() != null
-										? formatDate(deplyomentDetails.get().getDeploymentDate())
-										: "NA")
-								+ ". The expected impact and affected department are succinctly conveyed "
-								+ (deplyomentDetails.get().getImpactedDepartment() != null
-										? deplyomentDetails.get().getImpactedDepartment()
-										: "NA")
-								+ " These are the updated overview of the Recommendation.";
+						String descriptions = additionalInformation;
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 						createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
 								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.RECCOMENDATION_REJECTED)) {
 						User oem = recommendation.getCreatedBy();
+						User appOwner = departmentApprover.get().getApplicationOwner();
+						List<User> userList = new ArrayList<>();
+						userList.add(appOwner);
+						userList.add(oem);
 						String text = "";
 						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId()
 								.longValue()) {
@@ -305,9 +295,11 @@ public class NotificationServiceImpl implements NotificationService {
 						}
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
+						for (User user : userList) {
+							createNotification(recommendation.getReferenceId(), text, descriptions, user,
+									recommendationStatus);
+						}
 
-						createNotification(recommendation.getReferenceId(), text, descriptions, oem,
-								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS)) {
 						User agm = departmentApprover.get().getAgm();
 						String text = "Recommendation deployment details has been updated";
@@ -344,64 +336,34 @@ public class NotificationServiceImpl implements NotificationService {
 								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
 						User agm = departmentApprover.get().getAgm();
+						User oem = recommendation.getCreatedBy();
+						List<User> userList = new ArrayList<>();
+						userList.add(agm);
+						userList.add(oem);
 						String text = "Recommendation status has been changed";
 
-						String descriptions = "Your recommendation with referenceId = "
-								+ recommendation.getReferenceId()
-								+ ". Recommendation deployment details has been updated as " + "Development Dates - "
-								+ (deplyomentDetails.get().getDevelopmentStartDate() != null
-										? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
-										: "NA")
-								+ "-"
-								+ (deplyomentDetails.get().getDevelopementEndDate() != null
-										? formatDate(deplyomentDetails.get().getDevelopementEndDate())
-										: "NA")
-								+ " , with Test Completion Date - "
-								+ (deplyomentDetails.get().getTestCompletionDate() != null
-										? formatDate(deplyomentDetails.get().getTestCompletionDate())
-										: "NA")
-								+ ", with Development Complete Date - "
-								+ (deplyomentDetails.get().getDeploymentDate() != null
-										? formatDate(deplyomentDetails.get().getDeploymentDate())
-										: "NA")
-								+ ". The expected impact and affected department are succinctly conveyed "
-								+ (deplyomentDetails.get().getImpactedDepartment() != null
-										? deplyomentDetails.get().getImpactedDepartment()
-										: "NA")
-								+ " These are the updated overview of the Recommendation.";
-
+						String descriptions = "Your recommendation ";
+						if (recommendationObj.get().getRecommendationStatus().getId()
+								.longValue() == StatusEnum.Department_implementation.getId().longValue()) {
+							descriptions = descriptions + "Department Implementation";
+						}
+						if (recommendationObj.get().getRecommendationStatus().getId()
+								.longValue() == StatusEnum.UAT_testing.getId().longValue()) {
+							descriptions = descriptions + "UAT Testing";
+						}
+						descriptions = descriptions + " has done.";
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
+						for (User user : userList) {
+							createNotification(recommendation.getReferenceId(), text, descriptions, user,
+									recommendationStatus);
+						}
 
-						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
-								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_RELEASED)) {
 						List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
 								departmentApprover.get().getAgm());
 						String text = "Recommendation has been released.";
 
-						String descriptions = "Your recommendation with referenceId = "
-								+ recommendation.getReferenceId()
-								+ ". Recommendation deployment details has been updated as " + "Development Dates - "
-								+ (deplyomentDetails.get().getDevelopmentStartDate() != null
-										? formatDate(deplyomentDetails.get().getDevelopmentStartDate())
-										: "NA")
-								+ "-"
-								+ (deplyomentDetails.get().getDevelopementEndDate() != null
-										? formatDate(deplyomentDetails.get().getDevelopementEndDate())
-										: "NA")
-								+ " , with Test Completion Date - "
-								+ (deplyomentDetails.get().getTestCompletionDate() != null
-										? formatDate(deplyomentDetails.get().getTestCompletionDate())
-										: "NA")
-								+ ", with Development Complete Date - "
-								+ (deplyomentDetails.get().getDeploymentDate() != null
-										? formatDate(deplyomentDetails.get().getDeploymentDate())
-										: "NA")
-								+ ". The expected impact and affected department are succinctly conveyed "
-								+ (deplyomentDetails.get().getImpactedDepartment() != null
-										? deplyomentDetails.get().getImpactedDepartment()
-										: "NA")
-								+ " These are the updated overview of the Recommendation.";
+						String descriptions = "Your recommendation has been released";
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
@@ -522,9 +484,15 @@ public class NotificationServiceImpl implements NotificationService {
 									+ recommendation.getReferenceId() + " created on "
 									+ formatDate(recommendation.getCreatedAt()) + ". with recommended date as - "
 									+ formatDate(recommendation.getRecommendDate())
-									+ ". The expected impact and affected department are succinctly conveyed "
-									+ recommendation.getExpectedImpact()
-									+ " along with accessible documentation through URLs "
+									+ ". The expected impact and affected department are succinctly conveyed ";
+							if (recommendation.getExpectedImpact() == null
+									|| recommendation.getExpectedImpact().isBlank()
+									|| recommendation.getExpectedImpact().equals("")) {
+								descriptions = descriptions + "NA";
+							} else {
+								descriptions = descriptions + recommendation.getExpectedImpact();
+							}
+							descriptions = descriptions + " along with accessible documentation through URLs "
 									+ "These are the systemic overview of the new Recommendation.";
 
 							RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
