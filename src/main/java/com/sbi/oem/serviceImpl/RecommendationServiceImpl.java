@@ -209,7 +209,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 										new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
 								recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
 								List<Recommendation> recommendList = recommendationRepository.findAll();
-								String refId = generateReferenceId(recommendList.size());
+								Collections.sort(recommendList, Comparator.comparing(Recommendation::getId).reversed());
+								String refId = generateReferenceId(recommendList.get(0).getId().intValue());
 								recommendation.setIsAppOwnerApproved(false);
 								recommendation.setIsAppOwnerRejected(false);
 								recommendation.setIsAgmApproved(false);
