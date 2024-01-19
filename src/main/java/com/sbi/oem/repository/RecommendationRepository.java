@@ -705,7 +705,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 		return findAll(specification);
 	}
 
-	default List<Recommendation> findAllApprovedRecommendationsOfDgmBySearchDto(SearchDto searchDto){
+	default List<Recommendation> findAllApprovedRecommendationsOfDgmBySearchDto(SearchDto searchDto) {
 		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
@@ -758,7 +758,9 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			predicates.add(criteriaBuilder.or(criteriaBuilder.equal(root.get("isAgmApproved"), true),
-					criteriaBuilder.equal(root.get("isAgmRejected"), true)));
+					criteriaBuilder.equal(root.get("isAgmRejected"), true),
+					criteriaBuilder.equal(root.get("isAppOwnerApproved"), true),
+					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false)));
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 

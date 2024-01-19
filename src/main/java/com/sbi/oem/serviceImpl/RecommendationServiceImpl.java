@@ -683,7 +683,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findAllByDepartmentId(rcmdDepartment.getId());
 
 						notificationService.save(recommendation.get(),
-								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null, recommendationDetailsRequestDto.getDescription());
+								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null,
+								recommendationDetailsRequestDto.getDescription());
 
 						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
 								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
@@ -763,6 +764,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					recommendationMessagesRepository.save(messages);
 					recommendObj.get().setIsAppOwnerApproved(false);
 					recommendObj.get().setIsAppOwnerRejected(true);
+					recommendObj.get().setIsAgmRejected(false);
 					recommendObj.get()
 							.setRecommendationStatus(new RecommendationStatus(StatusEnum.Review_process.getId()));
 					Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
@@ -918,7 +920,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 							}
 						}
 					} else if (recommendObj != null && recommendObj.isPresent()
-							&& recommendObj.get().getPriorityId() == PriorityEnum.High.getId()
 							&& recommendObj.get().getIsAppOwnerRejected().booleanValue() == true) {
 
 						if (recommendObj.get().getIsAppOwnerApproved() != null
@@ -1029,7 +1030,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 						notificationService.save(recommendObj.get(), RecommendationStatusEnum.APPROVED_BY_AGM, null,
 								recommendationRejectionRequestDto.getAddtionalInformation());
-						
+
 						emailTemplateService.sendMailRecommendation(recommendObj.get(),
 								RecommendationStatusEnum.APPROVED_BY_AGM);
 
@@ -1906,7 +1907,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 									.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
 
 							List<Recommendation> updatedRecommendationList = recommendationList.stream()
-									.filter(x -> x.getIsAppOwnerApproved().booleanValue() == true)
+									.filter(x -> x.getIsAppOwnerApproved() != null
+											&& (x.getIsAppOwnerApproved().booleanValue() == true)
+											&& (x.getPriorityId() == PriorityEnum.Medium.getId()
+													|| x.getPriorityId() == PriorityEnum.Low.getId()
+													|| x.getPriorityId() == PriorityEnum.High.getId()))
 									.collect(Collectors.toList());
 							List<DepartmentApprover> departmentApproverList = departmentApproverRepository
 									.findAllByDepartmentIdIn(departmentIds);
