@@ -82,7 +82,6 @@ import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
-import com.sbi.oem.util.CompressedMultipartFile;
 import com.sbi.oem.util.Pagination;
 
 @Service
