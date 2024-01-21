@@ -1,5 +1,9 @@
 package com.sbi.oem.serviceImpl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -15,7 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -27,10 +36,12 @@ import org.hibernate.internal.build.AllowSysOut;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import com.google.gson.JsonObject;
 import com.sbi.oem.constant.Constant;
@@ -71,6 +82,7 @@ import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
+import com.sbi.oem.util.CompressedMultipartFile;
 import com.sbi.oem.util.Pagination;
 
 @Service
@@ -177,76 +189,73 @@ public class RecommendationServiceImpl implements RecommendationService {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 
 					String fileUrl = null;
-					if (recommendationAddRequestDto.getFile() != null
-							&& recommendationAddRequestDto.getFile().getSize() > 1048576) {
-						return new Response<>(HttpStatus.BAD_REQUEST.value(), "File size can't be above 1MB.", null);
-					} else {
-						if (recommendationAddRequestDto.getFile() != null) {
-							fileUrl = fileSystemStorageService
-									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
+					if (recommendationAddRequestDto.getFile() != null) {
+						if (recommendationAddRequestDto.getFile().getSize() > 1048576) {
+							MultipartFile compressedFile = compressFile(recommendationAddRequestDto.getFile());
+							recommendationAddRequestDto.setFile(compressedFile);
 						}
-						String responseText = "Recommendation created successfully. An email will be sent to the application owner";
-						Recommendation savedRecommendation = new Recommendation();
-						List<Recommendation> recommendationList = new ArrayList<>();
-						List<RecommendationTrail> recommendatioTrailList = new ArrayList<>();
-						if (recommendationAddRequestDto.getDepartmentIds() != null
-								&& recommendationAddRequestDto.getDepartmentIds().size() > 0) {
-							for (Long id : recommendationAddRequestDto.getDepartmentIds()) {
-								Recommendation recommendation = new Recommendation();
-								recommendation.setFileUrl(fileUrl);
-								recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
-								recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
-								recommendation.setCreatedAt(new Date());
-								recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
-								recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
-								recommendation.setDepartment(new Department(id));
-								recommendation
-										.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
-								recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
-								recommendation.setRecommendationType(
-										new RecommendationType(recommendationAddRequestDto.getTypeId()));
-								recommendation.setRecommendationStatus(
-										new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
-								recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
-								List<Recommendation> recommendList = recommendationRepository.findAll();
-								Collections.sort(recommendList, Comparator.comparing(Recommendation::getId).reversed());
-								String refId = generateReferenceId(recommendList.get(0).getId().intValue());
-								recommendation.setIsAppOwnerApproved(false);
-								recommendation.setIsAppOwnerRejected(false);
-								recommendation.setIsAgmApproved(false);
-								recommendation.setReferenceId(refId);
-								recommendation.setUpdatedAt(new Date());
-								recommendationList.add(recommendation);
-								RecommendationTrail trailData = new RecommendationTrail();
-								trailData.setCreatedAt(new Date());
-								trailData.setRecommendationStatus(
-										new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
-								trailData.setReferenceId(refId);
-								recommendatioTrailList.add(trailData);
-								savedRecommendation = recommendationRepository.save(recommendation);
-								recommendationTrailRepository.save(trailData);
-							}
+						fileUrl = fileSystemStorageService.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
+					}
+					String responseText = "Recommendation created successfully. An email will be sent to the application owner";
+					Recommendation savedRecommendation = new Recommendation();
+					List<Recommendation> recommendationList = new ArrayList<>();
+					List<RecommendationTrail> recommendatioTrailList = new ArrayList<>();
+					if (recommendationAddRequestDto.getDepartmentIds() != null
+							&& recommendationAddRequestDto.getDepartmentIds().size() > 0) {
+						for (Long id : recommendationAddRequestDto.getDepartmentIds()) {
+							Recommendation recommendation = new Recommendation();
+							recommendation.setFileUrl(fileUrl);
+							recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
+							recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
+							recommendation.setCreatedAt(new Date());
+							recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
+							recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
+							recommendation.setDepartment(new Department(id));
+							recommendation.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
+							recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
+							recommendation.setRecommendationType(
+									new RecommendationType(recommendationAddRequestDto.getTypeId()));
+							recommendation.setRecommendationStatus(
+									new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
+							recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
+							List<Recommendation> recommendList = recommendationRepository.findAll();
+							Collections.sort(recommendList, Comparator.comparing(Recommendation::getId).reversed());
+							String refId = generateReferenceId(recommendList.get(0).getId().intValue());
+							recommendation.setIsAppOwnerApproved(false);
+							recommendation.setIsAppOwnerRejected(false);
+							recommendation.setIsAgmApproved(false);
+							recommendation.setReferenceId(refId);
+							recommendation.setUpdatedAt(new Date());
+							recommendationList.add(recommendation);
+							RecommendationTrail trailData = new RecommendationTrail();
+							trailData.setCreatedAt(new Date());
+							trailData.setRecommendationStatus(
+									new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
+							trailData.setReferenceId(refId);
+							recommendatioTrailList.add(trailData);
+							savedRecommendation = recommendationRepository.save(recommendation);
+							recommendationTrailRepository.save(trailData);
 						}
+					}
 
-						Department rcmdDepartment = savedRecommendation.getDepartment();
-						Optional<DepartmentApprover> approver = departmentApproverRepository
-								.findAllByDepartmentId(rcmdDepartment.getId());
+					Department rcmdDepartment = savedRecommendation.getDepartment();
+					Optional<DepartmentApprover> approver = departmentApproverRepository
+							.findAllByDepartmentId(rcmdDepartment.getId());
 
 //						notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
-						notificationService.saveAllNotification(recommendationList, RecommendationStatusEnum.CREATED);
+					notificationService.saveAllNotification(recommendationList, RecommendationStatusEnum.CREATED);
 //						emailTemplateService.sendMailRecommendation(recommendation, RecommendationStatusEnum.CREATED);
-						emailTemplateService.sendAllMailForRecommendation(recommendationList,
-								RecommendationStatusEnum.CREATED);
+					emailTemplateService.sendAllMailForRecommendation(recommendationList,
+							RecommendationStatusEnum.CREATED);
 
-						if (approver != null && approver.isPresent()) {
-							if (approver.get().getApplicationOwner() != null
-									&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-								responseText += "(" + approver.get().getApplicationOwner().getEmail() + ")";
-								return new Response<>(HttpStatus.CREATED.value(), responseText, null);
-							}
+					if (approver != null && approver.isPresent()) {
+						if (approver.get().getApplicationOwner() != null
+								&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+							responseText += "(" + approver.get().getApplicationOwner().getEmail() + ")";
+							return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 						}
-						return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 					}
+					return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
@@ -3857,4 +3866,41 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 	}
 
+	private MultipartFile compressFile(MultipartFile file) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ZipOutputStream zipOut = new ZipOutputStream(bos);
+		zipOut.setLevel(Deflater.DEFAULT_COMPRESSION);
+
+		zipOut.putNextEntry(new ZipEntry(file.getOriginalFilename()));
+
+		byte[] buffer = new byte[1024];
+		int bytesRead;
+
+		InputStream inputStream = new ByteArrayInputStream(file.getBytes());
+		while ((bytesRead = inputStream.read(buffer)) != -1) {
+			zipOut.write(buffer, 0, bytesRead);
+		}
+
+		zipOut.closeEntry();
+		zipOut.close();
+		inputStream.close();
+		MultipartFile multipartFile = convertToMultipartFile(bos, file.getOriginalFilename());
+
+		return multipartFile;
+	}
+
+	public static MultipartFile convertToMultipartFile(ByteArrayOutputStream byteArrayOutputStream, String fileName)
+			throws IOException {
+		InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+
+		DiskFileItemFactory factory = new DiskFileItemFactory();
+		FileItem fileItem = factory.createItem("file", "text/plain", true, fileName);
+		try (InputStream fileInputStream = inputStream) {
+			fileItem.getOutputStream().write(inputStream.readAllBytes());
+		}
+
+		MultipartFile multipartFile = new CommonsMultipartFile(fileItem);
+
+		return multipartFile;
+	}
 }
