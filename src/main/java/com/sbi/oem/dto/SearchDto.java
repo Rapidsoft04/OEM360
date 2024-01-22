@@ -1,6 +1,7 @@
 package com.sbi.oem.dto;
 
 import java.util.Date;
+import java.util.List;
 
 import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.model.Department;
@@ -12,7 +13,7 @@ public class SearchDto {
 	private Long priorityId;
 
 	private String referenceId;
-	
+
 	private Long departmentId;
 
 	private Long statusId;
@@ -24,14 +25,12 @@ public class SearchDto {
 	private Long createdBy;
 
 	private Date updatedAt;
-	
+
 	private Department department;
-	
+
 	private StatusEnum status;
-	
-	
-	
-	
+
+	private List<Long> departmentIds;
 
 	public StatusEnum getStatus() {
 		return status;
@@ -121,5 +120,12 @@ public class SearchDto {
 		this.department = department;
 	}
 
-	
+	public List<Long> getDepartmentIds() {
+		return departmentIds;
+	}
+
+	public void setDepartmentIds(List<Long> departmentIds) {
+		this.departmentIds = departmentIds;
+	}
+
 }

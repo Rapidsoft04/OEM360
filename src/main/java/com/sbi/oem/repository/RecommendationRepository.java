@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import javax.persistence.criteria.Predicate;
 
+import org.hibernate.criterion.Restrictions;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -713,7 +714,9 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				predicates
 						.add(criteriaBuilder.equal(root.get("recommendationType"), searchDto.getRecommendationType()));
 			}
-
+			if (searchDto.getDepartmentIds() != null) {
+				predicates.add(root.get("department").in(searchDto.getDepartmentIds()));
+			}
 			if (searchDto.getPriorityId() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("priorityId"), searchDto.getPriorityId()));
 			}
