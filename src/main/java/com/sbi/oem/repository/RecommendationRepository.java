@@ -756,13 +756,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
 			}
 
-			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			predicates.add(criteriaBuilder.or(criteriaBuilder.equal(root.get("isAgmApproved"), true),
 					criteriaBuilder.equal(root.get("isAgmRejected"), true),
 					criteriaBuilder.equal(root.get("isAppOwnerApproved"), true),
-					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false),
-					criteriaBuilder.equal(root.get("isAgmApproved"), false),
-					criteriaBuilder.equal(root.get("isAgmRejected"), false)));
+					criteriaBuilder.equal(root.get("isAppOwnerApproved"), false)));
+			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
