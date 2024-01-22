@@ -21,6 +21,7 @@ import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.enums.StatusEnum;
+import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Notification;
 import com.sbi.oem.model.Recommendation;
@@ -28,6 +29,7 @@ import com.sbi.oem.model.RecommendationDeplyomentDetails;
 import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.DepartmentApproverRepository;
+import com.sbi.oem.repository.DepartmentRepository;
 import com.sbi.oem.repository.NotificationRepository;
 import com.sbi.oem.repository.RecommendationDeplyomentDetailsRepository;
 import com.sbi.oem.repository.RecommendationRepository;
@@ -42,6 +44,9 @@ public class NotificationServiceImpl implements NotificationService {
 
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
+	
+	@Autowired
+	private DepartmentRepository departmentRepository;
 
 	@Autowired
 	private RecommendationRepository recommendationRepository;
@@ -56,12 +61,16 @@ public class NotificationServiceImpl implements NotificationService {
 			Optional<Recommendation> recommendationObj = recommendationRepository
 					.findByReferenceId(recommendation.getReferenceId());
 			if (recommendation != null && status != null) {
+				
 				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 						.findAllByDepartmentId(recommendation.getDepartment().getId());
 
 				Optional<RecommendationDeplyomentDetails> deplyomentDetails = recommendationdeplyomentDetailsRepository
 						.findByRecommendRefId(recommendation.getReferenceId());
 
+				
+				List<Department> findAllDepartment = departmentRepository.findAll();
+				
 				rejectionMessage = (rejectionMessage != null) ? rejectionMessage : "NA";
 				additionalInformation = (additionalInformation != null) ? additionalInformation : "NA";
 
@@ -224,6 +233,9 @@ public class NotificationServiceImpl implements NotificationService {
 							createNotification(recommendation.getReferenceId(), text, descriptions, user,
 									recommendationStatus);
 						}
+						
+						
+						
 					} else if (status.equals(RecommendationStatusEnum.REVERTED_BY_AGM)) {
 						User appOwner = departmentApprover.get().getApplicationOwner();
 						String text = "";
@@ -295,6 +307,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 					} else if (status.equals(RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS)) {
 						User agm = departmentApprover.get().getAgm();
+		
 						String text = "Recommendation deployment details has been updated";
 
 						String descriptions = "Your recommendation with referenceId = "
@@ -324,12 +337,44 @@ public class NotificationServiceImpl implements NotificationService {
 								
 								+ ". These are the updated overview of the Recommendation.";
 
-						System.out.println("descriptions = " + descriptions);
-
+			
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
 						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
 								recommendationStatus);
+
+						
+                        String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(",");
+						
+
+						for (Department eachDepartment : findAllDepartment) {  
+						    if (Arrays.asList(impactedDepartmentsArray).contains(eachDepartment.getName())) {
+						    	
+						    	Optional<DepartmentApprover> departmentApproverImpactDept = departmentApproverRepository
+										.findAllByDepartmentId(eachDepartment.getId());
+						    	
+						    	User applicationOwner = departmentApproverImpactDept.get().getApplicationOwner();
+						    
+						    	
+						    	 text = "New Recommendation deployment may affected your department";
+
+						    	descriptions = "Related to recommendation with referenceId = "
+				                        + recommendation.getReferenceId()
+				                        + ".  Please note that the implementation of this"
+				                        + " new recommendation could have impact on your department.";
+
+					
+								recommendationStatus = recommendation.getRecommendationStatus();
+
+								createNotification(recommendation.getReferenceId(), text, descriptions, applicationOwner,
+										recommendationStatus);
+						    	
+						    }
+						}
+						
+						
+						
+						
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
 						User agm = departmentApprover.get().getAgm();
 						User oem = recommendation.getCreatedBy();
