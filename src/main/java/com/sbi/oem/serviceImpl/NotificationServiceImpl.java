@@ -44,7 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
-	
+
 	@Autowired
 	private DepartmentRepository departmentRepository;
 
@@ -61,16 +61,15 @@ public class NotificationServiceImpl implements NotificationService {
 			Optional<Recommendation> recommendationObj = recommendationRepository
 					.findByReferenceId(recommendation.getReferenceId());
 			if (recommendation != null && status != null) {
-				
+
 				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 						.findAllByDepartmentId(recommendation.getDepartment().getId());
 
 				Optional<RecommendationDeplyomentDetails> deplyomentDetails = recommendationdeplyomentDetailsRepository
 						.findByRecommendRefId(recommendation.getReferenceId());
 
-				
 				List<Department> findAllDepartment = departmentRepository.findAll();
-				
+
 				rejectionMessage = (rejectionMessage != null) ? rejectionMessage : "NA";
 				additionalInformation = (additionalInformation != null) ? additionalInformation : "NA";
 
@@ -142,7 +141,7 @@ public class NotificationServiceImpl implements NotificationService {
 								+ (deplyomentDetails.get().getImpactedDepartment() != null
 										? deplyomentDetails.get().getImpactedDepartment()
 										: "NA")
-								
+
 								+ " with descriptions as - " + additionalInformation
 								+ " These are the updated overview of the Recommendation.";
 
@@ -150,6 +149,37 @@ public class NotificationServiceImpl implements NotificationService {
 
 						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
 								recommendationStatus);
+						String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(",");
+
+						for (Department eachDepartment : findAllDepartment) {
+							if (Arrays.asList(impactedDepartmentsArray).contains(eachDepartment.getName())) {
+
+								Optional<DepartmentApprover> departmentApproverImpactDept = departmentApproverRepository
+										.findAllByDepartmentId(eachDepartment.getId());
+
+								User departmentAgm = departmentApproverImpactDept.get().getAgm();
+								User appOwner = departmentApproverImpactDept.get().getApplicationOwner();
+								List<User> userList = new ArrayList<>();
+								if (departmentApprover.get().getApplicationOwner().getId().longValue() != appOwner
+										.getId().longValue()) {
+									userList.add(appOwner);
+								}
+								userList.add(departmentAgm);
+
+								text = "New Recommendation deployment may affected your department";
+
+								descriptions = "Related to recommendation with referenceId = "
+										+ recommendation.getReferenceId()
+										+ ".  Please note that the implementation of this"
+										+ " new recommendation could have impact on your department.";
+
+								recommendationStatus = recommendation.getRecommendationStatus();
+
+								createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
+										recommendationStatus);
+
+							}
+						}
 					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
 						User agm = new User();
 						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId()
@@ -222,9 +252,9 @@ public class NotificationServiceImpl implements NotificationService {
 								+ (deplyomentDetails.get().getImpactedDepartment() != null
 										? deplyomentDetails.get().getImpactedDepartment()
 										: "NA")
-								
+
 								+ " with descriptions as - " + additionalInformation
-								
+
 								+ " These are the updated overview of the Recommendation.";
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
@@ -233,9 +263,7 @@ public class NotificationServiceImpl implements NotificationService {
 							createNotification(recommendation.getReferenceId(), text, descriptions, user,
 									recommendationStatus);
 						}
-						
-						
-						
+
 					} else if (status.equals(RecommendationStatusEnum.REVERTED_BY_AGM)) {
 						User appOwner = departmentApprover.get().getApplicationOwner();
 						String text = "";
@@ -307,7 +335,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 					} else if (status.equals(RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS)) {
 						User agm = departmentApprover.get().getAgm();
-		
+
 						String text = "Recommendation deployment details has been updated";
 
 						String descriptions = "Your recommendation with referenceId = "
@@ -332,49 +360,45 @@ public class NotificationServiceImpl implements NotificationService {
 								+ (deplyomentDetails.get().getImpactedDepartment() != null
 										? deplyomentDetails.get().getImpactedDepartment()
 										: "NA")
-								
+
 								+ " with descriptions as - " + additionalInformation
-								
+
 								+ ". These are the updated overview of the Recommendation.";
 
-			
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
 						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
 								recommendationStatus);
 
-						
-                        String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(",");
-						
+						String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(",");
 
-						for (Department eachDepartment : findAllDepartment) {  
-						    if (Arrays.asList(impactedDepartmentsArray).contains(eachDepartment.getName())) {
-						    	
-						    	Optional<DepartmentApprover> departmentApproverImpactDept = departmentApproverRepository
+						for (Department eachDepartment : findAllDepartment) {
+							if (Arrays.asList(impactedDepartmentsArray).contains(eachDepartment.getName())) {
+
+								Optional<DepartmentApprover> departmentApproverImpactDept = departmentApproverRepository
 										.findAllByDepartmentId(eachDepartment.getId());
-						    	
-						    	User applicationOwner = departmentApproverImpactDept.get().getApplicationOwner();
-						    
-						    	
-						    	 text = "New Recommendation deployment may affected your department";
 
-						    	descriptions = "Related to recommendation with referenceId = "
-				                        + recommendation.getReferenceId()
-				                        + ".  Please note that the implementation of this"
-				                        + " new recommendation could have impact on your department.";
+								User departmentAgm = departmentApproverImpactDept.get().getAgm();
+								User appOwner = departmentApproverImpactDept.get().getApplicationOwner();
+								List<User> userList = new ArrayList<>();
+								userList.add(appOwner);
+								userList.add(agm);
 
-					
+								text = "New Recommendation deployment may affected your department";
+
+								descriptions = "Related to recommendation with referenceId = "
+										+ recommendation.getReferenceId()
+										+ ".  Please note that the implementation of this"
+										+ " new recommendation could have impact on your department.";
+
 								recommendationStatus = recommendation.getRecommendationStatus();
 
-								createNotification(recommendation.getReferenceId(), text, descriptions, applicationOwner,
+								createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
 										recommendationStatus);
-						    	
-						    }
+
+							}
 						}
-						
-						
-						
-						
+
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
 						User agm = departmentApprover.get().getAgm();
 						User oem = recommendation.getCreatedBy();
@@ -717,6 +741,27 @@ public class NotificationServiceImpl implements NotificationService {
 		Instant instant = date.toInstant();
 		LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
 		return localDate.format(dateFormatter);
+	}
+
+	public void createNotificationV2(String referenceId, String notificationText, String descriptions, List<User> users,
+			RecommendationStatus status) {
+		try {
+			for (User user : users) {
+				Notification notification = new Notification();
+				notification.setReferenceId(referenceId);
+				notification.setMessage(notificationText);
+				notification.setDescriptions(descriptions);
+				notification.setRecommendationStatus(new RecommendationStatus(status.getId()));
+				notification.setUser(user);
+				notification.setIsSeen(false);
+				notification.setCreatedAt(new Date());
+				notification.setUpdatedAt(new Date());
+				notificationRepository.save(notification);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

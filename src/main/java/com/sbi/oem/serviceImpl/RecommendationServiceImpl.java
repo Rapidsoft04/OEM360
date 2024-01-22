@@ -220,7 +220,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 
 					}
-					String responseText = "Recommendation created successfully. An email will be sent to the application owner";
+					String responseText = "Recommendation created successfully. An email will be sent to the application owner ";
 					Recommendation savedRecommendation = new Recommendation();
 					List<Recommendation> recommendationList = new ArrayList<>();
 					List<RecommendationTrail> recommendatioTrailList = new ArrayList<>();
@@ -259,12 +259,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendatioTrailList.add(trailData);
 							savedRecommendation = recommendationRepository.save(recommendation);
 							recommendationTrailRepository.save(trailData);
+							Optional<DepartmentApprover> approver = departmentApproverRepository
+									.findAllByDepartmentId(id);
+							if (approver != null && approver.isPresent()) {
+								if (approver.get().getApplicationOwner() != null
+										&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+									responseText = responseText + approver.get().getApplicationOwner().getUserName() + "("
+											+ approver.get().getDepartment().getName() + ")";
+									responseText += "(" + approver.get().getApplicationOwner().getEmail() + ") ";
+
+								}
+							}
 						}
 					}
-
-					Department rcmdDepartment = savedRecommendation.getDepartment();
-					Optional<DepartmentApprover> approver = departmentApproverRepository
-							.findAllByDepartmentId(rcmdDepartment.getId());
 
 //						notificationService.save(savedRecommendation, RecommendationStatusEnum.CREATED);
 					notificationService.saveAllNotification(recommendationList, RecommendationStatusEnum.CREATED);
@@ -272,13 +279,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 					emailTemplateService.sendAllMailForRecommendation(recommendationList,
 							RecommendationStatusEnum.CREATED);
 
-					if (approver != null && approver.isPresent()) {
-						if (approver.get().getApplicationOwner() != null
-								&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-							responseText += "(" + approver.get().getApplicationOwner().getEmail() + ")";
-							return new Response<>(HttpStatus.CREATED.value(), responseText, null);
-						}
-					}
 					return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 
 				} else {
@@ -1042,7 +1042,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					if (recommendObj.get().getIsAppOwnerApproved() != null
 							&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
-						String responseText = "Recommendation request accepted";
+						String responseText = "Recommendation request accepted. ";
 						recommendObj.get().setIsAgmApproved(true);
 						recommendObj.get().setRecommendationStatus(
 								new RecommendationStatus(StatusEnum.Approved.getId().longValue()));
@@ -1941,10 +1941,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 							List<Recommendation> updatedRecommendationList = recommendationList.stream()
 									.filter(x -> x.getIsAppOwnerApproved() != null
-											&& (x.getIsAppOwnerApproved().booleanValue() == true)
-											&& (x.getPriorityId() == PriorityEnum.Medium.getId()
-													|| x.getPriorityId() == PriorityEnum.Low.getId()
-													|| x.getPriorityId() == PriorityEnum.High.getId()))
+											&& ((x.getIsAppOwnerApproved().booleanValue() == true
+													&& (x.getPriorityId() == PriorityEnum.Medium.getId()
+															|| x.getPriorityId() == PriorityEnum.Low.getId()
+															|| x.getPriorityId() == PriorityEnum.High.getId()))
+													|| (x.getIsAppOwnerRejected().booleanValue() == true
+															&& (x.getPriorityId() == PriorityEnum.Medium.getId()
+																	|| x.getPriorityId() == PriorityEnum.Low.getId()))))
 									.collect(Collectors.toList());
 							List<DepartmentApprover> departmentApproverList = departmentApproverRepository
 									.findAllByDepartmentIdIn(departmentIds);

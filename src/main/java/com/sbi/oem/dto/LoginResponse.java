@@ -23,6 +23,8 @@ public class LoginResponse {
 
 	private String imageUrl;
 
+	private Boolean hasAccessToUpdateForPastDate;
+
 	public String getEmail() {
 		return email;
 	}
@@ -77,6 +79,14 @@ public class LoginResponse {
 
 	public void setImageUrl(String imageUrl) {
 		this.imageUrl = imageUrl;
+	}
+
+	public Boolean getHasAccessToUpdateForPastDate() {
+		return hasAccessToUpdateForPastDate;
+	}
+
+	public void setHasAccessToUpdateForPastDate(Boolean hasAccessToUpdateForPastDate) {
+		this.hasAccessToUpdateForPastDate = hasAccessToUpdateForPastDate;
 	}
 
 }

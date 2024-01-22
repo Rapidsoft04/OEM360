@@ -16,8 +16,10 @@ import com.sbi.oem.dto.LoginResponse;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.dto.SignUpRequest;
 import com.sbi.oem.enums.UserType;
+import com.sbi.oem.model.CompanyWisePastDateConfiguration;
 import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.User;
+import com.sbi.oem.repository.CompanyWisePastDateConfigurationRepository;
 import com.sbi.oem.repository.CredentialMasterRepository;
 import com.sbi.oem.repository.UserRepository;
 import com.sbi.oem.security.JwtTokenUtil;
@@ -39,6 +41,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private JwtTokenUtil jwtTokenUtil;
+
+	@Autowired
+	private CompanyWisePastDateConfigurationRepository companyWisePastDateConfigurationRepository;
 
 	@Override
 	public Response<?> login(LoginRequest loginRequest) throws Exception {
@@ -66,6 +71,14 @@ public class UserServiceImpl implements UserService {
 							loginResponse.setImageUrl(credentialMaster.getUserId().getUserLogoUrl());
 							loginResponse.setCompany(credentialMaster.getUserId().getCompany());
 						}
+					}
+					Optional<CompanyWisePastDateConfiguration> companyWiseUserPastDateConfiguratioObj = companyWisePastDateConfigurationRepository
+							.findByCompany(loginResponse.getCompany().getId());
+					if(companyWiseUserPastDateConfiguratioObj!=null && companyWiseUserPastDateConfiguratioObj.isPresent()) {
+						loginResponse.setHasAccessToUpdateForPastDate(true);
+					}
+					else {
+						loginResponse.setHasAccessToUpdateForPastDate(false);
 					}
 					return new Response<>(HttpStatus.OK.value(), "Login success.", loginResponse);
 				} else {
