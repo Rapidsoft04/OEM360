@@ -2,6 +2,9 @@ package com.sbi.oem.serviceImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -190,10 +193,32 @@ public class RecommendationServiceImpl implements RecommendationService {
 					String fileUrl = null;
 					if (recommendationAddRequestDto.getFile() != null) {
 						if (recommendationAddRequestDto.getFile().getSize() > 1048576) {
-							MultipartFile compressedFile = compressFile(recommendationAddRequestDto.getFile());
-							recommendationAddRequestDto.setFile(compressedFile);
+							FileOutputStream fos = new FileOutputStream("compressed.zip");
+							ZipOutputStream zipOut = new ZipOutputStream(fos);
+
+							InputStream fis = recommendationAddRequestDto.getFile().getInputStream();
+
+							File fileToZip = new File(recommendationAddRequestDto.getFile().getOriginalFilename());
+							ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
+							zipOut.putNextEntry(zipEntry);
+
+							byte[] bytes = new byte[1024];
+							int length;
+							while ((length = fis.read(bytes)) >= 0) {
+								zipOut.write(bytes, 0, length);
+							}
+
+							zipOut.close();
+							fis.close();
+							fos.close();
+
+							fileUrl = fileSystemStorageService
+									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
+						} else {
+							fileUrl = fileSystemStorageService
+									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
 						}
-						fileUrl = fileSystemStorageService.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
+
 					}
 					String responseText = "Recommendation created successfully. An email will be sent to the application owner";
 					Recommendation savedRecommendation = new Recommendation();
