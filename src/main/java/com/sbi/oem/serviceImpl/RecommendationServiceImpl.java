@@ -1125,7 +1125,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendationMessagesRepository.save(messages);
 						}
 						notificationService.save(recommendation.get(),
-								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null, null);
+								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null, recommendationDetailsRequestDto.getDescription());
 
 						System.out.println("mail send !!");
 
