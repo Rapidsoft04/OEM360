@@ -370,7 +370,7 @@ public class NotificationServiceImpl implements NotificationService {
 						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
 								recommendationStatus);
 
-						String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(",");
+						String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(", ");
 
 						for (Department eachDepartment : findAllDepartment) {
 							if (Arrays.asList(impactedDepartmentsArray).contains(eachDepartment.getName())) {
@@ -381,8 +381,11 @@ public class NotificationServiceImpl implements NotificationService {
 								User departmentAgm = departmentApproverImpactDept.get().getAgm();
 								User appOwner = departmentApproverImpactDept.get().getApplicationOwner();
 								List<User> userList = new ArrayList<>();
-								userList.add(appOwner);
-								userList.add(agm);
+								if (departmentApprover.get().getApplicationOwner().getId().longValue() != appOwner
+										.getId().longValue()) {
+									userList.add(appOwner);
+								}
+								userList.add(departmentAgm);
 
 								text = "New Recommendation deployment may affected your department";
 
