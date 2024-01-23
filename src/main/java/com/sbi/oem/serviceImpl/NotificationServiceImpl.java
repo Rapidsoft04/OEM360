@@ -149,7 +149,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
 								recommendationStatus);
-						String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(",");
+						String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(", ");
 
 						for (Department eachDepartment : findAllDepartment) {
 							if (Arrays.asList(impactedDepartmentsArray).contains(eachDepartment.getName())) {
