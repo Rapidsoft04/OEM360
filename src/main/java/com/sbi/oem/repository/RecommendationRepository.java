@@ -151,7 +151,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			if (searchDto.getCreatedBy() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
 			}
+			if (searchDto.getSearchKey() != null) {
+				criteriaBuilder.or(criteriaBuilder.like(root.get("descriptions"), "%" + searchDto.getSearchKey() + "%"),
+						criteriaBuilder.like(root.get("referenceId"), "%" + searchDto.getSearchKey() + "%"));
 
+			}
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 
 			predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("isAppOwnerApproved"), false),
@@ -271,7 +275,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			if (searchDto.getCreatedBy() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
 			}
+			if (searchDto.getSearchKey() != null) {
+				criteriaBuilder.or(criteriaBuilder.like(root.get("descriptions"), "%" + searchDto.getSearchKey() + "%"),
+						criteriaBuilder.like(root.get("referenceId"), "%" + searchDto.getSearchKey() + "%"));
 
+			}
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			predicates.add(criteriaBuilder.or(criteriaBuilder.equal(root.get("isAppOwnerApproved"), true),
 					criteriaBuilder.equal(root.get("isAgmRejected"), true),
@@ -512,7 +520,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				predicates
 						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
 			}
+			if (searchDto.getSearchKey() != null) {
+				criteriaBuilder.or(criteriaBuilder.like(root.get("descriptions"), "%" + searchDto.getSearchKey() + "%"),
+						criteriaBuilder.like(root.get("referenceId"), "%" + searchDto.getSearchKey() + "%"));
 
+			}
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
@@ -771,35 +783,35 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 		return findAll(specification);
 	}
-	
+
 	default List<Recommendation> findAllRecommendationsByData(RecommendationAddRequestDto requestDto) {
-        Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
+		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
+			List<Predicate> predicates = new ArrayList<>();
 
-            if (requestDto.getDescription() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("descriptions"), requestDto.getDescription()));
-            }
+			if (requestDto.getDescription() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("descriptions"), requestDto.getDescription()));
+			}
 
-            if (requestDto.getTypeId() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("recommendationType"), requestDto.getTypeId()));
-            }
+			if (requestDto.getTypeId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("recommendationType"), requestDto.getTypeId()));
+			}
 
-            if (requestDto.getPriorityId() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("priorityId"), requestDto.getPriorityId()));
-            }
+			if (requestDto.getPriorityId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("priorityId"), requestDto.getPriorityId()));
+			}
 
-            if (requestDto.getRecommendDate() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("recommendDate"), requestDto.getRecommendDate()));
-            }
+			if (requestDto.getRecommendDate() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("recommendDate"), requestDto.getRecommendDate()));
+			}
 
-            if (requestDto.getComponentId() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("component"), requestDto.getComponentId()));
-            }
+			if (requestDto.getComponentId() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("component"), requestDto.getComponentId()));
+			}
 
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-        };
+			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+		};
 
-        return findAll(specification);
-    }
-	
+		return findAll(specification);
+	}
+
 }

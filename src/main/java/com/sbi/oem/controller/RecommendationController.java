@@ -155,7 +155,8 @@ public class RecommendationController {
 			@RequestParam(name = "fromDate", required = false) Date fromDate,
 			@RequestParam(name = "toDate", required = false) Date toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
-			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt,
+			@RequestParam(name = "searchKey", required = false) String searchKey) {
 
 		SearchDto newSearchDto = new SearchDto();
 		newSearchDto.setRecommendationType(recommendationType);
@@ -167,6 +168,7 @@ public class RecommendationController {
 		newSearchDto.setToDate(toDate);
 		newSearchDto.setCreatedBy(createdBy);
 		newSearchDto.setUpdatedAt(updatedAt);
+		newSearchDto.setSearchKey(searchKey);
 		Response<?> response = recommendationService.pendingRecommendationRequestForAppOwner(newSearchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
@@ -181,7 +183,8 @@ public class RecommendationController {
 			@RequestParam(name = "fromDate", required = false) Date fromDate,
 			@RequestParam(name = "toDate", required = false) Date toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
-			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt,
+			@RequestParam(name = "searchKey", required = false) String searchKey) {
 		SearchDto newSearchDto = new SearchDto();
 		newSearchDto.setRecommendationType(recommendationType);
 		newSearchDto.setPriorityId(priorityId);
@@ -192,6 +195,7 @@ public class RecommendationController {
 		newSearchDto.setToDate(toDate);
 		newSearchDto.setCreatedBy(createdBy);
 		newSearchDto.setUpdatedAt(updatedAt);
+		newSearchDto.setSearchKey(searchKey);
 		Response<?> response = recommendationService.approvedRecommendationRequestForAppOwner(newSearchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
@@ -266,7 +270,8 @@ public class RecommendationController {
 			@RequestParam(name = "fromDate", required = false) Date fromDate,
 			@RequestParam(name = "toDate", required = false) Date toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
-			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
+			@RequestParam(name = "updatedAt", required = false) Date updatedAt,
+			@RequestParam(name = "searchKey", required = false) String searchKey) {
 
 		SearchDto searchDto = new SearchDto();
 		searchDto.setRecommendationType(recommendationType);
@@ -278,7 +283,7 @@ public class RecommendationController {
 		searchDto.setToDate(toDate);
 		searchDto.setCreatedBy(createdBy);
 		searchDto.setUpdatedAt(updatedAt);
-
+		searchDto.setSearchKey(searchKey);
 		Response<?> response = recommendationService.viewRecommendationDetailsForOemAndAgmAndGm(searchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 

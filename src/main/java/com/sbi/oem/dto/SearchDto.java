@@ -32,6 +32,8 @@ public class SearchDto {
 
 	private List<Long> departmentIds;
 
+	private String searchKey;
+
 	public StatusEnum getStatus() {
 		return status;
 	}
@@ -126,6 +128,14 @@ public class SearchDto {
 
 	public void setDepartmentIds(List<Long> departmentIds) {
 		this.departmentIds = departmentIds;
+	}
+
+	public String getSearchKey() {
+		return searchKey;
+	}
+
+	public void setSearchKey(String searchKey) {
+		this.searchKey = searchKey;
 	}
 
 }
