@@ -687,86 +687,91 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
-					Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
-							.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
-					if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
-						String responseText = "Deployment details updated successfully. An email will be sent to the AGM";
-						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
-						details.setId(recommendDeployDetails.get().getId());
-						RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
-								.save(details);
-						Optional<Recommendation> recommendation = recommendationRepository
-								.findByReferenceId(details.getRecommendRefId());
-						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
-						recommendation.get().setIsAppOwnerApproved(true);
-						recommendation.get().setUpdatedAt(new Date());
-						Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
-						if (recommendationDetailsRequestDto.getDescription() != null
-								&& (recommendationDetailsRequestDto.getDescription() != "")
-								&& (!recommendationDetailsRequestDto.getDescription().equals(""))) {
-							RecommendationMessages messages = new RecommendationMessages();
-							messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
-							messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
-							messages.setCreatedAt(new Date());
-							messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
-							recommendationMessagesRepository.save(messages);
-						}
-						Department rcmdDepartment = updateRecommendation.getDepartment();
-						Optional<DepartmentApprover> approver = departmentApproverRepository
-								.findAllByDepartmentId(rcmdDepartment.getId());
-
-						notificationService.save(recommendation.get(),
-								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null,
-								recommendationDetailsRequestDto.getDescription());
-
-						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
-								RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
-						if (approver != null && approver.isPresent()) {
-							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-								responseText += "(" + approver.get().getAgm().getEmail() + ")";
-								return new Response<>(HttpStatus.OK.value(), responseText, null);
+					Optional<Recommendation> recommendation = recommendationRepository
+							.findByReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
+					if(recommendation.get().getRecommendDate().after(new Date())) {
+						Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
+								.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
+						if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
+							String responseText = "Deployment details updated successfully. An email will be sent to the AGM";
+							RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
+							details.setId(recommendDeployDetails.get().getId());
+							RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
+									.save(details);
+							
+							recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+							recommendation.get().setIsAppOwnerApproved(true);
+							recommendation.get().setUpdatedAt(new Date());
+							Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
+							if (recommendationDetailsRequestDto.getDescription() != null
+									&& (recommendationDetailsRequestDto.getDescription() != "")
+									&& (!recommendationDetailsRequestDto.getDescription().equals(""))) {
+								RecommendationMessages messages = new RecommendationMessages();
+								messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
+								messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
+								messages.setCreatedAt(new Date());
+								messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
+								recommendationMessagesRepository.save(messages);
 							}
-						}
-						return new Response<>(HttpStatus.OK.value(), responseText, null);
+							Department rcmdDepartment = updateRecommendation.getDepartment();
+							Optional<DepartmentApprover> approver = departmentApproverRepository
+									.findAllByDepartmentId(rcmdDepartment.getId());
 
-					} else {
-						String responseText = "Deployment details added successfully. An email will be sent to the AGM";
-						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
-						details.setCreatedAt(new Date());
-						deplyomentDetailsRepository.save(details);
-						Optional<Recommendation> recommendation = recommendationRepository
-								.findByReferenceId(details.getRecommendRefId());
-						recommendation.get().setRecommendationStatus(
-								new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
-						recommendation.get().setIsAppOwnerApproved(true);
-						recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
-						recommendation.get()
-								.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
-						recommendation.get().setUpdatedAt(new Date());
-						Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
-						RecommendationTrail trail = new RecommendationTrail();
-						trail.setCreatedAt(new Date());
-						trail.setRecommendationStatus(
-								new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
-						trail.setReferenceId(details.getRecommendRefId());
-						recommendationTrailRepository.save(trail);
+							notificationService.save(recommendation.get(),
+									RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null,
+									recommendationDetailsRequestDto.getDescription());
 
-						Department rcmdDepartment = updateRecommendation.getDepartment();
-						Optional<DepartmentApprover> approver = departmentApproverRepository
-								.findAllByDepartmentId(rcmdDepartment.getId());
-
-						notificationService.save(recommendation.get(), RecommendationStatusEnum.APPROVED_BY_APPOWNER,
-								null, null);
-						emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
-								RecommendationStatusEnum.APPROVED_BY_APPOWNER);
-						if (approver != null && approver.isPresent()) {
-							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-								responseText += "(" + approver.get().getAgm().getEmail() + ")";
-								return new Response<>(HttpStatus.CREATED.value(), responseText, null);
+							emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
+									RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
+							if (approver != null && approver.isPresent()) {
+								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+									responseText += "(" + approver.get().getAgm().getEmail() + ")";
+									return new Response<>(HttpStatus.OK.value(), responseText, null);
+								}
 							}
+							return new Response<>(HttpStatus.OK.value(), responseText, null);
+
+						} else {
+							String responseText = "Deployment details added successfully. An email will be sent to the AGM";
+							RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
+							details.setCreatedAt(new Date());
+							deplyomentDetailsRepository.save(details);
+							recommendation.get().setRecommendationStatus(
+									new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
+							recommendation.get().setIsAppOwnerApproved(true);
+							recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+							recommendation.get()
+									.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
+							recommendation.get().setUpdatedAt(new Date());
+							Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
+							RecommendationTrail trail = new RecommendationTrail();
+							trail.setCreatedAt(new Date());
+							trail.setRecommendationStatus(
+									new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
+							trail.setReferenceId(details.getRecommendRefId());
+							recommendationTrailRepository.save(trail);
+
+							Department rcmdDepartment = updateRecommendation.getDepartment();
+							Optional<DepartmentApprover> approver = departmentApproverRepository
+									.findAllByDepartmentId(rcmdDepartment.getId());
+
+							notificationService.save(recommendation.get(), RecommendationStatusEnum.APPROVED_BY_APPOWNER,
+									null, null);
+							emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
+									RecommendationStatusEnum.APPROVED_BY_APPOWNER);
+							if (approver != null && approver.isPresent()) {
+								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+									responseText += "(" + approver.get().getAgm().getEmail() + ")";
+									return new Response<>(HttpStatus.CREATED.value(), responseText, null);
+								}
+							}
+							return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 						}
-						return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 					}
+					else {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation date expired.", null);
+					}
+					
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(),
 							"You have no access to provide deployment details.", null);
