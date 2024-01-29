@@ -707,8 +707,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 							RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
 									.save(details);
 
-							recommendation.get()
-									.setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+//							recommendation.get()
+//									.setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 							recommendation.get().setIsAppOwnerApproved(true);
 							recommendation.get().setUpdatedAt(new Date());
 							Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
@@ -749,8 +749,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendation.get().setRecommendationStatus(
 									new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
 							recommendation.get().setIsAppOwnerApproved(true);
-							recommendation.get()
-									.setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+//							recommendation.get()
+//									.setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 							recommendation.get()
 									.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
 							recommendation.get().setUpdatedAt(new Date());
