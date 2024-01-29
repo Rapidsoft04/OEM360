@@ -189,6 +189,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
+					if (checkIfRecommendationAlreadyExist(recommendationAddRequestDto).equals(Boolean.valueOf(true))) {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation already reported", null);
+					}
 
 					String fileUrl = null;
 					if (recommendationAddRequestDto.getFile() != null) {
@@ -243,8 +246,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 									new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
 							recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
 							List<Recommendation> recommendList = recommendationRepository.findAll();
-							Collections.sort(recommendList, Comparator.comparing(Recommendation::getId).reversed());
-							String refId = generateReferenceId(recommendList.get(0).getId().intValue());
+
+							Integer size = 0;
+							if (recommendationList != null && recommendationList.size() > 0) {
+								Collections.sort(recommendList, Comparator.comparing(Recommendation::getId).reversed());
+								size = recommendList.get(0).getId().intValue();
+							} 
+							String refId = generateReferenceId(size);
 							recommendation.setIsAppOwnerApproved(false);
 							recommendation.setIsAppOwnerRejected(false);
 							recommendation.setIsAgmApproved(false);
@@ -288,6 +296,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
 		}
 	}
@@ -689,7 +698,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 					Optional<Recommendation> recommendation = recommendationRepository
 							.findByReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
-					if(recommendation.get().getRecommendDate().after(new Date())) {
+					if (recommendation.get().getRecommendDate().after(new Date())) {
 						Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
 								.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
 						if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
@@ -698,8 +707,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 							details.setId(recommendDeployDetails.get().getId());
 							RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
 									.save(details);
-							
-							recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+
+							recommendation.get()
+									.setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 							recommendation.get().setIsAppOwnerApproved(true);
 							recommendation.get().setUpdatedAt(new Date());
 							Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
@@ -721,7 +731,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 									RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null,
 									recommendationDetailsRequestDto.getDescription());
 
-							emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
+							emailTemplateService.sendMailRecommendationDeplyomentDetails(
+									recommendationDetailsRequestDto,
 									RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
@@ -739,7 +750,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendation.get().setRecommendationStatus(
 									new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
 							recommendation.get().setIsAppOwnerApproved(true);
-							recommendation.get().setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+							recommendation.get()
+									.setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
 							recommendation.get()
 									.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
 							recommendation.get().setUpdatedAt(new Date());
@@ -755,10 +767,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 							Optional<DepartmentApprover> approver = departmentApproverRepository
 									.findAllByDepartmentId(rcmdDepartment.getId());
 
-							notificationService.save(recommendation.get(), RecommendationStatusEnum.APPROVED_BY_APPOWNER,
-									null, null);
-							emailTemplateService.sendMailRecommendationDeplyomentDetails(recommendationDetailsRequestDto,
-									RecommendationStatusEnum.APPROVED_BY_APPOWNER);
+							notificationService.save(recommendation.get(),
+									RecommendationStatusEnum.APPROVED_BY_APPOWNER, null, null);
+							emailTemplateService.sendMailRecommendationDeplyomentDetails(
+									recommendationDetailsRequestDto, RecommendationStatusEnum.APPROVED_BY_APPOWNER);
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
 									responseText += "(" + approver.get().getAgm().getEmail() + ")";
@@ -767,11 +779,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 							}
 							return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 						}
-					}
-					else {
+					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation date expired.", null);
 					}
-					
+
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(),
 							"You have no access to provide deployment details.", null);
@@ -3926,5 +3937,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 		MultipartFile multipartFile = new CommonsMultipartFile(fileItem);
 
 		return multipartFile;
+	}
+
+	public Boolean checkIfRecommendationAlreadyExist(RecommendationAddRequestDto addRequestDto) {
+		List<Recommendation> rcmds = recommendationRepository.findAllRecommendationsByData(addRequestDto);
+		List<Long> departmentIds = addRequestDto.getDepartmentIds();
+		List<Long> rcmdDepartmentIds = rcmds.stream().filter(e -> e.getDepartment() != null)
+				.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
+		if (rcmdDepartmentIds.containsAll(departmentIds)) {
+			return true;
+		} else {
+			return false;
+		}
+
 	}
 }

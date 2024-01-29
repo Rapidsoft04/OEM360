@@ -17,6 +17,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.SearchDto;
 import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.model.Recommendation;
@@ -770,4 +771,35 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 		return findAll(specification);
 	}
+	
+	default List<Recommendation> findAllRecommendationsByData(RecommendationAddRequestDto requestDto) {
+        Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (requestDto.getDescription() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("descriptions"), requestDto.getDescription()));
+            }
+
+            if (requestDto.getTypeId() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("recommendationType"), requestDto.getTypeId()));
+            }
+
+            if (requestDto.getPriorityId() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("priorityId"), requestDto.getPriorityId()));
+            }
+
+            if (requestDto.getRecommendDate() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("recommendDate"), requestDto.getRecommendDate()));
+            }
+
+            if (requestDto.getComponentId() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("component"), requestDto.getComponentId()));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return findAll(specification);
+    }
+	
 }
