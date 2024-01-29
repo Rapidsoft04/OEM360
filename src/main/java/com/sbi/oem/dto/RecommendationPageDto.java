@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.Department;
+import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.RecommendationType;
 
 public class RecommendationPageDto {
@@ -12,6 +13,7 @@ public class RecommendationPageDto {
 	private List<PriorityResponseDto> priorityList;
 	private List<Department> departmentList;
 	private List<Component> componentList;
+	private List<RecommendationStatus> statusList;
 
 	public List<RecommendationType> getRecommendationTypeList() {
 		return recommendationTypeList;
@@ -43,6 +45,14 @@ public class RecommendationPageDto {
 
 	public void setComponentList(List<Component> componentList) {
 		this.componentList = componentList;
+	}
+
+	public List<RecommendationStatus> getStatusList() {
+		return statusList;
+	}
+
+	public void setStatusList(List<RecommendationStatus> statusList) {
+		this.statusList = statusList;
 	}
 
 }

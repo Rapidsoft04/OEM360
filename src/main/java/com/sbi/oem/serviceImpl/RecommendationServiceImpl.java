@@ -150,28 +150,27 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				RecommendationPageDto recommendationPageDto = new RecommendationPageDto();
-				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 
-					List<RecommendationType> recommendationList = recommendationTypeRepository
-							.findAllByCompanyId(companyId);
-					recommendationPageDto.setRecommendationTypeList(recommendationList);
-					List<Department> departmentList = departmentRepository.findAllByCompanyId(companyId);
-					recommendationPageDto.setDepartmentList(departmentList);
-					List<Component> componentList = componentRepository.findAllByCompanyId(companyId);
-					recommendationPageDto.setComponentList(componentList);
-					List<PriorityEnum> priorityEnumList = Arrays.asList(PriorityEnum.values());
-					List<PriorityResponseDto> priorityResponse = new ArrayList<>();
-					for (PriorityEnum enums : priorityEnumList) {
-						PriorityResponseDto dto = new PriorityResponseDto();
-						dto.setId(enums.getId());
-						dto.setName(enums.getName());
-						priorityResponse.add(dto);
-					}
-					recommendationPageDto.setPriorityList(priorityResponse);
-					return new Response<>(HttpStatus.OK.value(), "Recommendation page data.", recommendationPageDto);
-				} else {
-					return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found.", recommendationPageDto);
+				List<RecommendationType> recommendationList = recommendationTypeRepository
+						.findAllByCompanyId(companyId);
+				recommendationPageDto.setRecommendationTypeList(recommendationList);
+				List<Department> departmentList = departmentRepository.findAllByCompanyId(companyId);
+				recommendationPageDto.setDepartmentList(departmentList);
+				List<Component> componentList = componentRepository.findAllByCompanyId(companyId);
+				recommendationPageDto.setComponentList(componentList);
+				List<PriorityEnum> priorityEnumList = Arrays.asList(PriorityEnum.values());
+				List<PriorityResponseDto> priorityResponse = new ArrayList<>();
+				for (PriorityEnum enums : priorityEnumList) {
+					PriorityResponseDto dto = new PriorityResponseDto();
+					dto.setId(enums.getId());
+					dto.setName(enums.getName());
+					priorityResponse.add(dto);
 				}
+				recommendationPageDto.setPriorityList(priorityResponse);
+				List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+				recommendationPageDto.setStatusList(statusList);
+				return new Response<>(HttpStatus.OK.value(), "Recommendation page data.", recommendationPageDto);
+
 			} else {
 				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
 			}
@@ -251,7 +250,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							if (recommendationList != null && recommendationList.size() > 0) {
 								Collections.sort(recommendList, Comparator.comparing(Recommendation::getId).reversed());
 								size = recommendList.get(0).getId().intValue();
-							} 
+							}
 							String refId = generateReferenceId(size);
 							recommendation.setIsAppOwnerApproved(false);
 							recommendation.setIsAppOwnerRejected(false);
@@ -2076,7 +2075,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 					if (departmentIds != null && departmentIds.size() > 0) {
 						for (Long departmentId : departmentIds) {
-							searchDto.setDepartmentId(departmentId);
+							if (searchDto.getDepartmentId() == null) {
+								searchDto.setDepartmentId(departmentId);
+							}
 
 							List<Recommendation> recommendationList = recommendationRepository
 									.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
