@@ -264,8 +264,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getApplicationOwner() != null
 										&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-									responseText = responseText + approver.get().getApplicationOwner().getUserName() + "("
-											+ approver.get().getDepartment().getName() + ")";
+									responseText = responseText + approver.get().getApplicationOwner().getUserName()
+											+ "(" + approver.get().getDepartment().getName() + ")";
 									responseText += "(" + approver.get().getApplicationOwner().getEmail() + ") ";
 
 								}
@@ -1033,7 +1033,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Override
 	public Response<?> acceptRecommendationRequestByAgm(
-			RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+			RecommendationDetailsRequestDto recommendationRejectionRequestDto) {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
@@ -1046,6 +1046,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendObj.get().setIsAgmApproved(true);
 						recommendObj.get().setRecommendationStatus(
 								new RecommendationStatus(StatusEnum.Approved.getId().longValue()));
+						recommendObj.get().setUpdatedAt(new Date());
 						Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
 						RecommendationTrail trailData = new RecommendationTrail();
 						trailData.setCreatedAt(new Date());
@@ -1053,16 +1054,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 								new RecommendationStatus(StatusEnum.Approved.getId().longValue()));
 						trailData.setReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 						recommendationTrailRepository.save(trailData);
-						if (recommendationRejectionRequestDto.getAddtionalInformation() != null
-								&& recommendationRejectionRequestDto.getAddtionalInformation() != ""
-								&& !(recommendationRejectionRequestDto.getAddtionalInformation().isEmpty())) {
-							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
+						if (recommendationRejectionRequestDto.getDescription() != null
+								&& recommendationRejectionRequestDto.getDescription() != ""
+								&& !(recommendationRejectionRequestDto.getDescription().isEmpty())) {
+							RecommendationMessages messages = new RecommendationMessages();
+							messages.setAdditionalMessage(recommendationRejectionRequestDto.getDescription());
+							messages.setCreatedBy(recommendationRejectionRequestDto.getCreatedBy());
+							messages.setReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 							messages.setCreatedAt(new Date());
 							recommendationMessagesRepository.save(messages);
 						}
 
 						notificationService.save(recommendObj.get(), RecommendationStatusEnum.APPROVED_BY_AGM, null,
-								recommendationRejectionRequestDto.getAddtionalInformation());
+								recommendationRejectionRequestDto.getDescription());
 
 						emailTemplateService.sendMailRecommendation(recommendObj.get(),
 								RecommendationStatusEnum.APPROVED_BY_AGM);
@@ -1829,7 +1833,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 									Collections.sort(updatedMessageList,
 											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
 									if (updatedMessageList != null && updatedMessageList.size() > 0) {
-										String message = updatedMessageList.get(0).getRejectionReason();
+										String message = "";
+										if (updatedMessageList.get(0).getRejectionReason() != null) {
+											message = updatedMessageList.get(0).getRejectionReason();
+										} else {
+											message = updatedMessageList.get(0).getAdditionalMessage();
+										}
 										responseDto.setPastExperienceComment(message);
 									}
 									responseDto.setMessageList(messageList);
@@ -1973,7 +1982,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 									Collections.sort(updatedMessageList,
 											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
 									if (updatedMessageList != null && updatedMessageList.size() > 0) {
-										String message = updatedMessageList.get(0).getRejectionReason();
+										String message = "";
+										if (updatedMessageList.get(0).getRejectionReason() != null) {
+											message = updatedMessageList.get(0).getRejectionReason();
+										} else {
+											message = updatedMessageList.get(0).getAdditionalMessage();
+										}
 										responseDto.setPastExperienceComment(message);
 									}
 									responseDto.setMessageList(messageList);

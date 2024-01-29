@@ -29,7 +29,7 @@ public interface RecommendationService {
 
 	Response<?> rejectRecommendationByAgm(RecommendationRejectionRequestDto recommendationRejectionRequestDto);
 
-	Response<?> acceptRecommendationRequestByAgm(RecommendationRejectionRequestDto recommendationRejectionRequestDto);
+	Response<?> acceptRecommendationRequestByAgm(RecommendationDetailsRequestDto recommendationRejectionRequestDto);
 
 	Response<?> updateDeploymentDetails(RecommendationDetailsRequestDto recommendationDetailsRequestDto);
 

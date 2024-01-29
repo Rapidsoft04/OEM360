@@ -119,7 +119,7 @@ public class RecommendationController {
 
 	@PostMapping("/request/accept/by/agm")
 	public ResponseEntity<?> acceptRecommendationByAgm(
-			@RequestBody RecommendationRejectionRequestDto recommendationRejectionRequestDto) {
+			@RequestBody RecommendationDetailsRequestDto recommendationRejectionRequestDto) {
 		Response<?> response = recommendationService
 				.acceptRecommendationRequestByAgm(recommendationRejectionRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
