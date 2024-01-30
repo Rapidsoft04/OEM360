@@ -48,24 +48,34 @@ public class ValidationServiceImpl implements ValidationService {
 		} else if (recommendationDetailsRequestDto.getImpactedDepartment() == null
 				|| recommendationDetailsRequestDto.getImpactedDepartment() == "") {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please select the impacted department.", null);
-		} else if (recommendationDetailsRequestDto.getDevelopmentStartDate()
-				.after(recommendationDetailsRequestDto.getDeploymentDate())) {
+		} else if ((recommendationDetailsRequestDto.getDevelopmentStartDate()
+				.after(recommendationDetailsRequestDto.getDeploymentDate()))
+				|| (!recommendationDetailsRequestDto.getDevelopmentStartDate()
+						.equals(recommendationDetailsRequestDto.getDeploymentDate()))) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(),
 					"Development start date should be before the deployment date.", null);
-		} else if (recommendationDetailsRequestDto.getDevelopementEndDate()
-				.after(recommendationDetailsRequestDto.getDeploymentDate())) {
+		} else if ((recommendationDetailsRequestDto.getDevelopementEndDate()
+				.after(recommendationDetailsRequestDto.getDeploymentDate()))
+				|| (!recommendationDetailsRequestDto.getDevelopementEndDate()
+						.equals(recommendationDetailsRequestDto.getDeploymentDate()))) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(),
 					"Development end date should be before the deployment date.", null);
-		} else if (recommendationDetailsRequestDto.getTestCompletionDate()
-				.after(recommendationDetailsRequestDto.getDeploymentDate())) {
+		} else if ((recommendationDetailsRequestDto.getTestCompletionDate()
+				.after(recommendationDetailsRequestDto.getDeploymentDate()))
+				|| (!recommendationDetailsRequestDto.getTestCompletionDate()
+						.equals(recommendationDetailsRequestDto.getDeploymentDate()))) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(),
 					"Test completion date should be before the deployment date.", null);
-		} else if (recommendationDetailsRequestDto.getDevelopmentStartDate()
-				.after(recommendationDetailsRequestDto.getDevelopementEndDate())) {
+		} else if ((recommendationDetailsRequestDto.getDevelopmentStartDate()
+				.after(recommendationDetailsRequestDto.getDevelopementEndDate()))
+				|| (!recommendationDetailsRequestDto.getDevelopmentStartDate()
+						.equals(recommendationDetailsRequestDto.getDevelopementEndDate()))) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(),
 					"Development start date should be before the development end date.", null);
-		} else if (recommendationDetailsRequestDto.getDevelopementEndDate()
-				.after(recommendationDetailsRequestDto.getTestCompletionDate())) {
+		} else if ((recommendationDetailsRequestDto.getDevelopementEndDate()
+				.after(recommendationDetailsRequestDto.getTestCompletionDate()))
+				|| (!recommendationDetailsRequestDto.getDevelopementEndDate()
+						.equals(recommendationDetailsRequestDto.getTestCompletionDate()))) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(),
 					"Development end date should be before the test completion date.", null);
 		} else {

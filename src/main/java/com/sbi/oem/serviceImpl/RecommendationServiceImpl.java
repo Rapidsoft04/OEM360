@@ -247,9 +247,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 							List<Recommendation> recommendList = recommendationRepository.findAll();
 
 							Integer size = 0;
-							if (recommendationList != null && recommendationList.size() > 0) {
+							if (recommendList != null && recommendList.size() > 0) {
 								Collections.sort(recommendList, Comparator.comparing(Recommendation::getId).reversed());
-								size = recommendList.get(0).getId().intValue();
+								size = size+recommendList.get(0).getId().intValue();
 							}
 							String refId = generateReferenceId(size);
 							recommendation.setIsAppOwnerApproved(false);
