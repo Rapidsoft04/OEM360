@@ -697,15 +697,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findByReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
 
 					Date recommendationDate = recommendation.get().getRecommendDate();
-					Calendar midnightRecommendDate = Calendar.getInstance();
-					midnightRecommendDate.setTime(recommendationDate);
-					midnightRecommendDate.set(Calendar.HOUR_OF_DAY, 0);
-					midnightRecommendDate.set(Calendar.MINUTE, 0);
-					midnightRecommendDate.set(Calendar.SECOND, 0);
-					midnightRecommendDate.set(Calendar.MILLISECOND, 0);
-
-					// Set the recommendationDate to midnight (12:00 AM)
-					recommendation.get().setRecommendDate(midnightRecommendDate.getTime());
+					SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd");
+					String dateString = date.format(recommendationDate);
+					SimpleDateFormat time = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+					String dateStrings = dateString + " 23:59:00";
+					Date updatedRecommendedDate = time.parse(dateStrings);
+					
+					recommendation.get().setRecommendDate(updatedRecommendedDate);
 
 					if (recommendation.get().getRecommendDate().after(new Date())) {
 
