@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -249,7 +250,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							Integer size = 0;
 							if (recommendList != null && recommendList.size() > 0) {
 								Collections.sort(recommendList, Comparator.comparing(Recommendation::getId).reversed());
-								size = size+recommendList.get(0).getId().intValue();
+								size = size + recommendList.get(0).getId().intValue();
 							}
 							String refId = generateReferenceId(size);
 							recommendation.setIsAppOwnerApproved(false);
@@ -697,7 +698,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 					Optional<Recommendation> recommendation = recommendationRepository
 							.findByReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
-					if (recommendation.get().getRecommendDate().after(new Date())) {
+//					if (recommendation.get().getRecommendDate().after(new Date())) {
+					Calendar midnightToday = Calendar.getInstance();
+					midnightToday.set(Calendar.HOUR_OF_DAY, 0);
+					midnightToday.set(Calendar.MINUTE, 0);
+					midnightToday.set(Calendar.SECOND, 0);
+					midnightToday.set(Calendar.MILLISECOND, 0);
+					if (recommendation.get().getRecommendDate().after(midnightToday.getTime())) {
 						Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
 								.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
 						if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
