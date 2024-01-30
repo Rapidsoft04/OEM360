@@ -2081,14 +2081,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findAllByUserId(master.get().getUserId().getId());
 
 					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
-							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());
-
-					if (departmentIds != null && departmentIds.size() > 0) {
-						for (Long departmentId : departmentIds) {
-							if (searchDto.getDepartmentId() == null) {
-								searchDto.setDepartmentId(departmentId);
-							}
-
+							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());						
+							
+					
 							List<Recommendation> recommendationList = recommendationRepository
 									.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
 
@@ -2177,9 +2172,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 								}
 
 							}
-						}
+						
 
-					}
+					
 					responseDtos.setPendingRecommendation(recommendations);
 
 					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation List DGM.", responseDtos);

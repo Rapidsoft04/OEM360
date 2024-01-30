@@ -477,12 +477,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 		Specification<Recommendation> specification = (root, query, criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
-			if (searchDto.getSearchKey() != null) {
-				predicates.add(criteriaBuilder.or(
-						criteriaBuilder.like(root.get("descriptions"), "%" + searchDto.getSearchKey() + "%"),
-						criteriaBuilder.like(root.get("referenceId"), "%" + searchDto.getSearchKey() + "%")));
 
-			}
 			if (id != null) {
 				predicates.add(criteriaBuilder.equal(root.get("createdBy"), id));
 			}
@@ -531,7 +526,12 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
 			}
+			if (searchDto.getSearchKey() != null) {
+				predicates.add(criteriaBuilder.or(
+						criteriaBuilder.like(root.get("descriptions"), "%" + searchDto.getSearchKey() + "%"),
+						criteriaBuilder.like(root.get("referenceId"), "%" + searchDto.getSearchKey() + "%")));
 
+			}
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
@@ -662,7 +662,12 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			if (searchDto.getCreatedBy() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
 			}
+			if (searchDto.getSearchKey() != null) {
+				predicates.add(criteriaBuilder.or(
+						criteriaBuilder.like(root.get("descriptions"), "%" + searchDto.getSearchKey() + "%"),
+						criteriaBuilder.like(root.get("referenceId"), "%" + searchDto.getSearchKey() + "%")));
 
+			}
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -719,7 +724,12 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			if (searchDto.getCreatedBy() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
 			}
+			if (searchDto.getSearchKey() != null) {
+				predicates.add(criteriaBuilder.or(
+						criteriaBuilder.like(root.get("descriptions"), "%" + searchDto.getSearchKey() + "%"),
+						criteriaBuilder.like(root.get("referenceId"), "%" + searchDto.getSearchKey() + "%")));
 
+			}
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -770,7 +780,12 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				predicates
 						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
 			}
+			if (searchDto.getSearchKey() != null) {
+				predicates.add(criteriaBuilder.or(
+						criteriaBuilder.like(root.get("descriptions"), "%" + searchDto.getSearchKey() + "%"),
+						criteriaBuilder.like(root.get("referenceId"), "%" + searchDto.getSearchKey() + "%")));
 
+			}
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				Date toDate = DateUtil.convertISTtoUTC(searchDto.getToDate());
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
