@@ -3,7 +3,6 @@ package com.sbi.oem.serviceImpl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,11 +35,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.hibernate.internal.build.AllowSysOut;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -698,13 +695,20 @@ public class RecommendationServiceImpl implements RecommendationService {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 					Optional<Recommendation> recommendation = recommendationRepository
 							.findByReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
-//					if (recommendation.get().getRecommendDate().after(new Date())) {
-					Calendar midnightToday = Calendar.getInstance();
-					midnightToday.set(Calendar.HOUR_OF_DAY, 0);
-					midnightToday.set(Calendar.MINUTE, 0);
-					midnightToday.set(Calendar.SECOND, 0);
-					midnightToday.set(Calendar.MILLISECOND, 0);
-					if (recommendation.get().getRecommendDate().after(midnightToday.getTime())) {
+
+					Date recommendationDate = recommendation.get().getRecommendDate();
+					Calendar midnightRecommendDate = Calendar.getInstance();
+					midnightRecommendDate.setTime(recommendationDate);
+					midnightRecommendDate.set(Calendar.HOUR_OF_DAY, 0);
+					midnightRecommendDate.set(Calendar.MINUTE, 0);
+					midnightRecommendDate.set(Calendar.SECOND, 0);
+					midnightRecommendDate.set(Calendar.MILLISECOND, 0);
+
+					// Set the recommendationDate to midnight (12:00 AM)
+					recommendation.get().setRecommendDate(midnightRecommendDate.getTime());
+
+					if (recommendation.get().getRecommendDate().after(new Date())) {
+
 						Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
 								.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
 						if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
@@ -786,7 +790,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 							return new Response<>(HttpStatus.CREATED.value(), responseText, null);
 						}
 					} else {
-						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation date expired.", null);
+						return new Response<>(HttpStatus.BAD_REQUEST.value(),
+								"Recommendation end date exceed unable to perform any action", null);
 					}
 
 				} else {
