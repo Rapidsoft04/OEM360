@@ -630,7 +630,9 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			if (searchDto.getReferenceId() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("referenceId"), searchDto.getReferenceId()));
 			}
-
+			if (searchDto.getDepartmentIds() != null) {
+				predicates.add(root.get("department").in(searchDto.getDepartmentIds()));
+			}
 			if (searchDto.getDepartmentId() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("department"), searchDto.getDepartmentId()));
 			}
