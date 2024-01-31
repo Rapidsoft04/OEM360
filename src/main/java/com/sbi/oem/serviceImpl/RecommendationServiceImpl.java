@@ -2082,14 +2082,34 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());						
-							
-					
-							List<Recommendation> recommendationList = recommendationRepository
-									.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
 
-							List<Recommendation> recommendationListHighPriority = recommendationList.stream()
-									.filter(x -> x.getPriorityId() == PriorityEnum.High.getId().longValue())
-									.filter(x -> x.getIsAppOwnerRejected().booleanValue() == true)
+					searchDto.setDepartmentIds(departmentIds);
+					List<Recommendation> recommendationList = recommendationRepository
+							.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
+
+					List<Recommendation> recommendationListHighPriority = recommendationList.stream()
+							.filter(x -> x.getPriorityId() == PriorityEnum.High.getId().longValue())
+							.filter(x -> x.getIsAppOwnerRejected().booleanValue() == true).collect(Collectors.toList());
+
+					List<DepartmentApprover> departmentApproverList = departmentApproverRepository
+							.findAllByDepartmentIdIn(departmentIds);
+					Map<Long, DepartmentApprover> departmentApproverMap = new HashMap<>();
+					if (departmentApproverList != null && departmentApproverList.size() > 0) {
+						for (DepartmentApprover approver : departmentApproverList) {
+							if (!departmentApproverMap.containsKey(approver.getDepartment().getId().longValue())) {
+								departmentApproverMap.put(approver.getDepartment().getId(), approver);
+							}
+						}
+					}
+					for (Recommendation rcmnd : recommendationListHighPriority) {
+						RecommendationResponseDto responseDto = rcmnd.convertToDto();
+						List<RecommendationMessages> messageList = recommendationMessagesRepository
+								.findAllByReferenceId(rcmnd.getReferenceId());
+
+						if (messageList != null && messageList.size() > 0) {
+							List<RecommendationMessages> updatedMessageList = messageList.stream()
+									.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+											.longValue() == master.get().getUserId().getId().longValue())
 									.collect(Collectors.toList());
 
 							List<DepartmentApprover> departmentApproverList = departmentApproverRepository
