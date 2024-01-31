@@ -15,6 +15,9 @@ public interface DepartmentApproverRepository extends JpaRepository<DepartmentAp
 	@Query(value = "SELECT * FROM department_approver where department_id=?1", nativeQuery = true)
 	Optional<DepartmentApprover> findAllByDepartmentId(Long id);
 
+	@Query(value = "SELECT * FROM department_approver WHERE department_id = ?1 AND (app_owner_id = ?2 OR agm_id = ?2 OR dgm_id = ?2)", nativeQuery = true)
+	Optional<DepartmentApprover> findAllByDepartmentId2(Long departmentId, Long userId);
+
 	@Query(value = "SELECT * FROM department_approver where app_owner_id=?1 or agm_id=?1 or dgm_id=?1", nativeQuery = true)
 	List<DepartmentApprover> findAllByUserId(Long userId);
 
@@ -23,7 +26,7 @@ public interface DepartmentApproverRepository extends JpaRepository<DepartmentAp
 
 	@Query(value = "SELECT * FROM department_approver where agm_id=?1", nativeQuery = true)
 	Optional<DepartmentApprover> findByAgmId(Long id);
-	
+
 	@Query(value = "SELECT * FROM department_approver where app_owner_id=?1", nativeQuery = true)
 	Optional<DepartmentApprover> findByAppOwnerId(Long id);
 
