@@ -70,6 +70,7 @@ import com.sbi.oem.model.RecommendationTrail;
 import com.sbi.oem.model.RecommendationType;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.ComponentRepository;
+import com.sbi.oem.repository.CredentialMasterRepository;
 import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.DepartmentRepository;
 import com.sbi.oem.repository.RecommendationDeplyomentDetailsRepository;
@@ -124,6 +125,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
+	
+	@Autowired
+	private CredentialMasterRepository credentialMasterRepository;
 
 	@SuppressWarnings("rawtypes")
 	@Lookup
@@ -364,6 +368,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 					List<RecommendationResponseDto> recommendations = new ArrayList<>();
 					List<DepartmentApprover> departmentList = departmentApproverRepository
 							.findAllByUserId(master.get().getUserId().getId());
+					List<CredentialMaster> seniorManagementList = credentialMasterRepository
+							.findByUserTypeId(UserType.GM_IT_INFRA);
+					List<User> seniorManagementUsers = new ArrayList<>();
+					if (seniorManagementList != null && seniorManagementList.size() > 0) {
+						seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
+								.collect(Collectors.toList());
+					}
 					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 							.map(e -> e.getDepartment().getId()).collect(Collectors.toList());
 
@@ -694,7 +705,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 					Optional<Recommendation> recommendation = recommendationRepository
 							.findByReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
-
+					
+					List<CredentialMaster> seniorManagementList = credentialMasterRepository
+							.findByUserTypeId(UserType.GM_IT_INFRA);
+					List<User> seniorManagementUsers = new ArrayList<>();
+					if (seniorManagementList != null && seniorManagementList.size() > 0) {
+						seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
+								.collect(Collectors.toList());
+					}
 					Date recommendationDate = recommendation.get().getRecommendDate();
 					SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd");
 					String dateString = date.format(recommendationDate);
@@ -709,7 +727,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
 								.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
 						if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
-							String responseText = "Deployment details updated successfully. An email will be sent to the AGM";
+							String responseText = "Deployment details updated successfully. An email will be sent to the AGM ";
 							RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
 							details.setId(recommendDeployDetails.get().getId());
 							RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
@@ -743,7 +761,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 									RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-									responseText += "(" + approver.get().getAgm().getEmail() + ")";
+									responseText += "(" + approver.get().getAgm().getEmail() + ") and senior management ";
+									
+									for(User user : seniorManagementUsers) {
+										responseText += "(" + user.getEmail() + ") ";
+									}
+									
 									return new Response<>(HttpStatus.OK.value(), responseText, null);
 								}
 							}
