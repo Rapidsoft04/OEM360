@@ -813,7 +813,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
-					String responseText = "Recommendation rejected successfully. An email will be sent to the AGM";
+					String responseText = "Recommendation rejected successfully. An email will be sent to the ";
 
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendation.getRecommendRefId());
@@ -844,9 +844,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendation.getRejectionMessage(), recommendation.getAddtionalInformation());
 					emailTemplateService.sendMailRecommendationMessages(messages,
 							RecommendationStatusEnum.REJECTED_BY_APPOWNER);
-					if (approver != null && approver.isPresent()) {
+					if (approver != null && approver.isPresent() && (recommendObj.get().getPriorityId()
+							.longValue() != PriorityEnum.High.getId().longValue())) {
 						if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-							responseText += "(" + approver.get().getAgm().getEmail() + ")";
+							responseText += "AGM (" + approver.get().getAgm().getEmail() + ")";
+							return new Response<>(HttpStatus.OK.value(), responseText, null);
+						}
+					} else {
+						if (approver.get().getDgm() != null && !approver.get().getDgm().getEmail().isBlank()) {
+							responseText += "DGM (" + approver.get().getDgm().getEmail() + ")";
 							return new Response<>(HttpStatus.OK.value(), responseText, null);
 						}
 					}
@@ -944,9 +950,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendObj.get().setIsAppOwnerApproved(false);
 							recommendObj.get().setIsAgmRejected(true);
 							recommendObj.get().setUpdatedAt(new Date());
-							recommendationRepository.save(recommendObj.get());
-							return new Response<>(HttpStatus.OK.value(),
-									"Recommendation reject request sent successfully.", null);
+							Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
+							Department rcmdDepartment = updateRecommendation.getDepartment();
+							Optional<DepartmentApprover> approver = departmentApproverRepository
+									.findAllByDepartmentId(rcmdDepartment.getId());
+							if (approver != null && approver.isPresent()) {
+								if (approver.get().getApplicationOwner() != null
+										&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+									responseText += "(" + approver.get().getApplicationOwner().getEmail() + ")";
+									return new Response<>(HttpStatus.OK.value(), responseText, null);
+								}
+							}
+							return new Response<>(HttpStatus.OK.value(), responseText, null);
 						} else {
 							if (recommendObj.get().getRecommendationStatus().getId() != StatusEnum.Rejected.getId()
 									.longValue()) {
