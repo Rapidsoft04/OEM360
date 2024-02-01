@@ -934,8 +934,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
-					if (recommendObj != null && recommendObj.isPresent()
-							&& recommendObj.get().getIsAppOwnerApproved() == true) {
+					if (recommendObj != null && recommendObj.isPresent()) {
 						if (recommendObj.get().getIsAppOwnerApproved() != null
 								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
 							responseText = "Recommendation reject request sent successfully. An email will be sent to the Appowner";
