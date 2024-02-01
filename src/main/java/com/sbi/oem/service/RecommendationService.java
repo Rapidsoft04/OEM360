@@ -55,4 +55,6 @@ public interface RecommendationService {
 	Response<?> getAllStatusListToBeImplement();
 	
 	Response<?> updateRecommendation(RecommendationAddRequestDto recommendationAddRequestDto);
+
+	void changeRecommendationStatusByScheduler();
 }

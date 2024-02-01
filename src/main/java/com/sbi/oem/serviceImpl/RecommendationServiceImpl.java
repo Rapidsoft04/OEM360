@@ -3952,4 +3952,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 
 	}
+
+	@Override
+	public void changeRecommendationStatusByScheduler() {
+		List<Recommendation> recommendationList
+		
+	}
 }
