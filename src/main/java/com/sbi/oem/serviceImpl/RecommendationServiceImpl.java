@@ -1007,69 +1007,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 								return new Response<>(HttpStatus.OK.value(), "Recommendation already rejected.", null);
 							}
 						}
-					} else if (recommendObj != null && recommendObj.isPresent()
-							&& recommendObj.get().getIsAppOwnerRejected().booleanValue() == true) {
-
-						if (recommendObj.get().getIsAppOwnerApproved() != null
-								&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
-							RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
-							messages.setCreatedAt(new Date());
-							recommendationMessagesRepository.save(messages);
-							notificationService.save(recommendObj.get(), RecommendationStatusEnum.REJECTED_BY_AGM,
-									recommendationRejectionRequestDto.getRejectionMessage(),
-									recommendationRejectionRequestDto.getAddtionalInformation());
-							emailTemplateService.sendMailRecommendationMessages(messages,
-									RecommendationStatusEnum.REJECTED_BY_DGM);
-							recommendObj.get().setIsAppOwnerApproved(false);
-							recommendObj.get().setIsAgmRejected(true);
-							recommendObj.get().setUpdatedAt(new Date());
-							recommendationRepository.save(recommendObj.get());
-							Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
-							Department rcmdDepartment = updateRecommendation.getDepartment();
-							Optional<DepartmentApprover> approver = departmentApproverRepository
-									.findAllByDepartmentId(rcmdDepartment.getId());
-							if (approver != null && approver.isPresent()) {
-								if (approver.get().getApplicationOwner() != null
-										&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-									responseText += "(" + approver.get().getApplicationOwner().getEmail() + ")";
-									return new Response<>(HttpStatus.OK.value(), responseText, null);
-								}
-							}
-							return new Response<>(HttpStatus.OK.value(), responseText, null);
-						} else {
-							if (recommendObj.get().getRecommendationStatus().getId() != StatusEnum.Rejected.getId()
-									.longValue()) {
-								responseText = "Recommendation rejected successfully. An email will be sent to the oem";
-								recommendObj.get().setIsAgmApproved(false);
-								recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
-								recommendObj.get().setIsAgmRejected(true);
-								Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
-								RecommendationTrail trailData = new RecommendationTrail();
-								trailData.setCreatedAt(new Date());
-								trailData.setRecommendationStatus(
-										new RecommendationStatus(StatusEnum.Rejected.getId().longValue()));
-								trailData.setReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
-								recommendationTrailRepository.save(trailData);
-								RecommendationMessages messages = recommendationRejectionRequestDto.convertToEntity();
-								messages.setCreatedAt(new Date());
-								recommendationMessagesRepository.save(messages);
-								notificationService.save(recommendObj.get(),
-										RecommendationStatusEnum.RECCOMENDATION_REJECTED, messages.getRejectionReason(),
-										messages.getAdditionalMessage());
-								emailTemplateService.sendMailRecommendationMessages(messages,
-										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
-								if (recommendObj != null && recommendObj.isPresent()) {
-									if (recommendObj.get().getCreatedBy() != null
-											&& !recommendObj.get().getCreatedBy().getEmail().isBlank()) {
-										responseText += "(" + recommendObj.get().getCreatedBy().getEmail() + ")";
-										return new Response<>(HttpStatus.OK.value(), responseText, null);
-									}
-								}
-								return new Response<>(HttpStatus.OK.value(), responseText, null);
-							} else {
-								return new Response<>(HttpStatus.OK.value(), "Recommendation already rejected.", null);
-							}
-						}
 					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "No data found", null);
 					}
