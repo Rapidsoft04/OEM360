@@ -90,8 +90,6 @@ public class DashboardServiceImpl implements DashboardService {
 				String formattedEndDate = dateFormat.format(endDate);
 				fromDate = formattedStartDate + " " + addedFromTime;
 				toDate = formattedEndDate + " " + addedToTime;
-				System.out.println(fromDate);
-				System.out.println(toDate);
 			} else if (value.equals(Constant.LAST_MONTH)) {
 				Calendar calendar = Calendar.getInstance();
 				calendar.set(Calendar.DAY_OF_MONTH, 1);

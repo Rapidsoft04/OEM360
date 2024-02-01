@@ -169,6 +169,27 @@ public class RecommendationServiceImpl implements RecommendationService {
 				}
 				recommendationPageDto.setPriorityList(priorityResponse);
 				List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+				StatusEnum[] statusEnums = StatusEnum.values();
+				for (StatusEnum enums : statusEnums) {
+					if (enums.getName().equals(StatusEnum.No_Action.getName())) {
+						RecommendationStatus status = new RecommendationStatus();
+						status.setId(enums.getId());
+						status.setStatusName(enums.getName());
+						statusList.add(status);
+					}
+					if (enums.getName().equals(StatusEnum.Delayed.getName())) {
+						RecommendationStatus status = new RecommendationStatus();
+						status.setId(enums.getId());
+						status.setStatusName(enums.getName());
+						statusList.add(status);
+					}
+					if (enums.getName().equals(StatusEnum.Released_With_Delay.getName())) {
+						RecommendationStatus status = new RecommendationStatus();
+						status.setId(enums.getId());
+						status.setStatusName(enums.getName());
+						statusList.add(status);
+					}
+				}
 				recommendationPageDto.setStatusList(statusList);
 				return new Response<>(HttpStatus.OK.value(), "Recommendation page data.", recommendationPageDto);
 
@@ -930,7 +951,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
-					
+
 					List<CredentialMaster> seniorManagementList = credentialMasterRepository
 							.findByUserTypeId(UserType.GM_IT_INFRA);
 					List<User> seniorManagementUsers = new ArrayList<>();
@@ -938,7 +959,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
 								.collect(Collectors.toList());
 					}
-					
+
 					String responseText = "Approval request reverted successfully. An email will be sent to the Appowner";
 					RecommendationMessages messages = new RecommendationMessages();
 					messages.setCreatedBy(recommendationRejectionRequestDto.getCreatedBy());
@@ -996,7 +1017,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
-					
+
 					List<CredentialMaster> seniorManagementList = credentialMasterRepository
 							.findByUserTypeId(UserType.GM_IT_INFRA);
 					List<User> seniorManagementUsers = new ArrayList<>();
@@ -1004,7 +1025,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
 								.collect(Collectors.toList());
 					}
-					
+
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					if (recommendObj != null && recommendObj.isPresent()) {
@@ -1112,7 +1133,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					if (recommendObj.get().getIsAppOwnerApproved() != null
 							&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
-						
+
 						List<CredentialMaster> seniorManagementList = credentialMasterRepository
 								.findByUserTypeId(UserType.GM_IT_INFRA);
 						List<User> seniorManagementUsers = new ArrayList<>();
@@ -1120,7 +1141,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
 									.collect(Collectors.toList());
 						}
-						
+
 						String responseText = "Recommendation request accepted. ";
 						recommendObj.get().setIsAgmApproved(true);
 						recommendObj.get().setRecommendationStatus(
@@ -1192,7 +1213,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
 							.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
 					if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
-						
+
 						List<CredentialMaster> seniorManagementList = credentialMasterRepository
 								.findByUserTypeId(UserType.GM_IT_INFRA);
 						List<User> seniorManagementUsers = new ArrayList<>();
@@ -1200,7 +1221,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
 									.collect(Collectors.toList());
 						}
-						
+
 						String responseText = "Deployment details updated successfully";
 						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
 						details.setId(recommendDeployDetails.get().getId());
@@ -1268,87 +1289,567 @@ public class RecommendationServiceImpl implements RecommendationService {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 
 					Long OemId = master.get().getUserId().getId();
+					Long statusId = searchDto.getStatusId();
+					List<Recommendation> recomendationListOem = new ArrayList<>();
+					if (searchDto.getStatusId() != null
+							&& ((searchDto.getStatusId().longValue() == StatusEnum.No_Action.getId().longValue())
+									|| (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId().longValue())
+									|| (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay.getId()
+											.longValue()))) {
 
-					List<Recommendation> RecomendationListOem = recommendationRepository
-							.findAllRecommendationsOemAndAgmBySearchDto(OemId, searchDto);
+						searchDto.setStatusId(null);
+						recomendationListOem = recommendationRepository
+								.findAllRecommendationsOemAndAgmBySearchDto(OemId, searchDto);
+					} else {
+						recomendationListOem = recommendationRepository
+								.findAllRecommendationsOemAndAgmBySearchDto(OemId, searchDto);
+					}
+					if (statusId != null) {
+						searchDto.setStatusId(statusId);
+					}
 
-					for (Recommendation rcmnd : RecomendationListOem) {
-						RecommendationResponseDto responseDto = rcmnd.convertToDto();
+					for (Recommendation rcmnd : recomendationListOem) {
+						if (searchDto.getStatusId() != null
+								&& ((searchDto.getStatusId().longValue() != StatusEnum.No_Action.getId().longValue())
+										&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId()
+												.longValue())
+										&& (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay
+												.getId().longValue()))) {
+							RecommendationResponseDto responseDto = rcmnd.convertToDto();
 
-						List<RecommendationTrail> trailList = recommendationTrailRepository
-								.findAllByReferenceId(rcmnd.getReferenceId());
-						Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
-						for (RecommendationTrail trail : trailList) {
-							recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
-						}
-						Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
-								.sorted(Map.Entry.comparingByKey())
-								.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
-										LinkedHashMap<Long, RecommendationTrail>::new));
-
-						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-						if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
-							for (Long key : sortedMap.keySet()) {
-								RecommendationTrail trail = sortedMap.get(key);
-								RecommendationTrailResponseDto response = trail.convertToDto();
-								response.setIsStatusDone(true);
-								trailResponseList.add(response);
+							List<RecommendationTrail> trailList = recommendationTrailRepository
+									.findAllByReferenceId(rcmnd.getReferenceId());
+							Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+							for (RecommendationTrail trail : trailList) {
+								recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
 							}
-						} else {
-							for (RecommendationStatus status : statusList) {
-								if (sortedMap.containsKey(status.getId().longValue())) {
-									RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+							Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+									.sorted(Map.Entry.comparingByKey())
+									.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+											LinkedHashMap<Long, RecommendationTrail>::new));
+
+							List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+							if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+								for (Long key : sortedMap.keySet()) {
+									RecommendationTrail trail = sortedMap.get(key);
 									RecommendationTrailResponseDto response = trail.convertToDto();
 									response.setIsStatusDone(true);
 									trailResponseList.add(response);
-								} else {
-									RecommendationTrail trail = new RecommendationTrail();
-									trail.setRecommendationStatus(status);
-									RecommendationTrailResponseDto response = trail.convertToDto();
-									response.setIsStatusDone(false);
-									trailResponseList.add(response);
+								}
+							} else {
+								for (RecommendationStatus status : statusList) {
+									if (sortedMap.containsKey(status.getId().longValue())) {
+										RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									} else {
+										RecommendationTrail trail = new RecommendationTrail();
+										trail.setRecommendationStatus(status);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(false);
+										trailResponseList.add(response);
+									}
 								}
 							}
-						}
-						responseDto.setTrailResponse(trailResponseList);
-						if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
-							responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
-						} else {
-							String priority = "";
-							if (rcmnd.getPriorityId().longValue() == 1) {
-								priority = PriorityEnum.High.getName();
-								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-								responseDto.setPriority(priority);
-							} else if (rcmnd.getPriorityId().longValue() == 2) {
-								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-								responseDto.setPriority(priority);
+							responseDto.setTrailResponse(trailResponseList);
+							if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+								responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
 							} else {
-								priority = PriorityEnum.Low.getName();
-								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-								responseDto.setPriority(priority);
+								String priority = "";
+								if (rcmnd.getPriorityId().longValue() == 1) {
+									priority = PriorityEnum.High.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else if (rcmnd.getPriorityId().longValue() == 2) {
+									priority = PriorityEnum.Medium.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else {
+									priority = PriorityEnum.Low.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								}
 							}
-						}
-						List<RecommendationMessages> messageList = recommendationMessagesRepository
-								.findAllByReferenceId(rcmnd.getReferenceId());
+							List<RecommendationMessages> messageList = recommendationMessagesRepository
+									.findAllByReferenceId(rcmnd.getReferenceId());
 
-						if (messageList != null && messageList.size() > 0) {
-							responseDto.setMessageList(messageList);
+							if (messageList != null && messageList.size() > 0) {
+								responseDto.setMessageList(messageList);
+							} else {
+								responseDto.setMessageList(null);
+							}
+							Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+									.findByRecommendRefId(rcmnd.getReferenceId());
+							if (deploymentDetails != null && deploymentDetails.isPresent()) {
+								responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+							} else {
+								responseDto.setRecommendationDeploymentDetails(null);
+							}
+							Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+									.findAllByDepartmentId(rcmnd.getDepartment().getId());
+							responseDto.setApprover(departmentApprover.get().getAgm());
+							responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+							Date rcmdDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(responseDto.getRecommendDate());
+							if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+									.equals(StatusEnum.OEM_recommendation.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.No_Action.getId());
+								status.setStatusName(StatusEnum.No_Action.getName());
+								responseDto.setStatus(status);
+							}
+							if (rcmdDate.before(new Date())
+									&& responseDto.getStatus().getStatusName().equals(StatusEnum.Approved.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.Delayed.getId());
+								status.setStatusName(StatusEnum.Delayed.getName());
+								responseDto.setStatus(status);
+							}
+							if (rcmdDate.before(new Date())
+									&& responseDto.getStatus().getStatusName().equals(StatusEnum.Released.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.Released_With_Delay.getId());
+								status.setStatusName(StatusEnum.Released_With_Delay.getName());
+								responseDto.setStatus(status);
+							}
+							recommendations.add(responseDto);
+						} else if (searchDto.getStatusId() != null
+								&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+							Date recommendDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(rcmnd.getRecommendDate());
+							if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+									.equals(StatusEnum.OEM_recommendation.getName())) {
+
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(trailResponseList);
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+
+								if (messageList != null && messageList.size() > 0) {
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
+								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+										.findAllByDepartmentId(rcmnd.getDepartment().getId());
+								responseDto.setApprover(departmentApprover.get().getAgm());
+								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+								Date rcmdDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(responseDto.getRecommendDate());
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.No_Action.getId());
+									status.setStatusName(StatusEnum.No_Action.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Delayed.getId());
+									status.setStatusName(StatusEnum.Delayed.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Released_With_Delay.getId());
+									status.setStatusName(StatusEnum.Released_With_Delay.getName());
+									responseDto.setStatus(status);
+								}
+								recommendations.add(responseDto);
+
+							}
+						} else if (searchDto.getStatusId() != null
+								&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+							Date recommendDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(rcmnd.getRecommendDate());
+							if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+									.equals(StatusEnum.Approved.getName())) {
+
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(trailResponseList);
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+
+								if (messageList != null && messageList.size() > 0) {
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
+								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+										.findAllByDepartmentId(rcmnd.getDepartment().getId());
+								responseDto.setApprover(departmentApprover.get().getAgm());
+								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+								Date rcmdDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(responseDto.getRecommendDate());
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.No_Action.getId());
+									status.setStatusName(StatusEnum.No_Action.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Delayed.getId());
+									status.setStatusName(StatusEnum.Delayed.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Released_With_Delay.getId());
+									status.setStatusName(StatusEnum.Released_With_Delay.getName());
+									responseDto.setStatus(status);
+								}
+								recommendations.add(responseDto);
+
+							}
+						} else if (searchDto.getStatusId() != null
+								&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+							Date recommendDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(rcmnd.getRecommendDate());
+							if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+									.equals(StatusEnum.Released.getName())) {
+
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(trailResponseList);
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+
+								if (messageList != null && messageList.size() > 0) {
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
+								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+										.findAllByDepartmentId(rcmnd.getDepartment().getId());
+								responseDto.setApprover(departmentApprover.get().getAgm());
+								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+								Date rcmdDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(responseDto.getRecommendDate());
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.No_Action.getId());
+									status.setStatusName(StatusEnum.No_Action.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Delayed.getId());
+									status.setStatusName(StatusEnum.Delayed.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Released_With_Delay.getId());
+									status.setStatusName(StatusEnum.Released_With_Delay.getName());
+									responseDto.setStatus(status);
+								}
+								recommendations.add(responseDto);
+
+							}
 						} else {
-							responseDto.setMessageList(null);
+
+							RecommendationResponseDto responseDto = rcmnd.convertToDto();
+
+							List<RecommendationTrail> trailList = recommendationTrailRepository
+									.findAllByReferenceId(rcmnd.getReferenceId());
+							Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+							for (RecommendationTrail trail : trailList) {
+								recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+							}
+							Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+									.sorted(Map.Entry.comparingByKey())
+									.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+											LinkedHashMap<Long, RecommendationTrail>::new));
+
+							List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+							if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+								for (Long key : sortedMap.keySet()) {
+									RecommendationTrail trail = sortedMap.get(key);
+									RecommendationTrailResponseDto response = trail.convertToDto();
+									response.setIsStatusDone(true);
+									trailResponseList.add(response);
+								}
+							} else {
+								for (RecommendationStatus status : statusList) {
+									if (sortedMap.containsKey(status.getId().longValue())) {
+										RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									} else {
+										RecommendationTrail trail = new RecommendationTrail();
+										trail.setRecommendationStatus(status);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(false);
+										trailResponseList.add(response);
+									}
+								}
+							}
+							responseDto.setTrailResponse(trailResponseList);
+							if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+								responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+							} else {
+								String priority = "";
+								if (rcmnd.getPriorityId().longValue() == 1) {
+									priority = PriorityEnum.High.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else if (rcmnd.getPriorityId().longValue() == 2) {
+									priority = PriorityEnum.Medium.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else {
+									priority = PriorityEnum.Low.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								}
+							}
+							List<RecommendationMessages> messageList = recommendationMessagesRepository
+									.findAllByReferenceId(rcmnd.getReferenceId());
+
+							if (messageList != null && messageList.size() > 0) {
+								responseDto.setMessageList(messageList);
+							} else {
+								responseDto.setMessageList(null);
+							}
+							Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+									.findByRecommendRefId(rcmnd.getReferenceId());
+							if (deploymentDetails != null && deploymentDetails.isPresent()) {
+								responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+							} else {
+								responseDto.setRecommendationDeploymentDetails(null);
+							}
+							Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+									.findAllByDepartmentId(rcmnd.getDepartment().getId());
+							responseDto.setApprover(departmentApprover.get().getAgm());
+							responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+							Date rcmdDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(responseDto.getRecommendDate());
+							if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+									.equals(StatusEnum.OEM_recommendation.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.No_Action.getId());
+								status.setStatusName(StatusEnum.No_Action.getName());
+								responseDto.setStatus(status);
+							}
+							if (rcmdDate.before(new Date())
+									&& responseDto.getStatus().getStatusName().equals(StatusEnum.Approved.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.Delayed.getId());
+								status.setStatusName(StatusEnum.Delayed.getName());
+								responseDto.setStatus(status);
+							}
+							if (rcmdDate.before(new Date())
+									&& responseDto.getStatus().getStatusName().equals(StatusEnum.Released.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.Released_With_Delay.getId());
+								status.setStatusName(StatusEnum.Released_With_Delay.getName());
+								responseDto.setStatus(status);
+							}
+							recommendations.add(responseDto);
+
 						}
-						Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-								.findByRecommendRefId(rcmnd.getReferenceId());
-						if (deploymentDetails != null && deploymentDetails.isPresent()) {
-							responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
-						} else {
-							responseDto.setRecommendationDeploymentDetails(null);
-						}
-						Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-								.findAllByDepartmentId(rcmnd.getDepartment().getId());
-						responseDto.setApprover(departmentApprover.get().getAgm());
-						responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
-						recommendations.add(responseDto);
 					}
 					responseDtos.setRecommendations(recommendations);
 
@@ -1443,6 +1944,29 @@ public class RecommendationServiceImpl implements RecommendationService {
 										&& (rcmnd.getIsAgmRejected() == null
 												|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
 									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
 									recommendations.add(responseDto);
 								}
 
@@ -1455,9 +1979,24 @@ public class RecommendationServiceImpl implements RecommendationService {
 					return new Response<>(HttpStatus.OK.value(), "Recommendation List AGM.", responseDtos);
 
 				} else if (master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name())) {
+					List<Recommendation> recomendationListGm = new ArrayList<>();
+					Long statusId = searchDto.getStatusId();
+					if (searchDto.getStatusId() != null
+							&& ((searchDto.getStatusId().longValue() == StatusEnum.No_Action.getId().longValue())
+									|| (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId().longValue())
+									|| (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay.getId()
+											.longValue()))) {
 
-					List<Recommendation> recomendationListGm = recommendationRepository
-							.findAllRecommendationsForGmBySearchDto(searchDto);
+						searchDto.setStatusId(null);
+						recomendationListGm = recommendationRepository
+								.findAllRecommendationsForGmBySearchDto(searchDto);
+					} else {
+						recomendationListGm = recommendationRepository
+								.findAllRecommendationsForGmBySearchDto(searchDto);
+					}
+					if (statusId != null) {
+						searchDto.setStatusId(statusId);
+					}
 					List<Long> departmentIds = recomendationListGm.stream()
 							.filter(e -> e.getDepartment().getId() != null).map(e -> e.getDepartment().getId())
 							.distinct().collect(Collectors.toList());
@@ -1472,92 +2011,598 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 					}
 					for (Recommendation rcmnd : recomendationListGm) {
-						RecommendationResponseDto responseDto = rcmnd.convertToDto();
-						List<RecommendationMessages> messageList = recommendationMessagesRepository
-								.findAllByReferenceId(rcmnd.getReferenceId());
-						if (messageList != null && messageList.size() > 0) {
-							List<RecommendationMessages> updatedMessageList = messageList.stream()
-									.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
-											.longValue() == master.get().getUserId().getId().longValue())
-									.collect(Collectors.toList());
-							Collections.sort(updatedMessageList,
-									Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
-							if (updatedMessageList != null && updatedMessageList.size() > 0) {
-								String message = updatedMessageList.get(0).getRejectionReason();
-								responseDto.setPastExperienceComment(message);
+						if (searchDto.getStatusId() != null
+								&& ((searchDto.getStatusId().longValue() != StatusEnum.No_Action.getId().longValue())
+										&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId()
+												.longValue())
+										&& (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay
+												.getId().longValue()))) {
+							RecommendationResponseDto responseDto = rcmnd.convertToDto();
+							List<RecommendationMessages> messageList = recommendationMessagesRepository
+									.findAllByReferenceId(rcmnd.getReferenceId());
+							if (messageList != null && messageList.size() > 0) {
+								List<RecommendationMessages> updatedMessageList = messageList.stream()
+										.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+												.longValue() == master.get().getUserId().getId().longValue())
+										.collect(Collectors.toList());
+								Collections.sort(updatedMessageList,
+										Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+								if (updatedMessageList != null && updatedMessageList.size() > 0) {
+									String message = updatedMessageList.get(0).getRejectionReason();
+									responseDto.setPastExperienceComment(message);
+								}
+								responseDto.setMessageList(messageList);
+							} else {
+								responseDto.setMessageList(null);
 							}
-							responseDto.setMessageList(messageList);
-						} else {
-							responseDto.setMessageList(null);
-						}
-						List<RecommendationTrail> trailList = recommendationTrailRepository
-								.findAllByReferenceId(rcmnd.getReferenceId());
-						Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
-						for (RecommendationTrail trail : trailList) {
-							recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
-						}
-						Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
-								.sorted(Map.Entry.comparingByKey())
-								.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
-										LinkedHashMap<Long, RecommendationTrail>::new));
+							List<RecommendationTrail> trailList = recommendationTrailRepository
+									.findAllByReferenceId(rcmnd.getReferenceId());
+							Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+							for (RecommendationTrail trail : trailList) {
+								recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+							}
+							Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+									.sorted(Map.Entry.comparingByKey())
+									.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+											LinkedHashMap<Long, RecommendationTrail>::new));
 
-						List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-						if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
-							for (Long key : sortedMap.keySet()) {
-								RecommendationTrail trail = sortedMap.get(key);
-								RecommendationTrailResponseDto response = trail.convertToDto();
-								response.setIsStatusDone(true);
-								trailResponseList.add(response);
-							}
-						} else {
-							for (RecommendationStatus status : statusList) {
-								if (sortedMap.containsKey(status.getId().longValue())) {
-									RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+							List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+							if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+								for (Long key : sortedMap.keySet()) {
+									RecommendationTrail trail = sortedMap.get(key);
 									RecommendationTrailResponseDto response = trail.convertToDto();
 									response.setIsStatusDone(true);
 									trailResponseList.add(response);
-								} else {
-									RecommendationTrail trail = new RecommendationTrail();
-									trail.setRecommendationStatus(status);
-									RecommendationTrailResponseDto response = trail.convertToDto();
-									response.setIsStatusDone(false);
-									trailResponseList.add(response);
+								}
+							} else {
+								for (RecommendationStatus status : statusList) {
+									if (sortedMap.containsKey(status.getId().longValue())) {
+										RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									} else {
+										RecommendationTrail trail = new RecommendationTrail();
+										trail.setRecommendationStatus(status);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(false);
+										trailResponseList.add(response);
+									}
 								}
 							}
-						}
-						responseDto.setTrailResponse(trailResponseList);
-						if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
-							responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
-						} else {
-							String priority = "";
-							if (rcmnd.getPriorityId().longValue() == 1) {
-								priority = PriorityEnum.High.getName();
-								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-								responseDto.setPriority(priority);
-							} else if (rcmnd.getPriorityId().longValue() == 2) {
-								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-								responseDto.setPriority(priority);
+							responseDto.setTrailResponse(trailResponseList);
+							if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+								responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
 							} else {
-								priority = PriorityEnum.Low.getName();
-								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-								responseDto.setPriority(priority);
+								String priority = "";
+								if (rcmnd.getPriorityId().longValue() == 1) {
+									priority = PriorityEnum.High.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else if (rcmnd.getPriorityId().longValue() == 2) {
+									priority = PriorityEnum.Medium.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else {
+									priority = PriorityEnum.Low.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								}
 							}
-						}
-						Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-								.findByRecommendRefId(rcmnd.getReferenceId());
-						if (deploymentDetails != null && deploymentDetails.isPresent()) {
-							responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+							Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+									.findByRecommendRefId(rcmnd.getReferenceId());
+							if (deploymentDetails != null && deploymentDetails.isPresent()) {
+								responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+							} else {
+								responseDto.setRecommendationDeploymentDetails(null);
+							}
+							if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+								DepartmentApprover approverObj = departmentApproverMap
+										.get(rcmnd.getDepartment().getId().longValue());
+								responseDto.setAppOwner(approverObj.getApplicationOwner());
+								responseDto.setApprover(approverObj.getAgm());
+							}
+							Date rcmdDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(responseDto.getRecommendDate());
+							if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+									.equals(StatusEnum.OEM_recommendation.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.No_Action.getId());
+								status.setStatusName(StatusEnum.No_Action.getName());
+								responseDto.setStatus(status);
+							}
+							if (rcmdDate.before(new Date())
+									&& responseDto.getStatus().getStatusName().equals(StatusEnum.Approved.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.Delayed.getId());
+								status.setStatusName(StatusEnum.Delayed.getName());
+								responseDto.setStatus(status);
+							}
+							if (rcmdDate.before(new Date())
+									&& responseDto.getStatus().getStatusName().equals(StatusEnum.Released.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.Released_With_Delay.getId());
+								status.setStatusName(StatusEnum.Released_With_Delay.getName());
+								responseDto.setStatus(status);
+							}
+							recommendations.add(responseDto);
+						} else if (searchDto.getStatusId() != null
+								&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+							Date recommendDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(rcmnd.getRecommendDate());
+							if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+									.equals(StatusEnum.OEM_recommendation.getName())) {
+
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								if (messageList != null && messageList.size() > 0) {
+									List<RecommendationMessages> updatedMessageList = messageList.stream()
+											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+													.longValue() == master.get().getUserId().getId().longValue())
+											.collect(Collectors.toList());
+									Collections.sort(updatedMessageList,
+											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+									if (updatedMessageList != null && updatedMessageList.size() > 0) {
+										String message = updatedMessageList.get(0).getRejectionReason();
+										responseDto.setPastExperienceComment(message);
+									}
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
+								}
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(trailResponseList);
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
+								if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+									DepartmentApprover approverObj = departmentApproverMap
+											.get(rcmnd.getDepartment().getId().longValue());
+									responseDto.setAppOwner(approverObj.getApplicationOwner());
+									responseDto.setApprover(approverObj.getAgm());
+								}
+								Date rcmdDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(responseDto.getRecommendDate());
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.No_Action.getId());
+									status.setStatusName(StatusEnum.No_Action.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Delayed.getId());
+									status.setStatusName(StatusEnum.Delayed.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Released_With_Delay.getId());
+									status.setStatusName(StatusEnum.Released_With_Delay.getName());
+									responseDto.setStatus(status);
+								}
+								recommendations.add(responseDto);
+
+							}
+						} else if (searchDto.getStatusId() != null
+								&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+							Date recommendDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(rcmnd.getRecommendDate());
+							if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+									.equals(StatusEnum.Approved.getName())) {
+
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								if (messageList != null && messageList.size() > 0) {
+									List<RecommendationMessages> updatedMessageList = messageList.stream()
+											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+													.longValue() == master.get().getUserId().getId().longValue())
+											.collect(Collectors.toList());
+									Collections.sort(updatedMessageList,
+											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+									if (updatedMessageList != null && updatedMessageList.size() > 0) {
+										String message = updatedMessageList.get(0).getRejectionReason();
+										responseDto.setPastExperienceComment(message);
+									}
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
+								}
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(trailResponseList);
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
+								if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+									DepartmentApprover approverObj = departmentApproverMap
+											.get(rcmnd.getDepartment().getId().longValue());
+									responseDto.setAppOwner(approverObj.getApplicationOwner());
+									responseDto.setApprover(approverObj.getAgm());
+								}
+								Date rcmdDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(responseDto.getRecommendDate());
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.No_Action.getId());
+									status.setStatusName(StatusEnum.No_Action.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Delayed.getId());
+									status.setStatusName(StatusEnum.Delayed.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Released_With_Delay.getId());
+									status.setStatusName(StatusEnum.Released_With_Delay.getName());
+									responseDto.setStatus(status);
+								}
+								recommendations.add(responseDto);
+
+							}
+						} else if (searchDto.getStatusId() != null
+								&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+							Date recommendDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(rcmnd.getRecommendDate());
+							if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+									.equals(StatusEnum.Released.getName())) {
+
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								if (messageList != null && messageList.size() > 0) {
+									List<RecommendationMessages> updatedMessageList = messageList.stream()
+											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+													.longValue() == master.get().getUserId().getId().longValue())
+											.collect(Collectors.toList());
+									Collections.sort(updatedMessageList,
+											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+									if (updatedMessageList != null && updatedMessageList.size() > 0) {
+										String message = updatedMessageList.get(0).getRejectionReason();
+										responseDto.setPastExperienceComment(message);
+									}
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
+								}
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(trailResponseList);
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
+								if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+									DepartmentApprover approverObj = departmentApproverMap
+											.get(rcmnd.getDepartment().getId().longValue());
+									responseDto.setAppOwner(approverObj.getApplicationOwner());
+									responseDto.setApprover(approverObj.getAgm());
+								}
+								Date rcmdDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(responseDto.getRecommendDate());
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.No_Action.getId());
+									status.setStatusName(StatusEnum.No_Action.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Delayed.getId());
+									status.setStatusName(StatusEnum.Delayed.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Released_With_Delay.getId());
+									status.setStatusName(StatusEnum.Released_With_Delay.getName());
+									responseDto.setStatus(status);
+								}
+								recommendations.add(responseDto);
+
+							}
 						} else {
-							responseDto.setRecommendationDeploymentDetails(null);
+
+							RecommendationResponseDto responseDto = rcmnd.convertToDto();
+							List<RecommendationMessages> messageList = recommendationMessagesRepository
+									.findAllByReferenceId(rcmnd.getReferenceId());
+							if (messageList != null && messageList.size() > 0) {
+								List<RecommendationMessages> updatedMessageList = messageList.stream()
+										.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+												.longValue() == master.get().getUserId().getId().longValue())
+										.collect(Collectors.toList());
+								Collections.sort(updatedMessageList,
+										Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+								if (updatedMessageList != null && updatedMessageList.size() > 0) {
+									String message = updatedMessageList.get(0).getRejectionReason();
+									responseDto.setPastExperienceComment(message);
+								}
+								responseDto.setMessageList(messageList);
+							} else {
+								responseDto.setMessageList(null);
+							}
+							List<RecommendationTrail> trailList = recommendationTrailRepository
+									.findAllByReferenceId(rcmnd.getReferenceId());
+							Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+							for (RecommendationTrail trail : trailList) {
+								recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+							}
+							Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+									.sorted(Map.Entry.comparingByKey())
+									.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+											LinkedHashMap<Long, RecommendationTrail>::new));
+
+							List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+							if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+								for (Long key : sortedMap.keySet()) {
+									RecommendationTrail trail = sortedMap.get(key);
+									RecommendationTrailResponseDto response = trail.convertToDto();
+									response.setIsStatusDone(true);
+									trailResponseList.add(response);
+								}
+							} else {
+								for (RecommendationStatus status : statusList) {
+									if (sortedMap.containsKey(status.getId().longValue())) {
+										RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									} else {
+										RecommendationTrail trail = new RecommendationTrail();
+										trail.setRecommendationStatus(status);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(false);
+										trailResponseList.add(response);
+									}
+								}
+							}
+							responseDto.setTrailResponse(trailResponseList);
+							if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+								responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+							} else {
+								String priority = "";
+								if (rcmnd.getPriorityId().longValue() == 1) {
+									priority = PriorityEnum.High.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else if (rcmnd.getPriorityId().longValue() == 2) {
+									priority = PriorityEnum.Medium.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else {
+									priority = PriorityEnum.Low.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								}
+							}
+							Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+									.findByRecommendRefId(rcmnd.getReferenceId());
+							if (deploymentDetails != null && deploymentDetails.isPresent()) {
+								responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+							} else {
+								responseDto.setRecommendationDeploymentDetails(null);
+							}
+							if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+								DepartmentApprover approverObj = departmentApproverMap
+										.get(rcmnd.getDepartment().getId().longValue());
+								responseDto.setAppOwner(approverObj.getApplicationOwner());
+								responseDto.setApprover(approverObj.getAgm());
+							}
+							Date rcmdDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(responseDto.getRecommendDate());
+							if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+									.equals(StatusEnum.OEM_recommendation.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.No_Action.getId());
+								status.setStatusName(StatusEnum.No_Action.getName());
+								responseDto.setStatus(status);
+							}
+							if (rcmdDate.before(new Date())
+									&& responseDto.getStatus().getStatusName().equals(StatusEnum.Approved.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.Delayed.getId());
+								status.setStatusName(StatusEnum.Delayed.getName());
+								responseDto.setStatus(status);
+							}
+							if (rcmdDate.before(new Date())
+									&& responseDto.getStatus().getStatusName().equals(StatusEnum.Released.getName())) {
+								RecommendationStatus status = new RecommendationStatus();
+								status.setId(StatusEnum.Released_With_Delay.getId());
+								status.setStatusName(StatusEnum.Released_With_Delay.getName());
+								responseDto.setStatus(status);
+							}
+							recommendations.add(responseDto);
+
 						}
-						if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
-							DepartmentApprover approverObj = departmentApproverMap
-									.get(rcmnd.getDepartment().getId().longValue());
-							responseDto.setAppOwner(approverObj.getApplicationOwner());
-							responseDto.setApprover(approverObj.getAgm());
-						}
-						recommendations.add(responseDto);
+
 					}
 					responseDtos.setRecommendations(recommendations);
 
@@ -1914,117 +2959,723 @@ public class RecommendationServiceImpl implements RecommendationService {
 							List<Recommendation> recommendationList = recommendationRepository
 									.findAllPendingRecommendationsBySearchDto(searchDto);
 							for (Recommendation rcmnd : recommendationList) {
-								RecommendationResponseDto responseDto = rcmnd.convertToDto();
-								List<RecommendationMessages> messageList = recommendationMessagesRepository
-										.findAllByReferenceId(rcmnd.getReferenceId());
+								if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() != StatusEnum.Delayed.getId()
+												|| searchDto.getStatusId() != StatusEnum.No_Action.getId()
+												|| searchDto.getStatusId() != StatusEnum.Released_With_Delay.getId())) {
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
 
-								responseDto.setMessageList(messageList);
-								if (messageList != null && messageList.size() > 0) {
-									List<RecommendationMessages> updatedMessageList = messageList.stream()
-											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
-													.longValue() == master.get().getUserId().getId().longValue())
-											.collect(Collectors.toList());
-									Collections.sort(updatedMessageList,
-											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
-									if (updatedMessageList != null && updatedMessageList.size() > 0) {
-										String message = "";
-										if (updatedMessageList.get(0).getRejectionReason() != null) {
-											message = updatedMessageList.get(0).getRejectionReason();
-										} else {
-											message = updatedMessageList.get(0).getAdditionalMessage();
-										}
-										responseDto.setPastExperienceComment(message);
-									}
 									responseDto.setMessageList(messageList);
-								} else {
-									responseDto.setMessageList(null);
-								}
-								List<RecommendationTrail> trailList = recommendationTrailRepository
-										.findAllByReferenceId(responseDto.getReferenceId());
-								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
-								for (RecommendationTrail trail : trailList) {
-									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
-								}
-								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
-										.sorted(Map.Entry.comparingByKey())
-										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
-
-								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
-									for (Long key : sortedMap.keySet()) {
-										RecommendationTrail trail = sortedMap.get(key);
-										RecommendationTrailResponseDto response = trail.convertToDto();
-										response.setIsStatusDone(true);
-										trailResponseList.add(response);
+									if (messageList != null && messageList.size() > 0) {
+										List<RecommendationMessages> updatedMessageList = messageList.stream()
+												.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+														.longValue() == master.get().getUserId().getId().longValue())
+												.collect(Collectors.toList());
+										Collections.sort(updatedMessageList,
+												Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+										if (updatedMessageList != null && updatedMessageList.size() > 0) {
+											String message = "";
+											if (updatedMessageList.get(0).getRejectionReason() != null) {
+												message = updatedMessageList.get(0).getRejectionReason();
+											} else {
+												message = updatedMessageList.get(0).getAdditionalMessage();
+											}
+											responseDto.setPastExperienceComment(message);
+										}
+										responseDto.setMessageList(messageList);
+									} else {
+										responseDto.setMessageList(null);
 									}
-								} else {
-									for (RecommendationStatus status : statusList) {
-										if (sortedMap.containsKey(status.getId().longValue())) {
-											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+									List<RecommendationTrail> trailList = recommendationTrailRepository
+											.findAllByReferenceId(responseDto.getReferenceId());
+									Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+									for (RecommendationTrail trail : trailList) {
+										recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+									}
+									Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+											.stream().sorted(Map.Entry.comparingByKey())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+													(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+									List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+									if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+										for (Long key : sortedMap.keySet()) {
+											RecommendationTrail trail = sortedMap.get(key);
 											RecommendationTrailResponseDto response = trail.convertToDto();
 											response.setIsStatusDone(true);
 											trailResponseList.add(response);
-										} else {
-											RecommendationTrail trail = new RecommendationTrail();
-											trail.setRecommendationStatus(status);
-											RecommendationTrailResponseDto response = trail.convertToDto();
-											response.setIsStatusDone(false);
-											trailResponseList.add(response);
+										}
+									} else {
+										for (RecommendationStatus status : statusList) {
+											if (sortedMap.containsKey(status.getId().longValue())) {
+												RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											} else {
+												RecommendationTrail trail = new RecommendationTrail();
+												trail.setRecommendationStatus(status);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(false);
+												trailResponseList.add(response);
+											}
 										}
 									}
-								}
-								responseDto.setTrailResponse(null);
-								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
-									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
-								} else {
-									String priority = "";
-									if (rcmnd.getPriorityId().longValue() == 1) {
-										priority = PriorityEnum.High.getName();
-										priorityMap.put(PriorityEnum.High.getId().longValue(),
-												PriorityEnum.High.name());
-										responseDto.setPriority(priority);
-									} else if (rcmnd.getPriorityId().longValue() == 2) {
-										priority = PriorityEnum.Medium.getName();
-										priorityMap.put(PriorityEnum.High.getId().longValue(),
-												PriorityEnum.High.name());
-										responseDto.setPriority(priority);
+									responseDto.setTrailResponse(null);
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
 									} else {
-										priority = PriorityEnum.Low.getName();
-										priorityMap.put(PriorityEnum.High.getId().longValue(),
-												PriorityEnum.High.name());
-										responseDto.setPriority(priority);
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
 									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+											.findAllByDepartmentId(rcmnd.getDepartment().getId());
+									responseDto.setApprover(departmentApprover.get().getAgm());
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+									if (rcmnd.getRecommendationStatus().getId()
+											.longValue() == StatusEnum.OEM_recommendation.getId().longValue()) {
+										responseDto
+												.setStatus(new RecommendationStatus(Constant.RECOMMENDATION_CREATED));
+									}
+									if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Review_process
+											.getId().longValue() && rcmnd.getIsAgmRejected() != null
+											&& rcmnd.getIsAgmRejected().booleanValue() == true) {
+										responseDto.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REJECTED));
+									}
+									if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Review_process
+											.getId().longValue() && rcmnd.getIsAgmRejected() != null
+											&& rcmnd.getIsAgmRejected().booleanValue() == false) {
+										responseDto.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REVERTED));
+									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									pendingRecommendation.add(responseDto);
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.Approved.getName())) {
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+
+										responseDto.setMessageList(messageList);
+										if (messageList != null && messageList.size() > 0) {
+											List<RecommendationMessages> updatedMessageList = messageList.stream()
+													.filter(e -> e.getCreatedBy() != null
+															&& e.getCreatedBy().getId().longValue() == master.get()
+																	.getUserId().getId().longValue())
+													.collect(Collectors.toList());
+											Collections.sort(updatedMessageList, Comparator
+													.comparing(RecommendationMessages::getCreatedAt).reversed());
+											if (updatedMessageList != null && updatedMessageList.size() > 0) {
+												String message = "";
+												if (updatedMessageList.get(0).getRejectionReason() != null) {
+													message = updatedMessageList.get(0).getRejectionReason();
+												} else {
+													message = updatedMessageList.get(0).getAdditionalMessage();
+												}
+												responseDto.setPastExperienceComment(message);
+											}
+											responseDto.setMessageList(messageList);
+										} else {
+											responseDto.setMessageList(null);
+										}
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(null);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										if (rcmnd.getRecommendationStatus().getId()
+												.longValue() == StatusEnum.OEM_recommendation.getId().longValue()) {
+											responseDto.setStatus(
+													new RecommendationStatus(Constant.RECOMMENDATION_CREATED));
+										}
+										if (rcmnd.getRecommendationStatus().getId()
+												.longValue() == StatusEnum.Review_process.getId().longValue()
+												&& rcmnd.getIsAgmRejected() != null
+												&& rcmnd.getIsAgmRejected().booleanValue() == true) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REJECTED));
+										}
+										if (rcmnd.getRecommendationStatus().getId()
+												.longValue() == StatusEnum.Review_process.getId().longValue()
+												&& rcmnd.getIsAgmRejected() != null
+												&& rcmnd.getIsAgmRejected().booleanValue() == false) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REVERTED));
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										pendingRecommendation.add(responseDto);
+									}
+
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+
+										responseDto.setMessageList(messageList);
+										if (messageList != null && messageList.size() > 0) {
+											List<RecommendationMessages> updatedMessageList = messageList.stream()
+													.filter(e -> e.getCreatedBy() != null
+															&& e.getCreatedBy().getId().longValue() == master.get()
+																	.getUserId().getId().longValue())
+													.collect(Collectors.toList());
+											Collections.sort(updatedMessageList, Comparator
+													.comparing(RecommendationMessages::getCreatedAt).reversed());
+											if (updatedMessageList != null && updatedMessageList.size() > 0) {
+												String message = "";
+												if (updatedMessageList.get(0).getRejectionReason() != null) {
+													message = updatedMessageList.get(0).getRejectionReason();
+												} else {
+													message = updatedMessageList.get(0).getAdditionalMessage();
+												}
+												responseDto.setPastExperienceComment(message);
+											}
+											responseDto.setMessageList(messageList);
+										} else {
+											responseDto.setMessageList(null);
+										}
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(null);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										if (rcmnd.getRecommendationStatus().getId()
+												.longValue() == StatusEnum.OEM_recommendation.getId().longValue()) {
+											responseDto.setStatus(
+													new RecommendationStatus(Constant.RECOMMENDATION_CREATED));
+										}
+										if (rcmnd.getRecommendationStatus().getId()
+												.longValue() == StatusEnum.Review_process.getId().longValue()
+												&& rcmnd.getIsAgmRejected() != null
+												&& rcmnd.getIsAgmRejected().booleanValue() == true) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REJECTED));
+										}
+										if (rcmnd.getRecommendationStatus().getId()
+												.longValue() == StatusEnum.Review_process.getId().longValue()
+												&& rcmnd.getIsAgmRejected() != null
+												&& rcmnd.getIsAgmRejected().booleanValue() == false) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REVERTED));
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										pendingRecommendation.add(responseDto);
+									}
+
 								}
-								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-										.findByRecommendRefId(rcmnd.getReferenceId());
-								if (deploymentDetails != null && deploymentDetails.isPresent()) {
-									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+
+								else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.Released.getName())) {
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+
+										responseDto.setMessageList(messageList);
+										if (messageList != null && messageList.size() > 0) {
+											List<RecommendationMessages> updatedMessageList = messageList.stream()
+													.filter(e -> e.getCreatedBy() != null
+															&& e.getCreatedBy().getId().longValue() == master.get()
+																	.getUserId().getId().longValue())
+													.collect(Collectors.toList());
+											Collections.sort(updatedMessageList, Comparator
+													.comparing(RecommendationMessages::getCreatedAt).reversed());
+											if (updatedMessageList != null && updatedMessageList.size() > 0) {
+												String message = "";
+												if (updatedMessageList.get(0).getRejectionReason() != null) {
+													message = updatedMessageList.get(0).getRejectionReason();
+												} else {
+													message = updatedMessageList.get(0).getAdditionalMessage();
+												}
+												responseDto.setPastExperienceComment(message);
+											}
+											responseDto.setMessageList(messageList);
+										} else {
+											responseDto.setMessageList(null);
+										}
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(null);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										if (rcmnd.getRecommendationStatus().getId()
+												.longValue() == StatusEnum.OEM_recommendation.getId().longValue()) {
+											responseDto.setStatus(
+													new RecommendationStatus(Constant.RECOMMENDATION_CREATED));
+										}
+										if (rcmnd.getRecommendationStatus().getId()
+												.longValue() == StatusEnum.Review_process.getId().longValue()
+												&& rcmnd.getIsAgmRejected() != null
+												&& rcmnd.getIsAgmRejected().booleanValue() == true) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REJECTED));
+										}
+										if (rcmnd.getRecommendationStatus().getId()
+												.longValue() == StatusEnum.Review_process.getId().longValue()
+												&& rcmnd.getIsAgmRejected() != null
+												&& rcmnd.getIsAgmRejected().booleanValue() == false) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REVERTED));
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										pendingRecommendation.add(responseDto);
+									}
+
 								} else {
-									responseDto.setRecommendationDeploymentDetails(null);
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+
+									responseDto.setMessageList(messageList);
+									if (messageList != null && messageList.size() > 0) {
+										List<RecommendationMessages> updatedMessageList = messageList.stream()
+												.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+														.longValue() == master.get().getUserId().getId().longValue())
+												.collect(Collectors.toList());
+										Collections.sort(updatedMessageList,
+												Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+										if (updatedMessageList != null && updatedMessageList.size() > 0) {
+											String message = "";
+											if (updatedMessageList.get(0).getRejectionReason() != null) {
+												message = updatedMessageList.get(0).getRejectionReason();
+											} else {
+												message = updatedMessageList.get(0).getAdditionalMessage();
+											}
+											responseDto.setPastExperienceComment(message);
+										}
+										responseDto.setMessageList(messageList);
+									} else {
+										responseDto.setMessageList(null);
+									}
+									List<RecommendationTrail> trailList = recommendationTrailRepository
+											.findAllByReferenceId(responseDto.getReferenceId());
+									Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+									for (RecommendationTrail trail : trailList) {
+										recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+									}
+									Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+											.stream().sorted(Map.Entry.comparingByKey())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+													(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+									List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+									if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+										for (Long key : sortedMap.keySet()) {
+											RecommendationTrail trail = sortedMap.get(key);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										}
+									} else {
+										for (RecommendationStatus status : statusList) {
+											if (sortedMap.containsKey(status.getId().longValue())) {
+												RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											} else {
+												RecommendationTrail trail = new RecommendationTrail();
+												trail.setRecommendationStatus(status);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(false);
+												trailResponseList.add(response);
+											}
+										}
+									}
+									responseDto.setTrailResponse(null);
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+									} else {
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
+									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+											.findAllByDepartmentId(rcmnd.getDepartment().getId());
+									responseDto.setApprover(departmentApprover.get().getAgm());
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+									if (rcmnd.getRecommendationStatus().getId()
+											.longValue() == StatusEnum.OEM_recommendation.getId().longValue()) {
+										responseDto
+												.setStatus(new RecommendationStatus(Constant.RECOMMENDATION_CREATED));
+									}
+									if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Review_process
+											.getId().longValue() && rcmnd.getIsAgmRejected() != null
+											&& rcmnd.getIsAgmRejected().booleanValue() == true) {
+										responseDto.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REJECTED));
+									}
+									if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Review_process
+											.getId().longValue() && rcmnd.getIsAgmRejected() != null
+											&& rcmnd.getIsAgmRejected().booleanValue() == false) {
+										responseDto.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REVERTED));
+									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(Constant.RECOMMENDATION_CREATED)) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									pendingRecommendation.add(responseDto);
+
 								}
-								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-										.findAllByDepartmentId(rcmnd.getDepartment().getId());
-								responseDto.setApprover(departmentApprover.get().getAgm());
-								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
-								if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.OEM_recommendation
-										.getId().longValue()) {
-									responseDto.setStatus(new RecommendationStatus(Constant.RECOMMENDATION_CREATED));
-								}
-								if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Review_process
-										.getId().longValue() && rcmnd.getIsAgmRejected() != null
-										&& rcmnd.getIsAgmRejected().booleanValue() == true) {
-									responseDto.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REJECTED));
-								}
-								if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Review_process
-										.getId().longValue() && rcmnd.getIsAgmRejected() != null
-										&& rcmnd.getIsAgmRejected().booleanValue() == false) {
-									responseDto.setStatus(new RecommendationStatus(Constant.AGM_OR_DGM_REVERTED));
-								}
-								pendingRecommendation.add(responseDto);
 							}
 						}
 					}
+
 					pendingRecommendationResponseDto.setPendingRecommendation(pendingRecommendation);
 					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation of App Owner",
 							pendingRecommendationResponseDto);
@@ -2064,10 +3715,657 @@ public class RecommendationServiceImpl implements RecommendationService {
 								}
 							}
 							for (Recommendation rcmnd : updatedRecommendationList) {
+								if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() != StatusEnum.Delayed.getId()
+												|| searchDto.getStatusId() != StatusEnum.No_Action.getId()
+												|| searchDto.getStatusId() != StatusEnum.Released_With_Delay.getId())) {
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+
+									if (messageList != null && messageList.size() > 0) {
+										List<RecommendationMessages> updatedMessageList = messageList.stream()
+												.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+														.longValue() == master.get().getUserId().getId().longValue())
+												.collect(Collectors.toList());
+										Collections.sort(updatedMessageList,
+												Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+										if (updatedMessageList != null && updatedMessageList.size() > 0) {
+											String message = "";
+											if (updatedMessageList.get(0).getRejectionReason() != null) {
+												message = updatedMessageList.get(0).getRejectionReason();
+											} else {
+												message = updatedMessageList.get(0).getAdditionalMessage();
+											}
+											responseDto.setPastExperienceComment(message);
+										}
+										responseDto.setMessageList(messageList);
+									} else {
+										responseDto.setMessageList(null);
+									}
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+									} else {
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
+									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+										DepartmentApprover approverObj = departmentApproverMap
+												.get(rcmnd.getDepartment().getId().longValue());
+										responseDto.setAppOwner(approverObj.getApplicationOwner());
+										responseDto.setApprover(approverObj.getAgm());
+									}
+									if (rcmnd.getIsAppOwnerApproved() != null
+											&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+											&& (rcmnd.getIsAgmApproved() == null || rcmnd.getIsAgmApproved() != true)) {
+										responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+										recommendations.add(responseDto);
+									}
+									if (rcmnd.getIsAppOwnerRejected() != null
+											&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+											&& (rcmnd.getIsAgmRejected() == null
+													|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+										responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										recommendations.add(responseDto);
+									}
+
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.OEM_recommendation.getName())) {
+										if (messageList != null && messageList.size() > 0) {
+											List<RecommendationMessages> updatedMessageList = messageList.stream()
+													.filter(e -> e.getCreatedBy() != null
+															&& e.getCreatedBy().getId().longValue() == master.get()
+																	.getUserId().getId().longValue())
+													.collect(Collectors.toList());
+											Collections.sort(updatedMessageList, Comparator
+													.comparing(RecommendationMessages::getCreatedAt).reversed());
+											if (updatedMessageList != null && updatedMessageList.size() > 0) {
+												String message = "";
+												if (updatedMessageList.get(0).getRejectionReason() != null) {
+													message = updatedMessageList.get(0).getRejectionReason();
+												} else {
+													message = updatedMessageList.get(0).getAdditionalMessage();
+												}
+												responseDto.setPastExperienceComment(message);
+											}
+											responseDto.setMessageList(messageList);
+										} else {
+											responseDto.setMessageList(null);
+										}
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										if (departmentApproverMap
+												.containsKey(rcmnd.getDepartment().getId().longValue())) {
+											DepartmentApprover approverObj = departmentApproverMap
+													.get(rcmnd.getDepartment().getId().longValue());
+											responseDto.setAppOwner(approverObj.getApplicationOwner());
+											responseDto.setApprover(approverObj.getAgm());
+										}
+										if (rcmnd.getIsAppOwnerApproved() != null
+												&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+												&& (rcmnd.getIsAgmApproved() == null
+														|| rcmnd.getIsAgmApproved() != true)) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+											recommendations.add(responseDto);
+										}
+										if (rcmnd.getIsAppOwnerRejected() != null
+												&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+												&& (rcmnd.getIsAgmRejected() == null
+														|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+											Date rcmdDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(responseDto.getRecommendDate());
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.OEM_recommendation.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.No_Action.getId());
+												status.setStatusName(StatusEnum.No_Action.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Approved.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Delayed.getId());
+												status.setStatusName(StatusEnum.Delayed.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Released.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Released_With_Delay.getId());
+												status.setStatusName(StatusEnum.Released_With_Delay.getName());
+												responseDto.setStatus(status);
+											}
+											recommendations.add(responseDto);
+										}
+
+									}
+
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.Approved.getName())) {
+										if (messageList != null && messageList.size() > 0) {
+											List<RecommendationMessages> updatedMessageList = messageList.stream()
+													.filter(e -> e.getCreatedBy() != null
+															&& e.getCreatedBy().getId().longValue() == master.get()
+																	.getUserId().getId().longValue())
+													.collect(Collectors.toList());
+											Collections.sort(updatedMessageList, Comparator
+													.comparing(RecommendationMessages::getCreatedAt).reversed());
+											if (updatedMessageList != null && updatedMessageList.size() > 0) {
+												String message = "";
+												if (updatedMessageList.get(0).getRejectionReason() != null) {
+													message = updatedMessageList.get(0).getRejectionReason();
+												} else {
+													message = updatedMessageList.get(0).getAdditionalMessage();
+												}
+												responseDto.setPastExperienceComment(message);
+											}
+											responseDto.setMessageList(messageList);
+										} else {
+											responseDto.setMessageList(null);
+										}
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										if (departmentApproverMap
+												.containsKey(rcmnd.getDepartment().getId().longValue())) {
+											DepartmentApprover approverObj = departmentApproverMap
+													.get(rcmnd.getDepartment().getId().longValue());
+											responseDto.setAppOwner(approverObj.getApplicationOwner());
+											responseDto.setApprover(approverObj.getAgm());
+										}
+										if (rcmnd.getIsAppOwnerApproved() != null
+												&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+												&& (rcmnd.getIsAgmApproved() == null
+														|| rcmnd.getIsAgmApproved() != true)) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+											recommendations.add(responseDto);
+										}
+										if (rcmnd.getIsAppOwnerRejected() != null
+												&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+												&& (rcmnd.getIsAgmRejected() == null
+														|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+											Date rcmdDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(responseDto.getRecommendDate());
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.OEM_recommendation.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.No_Action.getId());
+												status.setStatusName(StatusEnum.No_Action.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Approved.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Delayed.getId());
+												status.setStatusName(StatusEnum.Delayed.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Released.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Released_With_Delay.getId());
+												status.setStatusName(StatusEnum.Released_With_Delay.getName());
+												responseDto.setStatus(status);
+											}
+											recommendations.add(responseDto);
+										}
+
+									}
+
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.Released.getName())) {
+										if (messageList != null && messageList.size() > 0) {
+											List<RecommendationMessages> updatedMessageList = messageList.stream()
+													.filter(e -> e.getCreatedBy() != null
+															&& e.getCreatedBy().getId().longValue() == master.get()
+																	.getUserId().getId().longValue())
+													.collect(Collectors.toList());
+											Collections.sort(updatedMessageList, Comparator
+													.comparing(RecommendationMessages::getCreatedAt).reversed());
+											if (updatedMessageList != null && updatedMessageList.size() > 0) {
+												String message = "";
+												if (updatedMessageList.get(0).getRejectionReason() != null) {
+													message = updatedMessageList.get(0).getRejectionReason();
+												} else {
+													message = updatedMessageList.get(0).getAdditionalMessage();
+												}
+												responseDto.setPastExperienceComment(message);
+											}
+											responseDto.setMessageList(messageList);
+										} else {
+											responseDto.setMessageList(null);
+										}
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										if (departmentApproverMap
+												.containsKey(rcmnd.getDepartment().getId().longValue())) {
+											DepartmentApprover approverObj = departmentApproverMap
+													.get(rcmnd.getDepartment().getId().longValue());
+											responseDto.setAppOwner(approverObj.getApplicationOwner());
+											responseDto.setApprover(approverObj.getAgm());
+										}
+										if (rcmnd.getIsAppOwnerApproved() != null
+												&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+												&& (rcmnd.getIsAgmApproved() == null
+														|| rcmnd.getIsAgmApproved() != true)) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+											recommendations.add(responseDto);
+										}
+										if (rcmnd.getIsAppOwnerRejected() != null
+												&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+												&& (rcmnd.getIsAgmRejected() == null
+														|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+											responseDto
+													.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+											Date rcmdDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(responseDto.getRecommendDate());
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.OEM_recommendation.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.No_Action.getId());
+												status.setStatusName(StatusEnum.No_Action.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Approved.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Delayed.getId());
+												status.setStatusName(StatusEnum.Delayed.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Released.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Released_With_Delay.getId());
+												status.setStatusName(StatusEnum.Released_With_Delay.getName());
+												responseDto.setStatus(status);
+											}
+											recommendations.add(responseDto);
+										}
+
+									}
+
+								} else {
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									if (messageList != null && messageList.size() > 0) {
+										List<RecommendationMessages> updatedMessageList = messageList.stream()
+												.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+														.longValue() == master.get().getUserId().getId().longValue())
+												.collect(Collectors.toList());
+										Collections.sort(updatedMessageList,
+												Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+										if (updatedMessageList != null && updatedMessageList.size() > 0) {
+											String message = "";
+											if (updatedMessageList.get(0).getRejectionReason() != null) {
+												message = updatedMessageList.get(0).getRejectionReason();
+											} else {
+												message = updatedMessageList.get(0).getAdditionalMessage();
+											}
+											responseDto.setPastExperienceComment(message);
+										}
+										responseDto.setMessageList(messageList);
+									} else {
+										responseDto.setMessageList(null);
+									}
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+									} else {
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
+									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+										DepartmentApprover approverObj = departmentApproverMap
+												.get(rcmnd.getDepartment().getId().longValue());
+										responseDto.setAppOwner(approverObj.getApplicationOwner());
+										responseDto.setApprover(approverObj.getAgm());
+									}
+									if (rcmnd.getIsAppOwnerApproved() != null
+											&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+											&& (rcmnd.getIsAgmApproved() == null || rcmnd.getIsAgmApproved() != true)) {
+										responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+										recommendations.add(responseDto);
+									}
+									if (rcmnd.getIsAppOwnerRejected() != null
+											&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+											&& (rcmnd.getIsAgmRejected() == null
+													|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+										responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										recommendations.add(responseDto);
+									}
+
+								}
+							}
+						}
+
+					}
+					responseDtos.setPendingRecommendation(recommendations);
+
+					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation List AGM.", responseDtos);
+				}
+				if (master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+
+					List<DepartmentApprover> departmentList = departmentApproverRepository
+							.findAllByUserId(master.get().getUserId().getId());
+
+					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());
+
+					searchDto.setDepartmentIds(departmentIds);
+					List<Recommendation> recommendationList = recommendationRepository
+							.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
+
+					List<Recommendation> recommendationListHighPriority = recommendationList.stream()
+							.filter(x -> x.getPriorityId() == PriorityEnum.High.getId().longValue())
+							.filter(x -> x.getIsAppOwnerRejected().booleanValue() == true).collect(Collectors.toList());
+
+					List<DepartmentApprover> departmentApproverList = departmentApproverRepository
+							.findAllByDepartmentIdIn(departmentIds);
+					Map<Long, DepartmentApprover> departmentApproverMap = new HashMap<>();
+					if (departmentApproverList != null && departmentApproverList.size() > 0) {
+						for (DepartmentApprover approver : departmentApproverList) {
+							if (!departmentApproverMap.containsKey(approver.getDepartment().getId().longValue())) {
+								departmentApproverMap.put(approver.getDepartment().getId(), approver);
+							}
+						}
+					}
+					for (Recommendation rcmnd : recommendationListHighPriority) {
+						if (searchDto.getStatusId() != null && (searchDto.getStatusId() != StatusEnum.Delayed.getId()
+								|| searchDto.getStatusId() != StatusEnum.No_Action.getId()
+								|| searchDto.getStatusId() != StatusEnum.Released_With_Delay.getId())) {
+
+							RecommendationResponseDto responseDto = rcmnd.convertToDto();
+							List<RecommendationMessages> messageList = recommendationMessagesRepository
+									.findAllByReferenceId(rcmnd.getReferenceId());
+							if (messageList != null && messageList.size() > 0) {
+								List<RecommendationMessages> updatedMessageList = messageList.stream()
+										.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+												.longValue() == master.get().getUserId().getId().longValue())
+										.collect(Collectors.toList());
+								Collections.sort(updatedMessageList,
+										Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+								if (updatedMessageList != null && updatedMessageList.size() > 0) {
+									String message = updatedMessageList.get(0).getRejectionReason();
+									responseDto.setPastExperienceComment(message);
+								}
+								responseDto.setMessageList(messageList);
+							} else {
+								responseDto.setMessageList(null);
+							}
+							if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+								responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+							} else {
+								String priority = "";
+								if (rcmnd.getPriorityId().longValue() == 1) {
+									priority = PriorityEnum.High.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else if (rcmnd.getPriorityId().longValue() == 2) {
+									priority = PriorityEnum.Medium.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else {
+									priority = PriorityEnum.Low.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								}
+							}
+							Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+									.findByRecommendRefId(rcmnd.getReferenceId());
+							if (deploymentDetails != null && deploymentDetails.isPresent()) {
+								responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+							} else {
+								responseDto.setRecommendationDeploymentDetails(null);
+							}
+							if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+								DepartmentApprover approverObj = departmentApproverMap
+										.get(rcmnd.getDepartment().getId().longValue());
+								responseDto.setAppOwner(approverObj.getApplicationOwner());
+								responseDto.setApprover(approverObj.getAgm());
+							}
+							if (rcmnd.getIsAppOwnerApproved() != null
+									&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+									&& (rcmnd.getIsAgmApproved() == null || rcmnd.getIsAgmApproved() != true)) {
+								responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+								recommendations.add(responseDto);
+							}
+							if (rcmnd.getIsAppOwnerRejected() != null
+									&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+									&& (rcmnd.getIsAgmRejected() == null
+											|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+								responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+								Date rcmdDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(responseDto.getRecommendDate());
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.No_Action.getId());
+									status.setStatusName(StatusEnum.No_Action.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Delayed.getId());
+									status.setStatusName(StatusEnum.Delayed.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Released_With_Delay.getId());
+									status.setStatusName(StatusEnum.Released_With_Delay.getName());
+									responseDto.setStatus(status);
+								}
+								recommendations.add(responseDto);
+							}
+
+						} else if (searchDto.getStatusId() != null
+								&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+							Date recommendDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(rcmnd.getRecommendDate());
+							if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+									.equals(StatusEnum.OEM_recommendation.getName())) {
+
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
-
 								if (messageList != null && messageList.size() > 0) {
 									List<RecommendationMessages> updatedMessageList = messageList.stream()
 											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
@@ -2076,12 +4374,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 									Collections.sort(updatedMessageList,
 											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
 									if (updatedMessageList != null && updatedMessageList.size() > 0) {
-										String message = "";
-										if (updatedMessageList.get(0).getRejectionReason() != null) {
-											message = updatedMessageList.get(0).getRejectionReason();
-										} else {
-											message = updatedMessageList.get(0).getAdditionalMessage();
-										}
+										String message = updatedMessageList.get(0).getRejectionReason();
 										responseDto.setPastExperienceComment(message);
 									}
 									responseDto.setMessageList(messageList);
@@ -2133,106 +4426,315 @@ public class RecommendationServiceImpl implements RecommendationService {
 										&& (rcmnd.getIsAgmRejected() == null
 												|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
 									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
 									recommendations.add(responseDto);
 								}
 
 							}
-						}
+						} else if (searchDto.getStatusId() != null
+								&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+							Date recommendDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(rcmnd.getRecommendDate());
+							if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+									.equals(StatusEnum.Approved.getName())) {
 
-					}
-					responseDtos.setPendingRecommendation(recommendations);
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								if (messageList != null && messageList.size() > 0) {
+									List<RecommendationMessages> updatedMessageList = messageList.stream()
+											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+													.longValue() == master.get().getUserId().getId().longValue())
+											.collect(Collectors.toList());
+									Collections.sort(updatedMessageList,
+											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+									if (updatedMessageList != null && updatedMessageList.size() > 0) {
+										String message = updatedMessageList.get(0).getRejectionReason();
+										responseDto.setPastExperienceComment(message);
+									}
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
+								}
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
+								if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+									DepartmentApprover approverObj = departmentApproverMap
+											.get(rcmnd.getDepartment().getId().longValue());
+									responseDto.setAppOwner(approverObj.getApplicationOwner());
+									responseDto.setApprover(approverObj.getAgm());
+								}
+								if (rcmnd.getIsAppOwnerApproved() != null
+										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+										&& (rcmnd.getIsAgmApproved() == null || rcmnd.getIsAgmApproved() != true)) {
+									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+									recommendations.add(responseDto);
+								}
+								if (rcmnd.getIsAppOwnerRejected() != null
+										&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+										&& (rcmnd.getIsAgmRejected() == null
+												|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									recommendations.add(responseDto);
+								}
 
-					return new Response<>(HttpStatus.OK.value(), "Pending Recommendation List AGM.", responseDtos);
-				}
-				if (master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
-
-					List<DepartmentApprover> departmentList = departmentApproverRepository
-							.findAllByUserId(master.get().getUserId().getId());
-
-					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
-							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());
-
-					searchDto.setDepartmentIds(departmentIds);
-					List<Recommendation> recommendationList = recommendationRepository
-							.findAllPendingRecommendationsForAgmBySearchDto(searchDto);
-
-					List<Recommendation> recommendationListHighPriority = recommendationList.stream()
-							.filter(x -> x.getPriorityId() == PriorityEnum.High.getId().longValue())
-							.filter(x -> x.getIsAppOwnerRejected().booleanValue() == true).collect(Collectors.toList());
-
-					List<DepartmentApprover> departmentApproverList = departmentApproverRepository
-							.findAllByDepartmentIdIn(departmentIds);
-					Map<Long, DepartmentApprover> departmentApproverMap = new HashMap<>();
-					if (departmentApproverList != null && departmentApproverList.size() > 0) {
-						for (DepartmentApprover approver : departmentApproverList) {
-							if (!departmentApproverMap.containsKey(approver.getDepartment().getId().longValue())) {
-								departmentApproverMap.put(approver.getDepartment().getId(), approver);
 							}
-						}
-					}
-					for (Recommendation rcmnd : recommendationListHighPriority) {
-						RecommendationResponseDto responseDto = rcmnd.convertToDto();
-						List<RecommendationMessages> messageList = recommendationMessagesRepository
-								.findAllByReferenceId(rcmnd.getReferenceId());
+						} else if (searchDto.getStatusId() != null
+								&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+							Date recommendDate = com.sbi.oem.util.DateUtil
+									.convertDateToNigh12AM(rcmnd.getRecommendDate());
+							if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+									.equals(StatusEnum.Released.getName())) {
 
-						if (messageList != null && messageList.size() > 0) {
-							List<RecommendationMessages> updatedMessageList = messageList.stream()
-									.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
-											.longValue() == master.get().getUserId().getId().longValue())
-									.collect(Collectors.toList());
-							Collections.sort(updatedMessageList,
-									Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
-							if (updatedMessageList != null && updatedMessageList.size() > 0) {
-								String message = updatedMessageList.get(0).getRejectionReason();
-								responseDto.setPastExperienceComment(message);
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								if (messageList != null && messageList.size() > 0) {
+									List<RecommendationMessages> updatedMessageList = messageList.stream()
+											.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+													.longValue() == master.get().getUserId().getId().longValue())
+											.collect(Collectors.toList());
+									Collections.sort(updatedMessageList,
+											Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+									if (updatedMessageList != null && updatedMessageList.size() > 0) {
+										String message = updatedMessageList.get(0).getRejectionReason();
+										responseDto.setPastExperienceComment(message);
+									}
+									responseDto.setMessageList(messageList);
+								} else {
+									responseDto.setMessageList(null);
+								}
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
+								if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+									DepartmentApprover approverObj = departmentApproverMap
+											.get(rcmnd.getDepartment().getId().longValue());
+									responseDto.setAppOwner(approverObj.getApplicationOwner());
+									responseDto.setApprover(approverObj.getAgm());
+								}
+								if (rcmnd.getIsAppOwnerApproved() != null
+										&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+										&& (rcmnd.getIsAgmApproved() == null || rcmnd.getIsAgmApproved() != true)) {
+									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+									recommendations.add(responseDto);
+								}
+								if (rcmnd.getIsAppOwnerRejected() != null
+										&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+										&& (rcmnd.getIsAgmRejected() == null
+												|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+									responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									recommendations.add(responseDto);
+								}
+
 							}
-							responseDto.setMessageList(messageList);
 						} else {
-							responseDto.setMessageList(null);
-						}
-						if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
-							responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
-						} else {
-							String priority = "";
-							if (rcmnd.getPriorityId().longValue() == 1) {
-								priority = PriorityEnum.High.getName();
-								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-								responseDto.setPriority(priority);
-							} else if (rcmnd.getPriorityId().longValue() == 2) {
-								priority = PriorityEnum.Medium.getName();
-								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-								responseDto.setPriority(priority);
+
+							RecommendationResponseDto responseDto = rcmnd.convertToDto();
+							List<RecommendationMessages> messageList = recommendationMessagesRepository
+									.findAllByReferenceId(rcmnd.getReferenceId());
+							if (messageList != null && messageList.size() > 0) {
+								List<RecommendationMessages> updatedMessageList = messageList.stream()
+										.filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+												.longValue() == master.get().getUserId().getId().longValue())
+										.collect(Collectors.toList());
+								Collections.sort(updatedMessageList,
+										Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+								if (updatedMessageList != null && updatedMessageList.size() > 0) {
+									String message = updatedMessageList.get(0).getRejectionReason();
+									responseDto.setPastExperienceComment(message);
+								}
+								responseDto.setMessageList(messageList);
 							} else {
-								priority = PriorityEnum.Low.getName();
-								priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-								responseDto.setPriority(priority);
+								responseDto.setMessageList(null);
 							}
-						}
-						Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-								.findByRecommendRefId(rcmnd.getReferenceId());
-						if (deploymentDetails != null && deploymentDetails.isPresent()) {
-							responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
-						} else {
-							responseDto.setRecommendationDeploymentDetails(null);
-						}
-						if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
-							DepartmentApprover approverObj = departmentApproverMap
-									.get(rcmnd.getDepartment().getId().longValue());
-							responseDto.setAppOwner(approverObj.getApplicationOwner());
-							responseDto.setApprover(approverObj.getAgm());
-						}
-						if (rcmnd.getIsAppOwnerApproved() != null
-								&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
-								&& (rcmnd.getIsAgmApproved() == null || rcmnd.getIsAgmApproved() != true)) {
-							responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
-							recommendations.add(responseDto);
-						}
-						if (rcmnd.getIsAppOwnerRejected() != null
-								&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
-								&& (rcmnd.getIsAgmRejected() == null
-										|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
-							responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
-							recommendations.add(responseDto);
+							if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+								responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+							} else {
+								String priority = "";
+								if (rcmnd.getPriorityId().longValue() == 1) {
+									priority = PriorityEnum.High.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else if (rcmnd.getPriorityId().longValue() == 2) {
+									priority = PriorityEnum.Medium.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								} else {
+									priority = PriorityEnum.Low.getName();
+									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
+									responseDto.setPriority(priority);
+								}
+							}
+							Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+									.findByRecommendRefId(rcmnd.getReferenceId());
+							if (deploymentDetails != null && deploymentDetails.isPresent()) {
+								responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+							} else {
+								responseDto.setRecommendationDeploymentDetails(null);
+							}
+							if (departmentApproverMap.containsKey(rcmnd.getDepartment().getId().longValue())) {
+								DepartmentApprover approverObj = departmentApproverMap
+										.get(rcmnd.getDepartment().getId().longValue());
+								responseDto.setAppOwner(approverObj.getApplicationOwner());
+								responseDto.setApprover(approverObj.getAgm());
+							}
+							if (rcmnd.getIsAppOwnerApproved() != null
+									&& rcmnd.getIsAppOwnerApproved().booleanValue() == true
+									&& (rcmnd.getIsAgmApproved() == null || rcmnd.getIsAgmApproved() != true)) {
+								responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_ACCEPTED));
+								recommendations.add(responseDto);
+							}
+							if (rcmnd.getIsAppOwnerRejected() != null
+									&& rcmnd.getIsAppOwnerRejected().booleanValue() == true
+									&& (rcmnd.getIsAgmRejected() == null
+											|| rcmnd.getIsAgmRejected().booleanValue() != true)) {
+								responseDto.setStatus(new RecommendationStatus(Constant.APPLICATION_REJECTED));
+								Date rcmdDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(responseDto.getRecommendDate());
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.No_Action.getId());
+									status.setStatusName(StatusEnum.No_Action.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Delayed.getId());
+									status.setStatusName(StatusEnum.Delayed.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Released_With_Delay.getId());
+									status.setStatusName(StatusEnum.Released_With_Delay.getName());
+									responseDto.setStatus(status);
+								}
+								recommendations.add(responseDto);
+							}
+
 						}
 
 					}
@@ -2268,154 +4770,144 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findAllByUserId(master.get().getUserId().getId());
 					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
 							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());
-
+					Long statusId = searchDto.getStatusId();
 					if (departmentIds != null && departmentIds.size() > 0) {
 						for (Long departmentId : departmentIds) {
 							searchDto.setDepartmentId(departmentId);
-							List<Recommendation> recommendationList = recommendationRepository
-									.findAllApprovedRecommendationsBySearchDto(searchDto);
+							List<Recommendation> recommendationList = new ArrayList<>();
+							if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
+									.longValue() == StatusEnum.No_Action.getId().longValue())
+									|| (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId().longValue())
+									|| (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay.getId()
+											.longValue()))) {
+
+								searchDto.setStatusId(null);
+								recommendationList = recommendationRepository
+										.findAllApprovedRecommendationsBySearchDto(searchDto);
+							} else {
+								recommendationList = recommendationRepository
+										.findAllApprovedRecommendationsBySearchDto(searchDto);
+							}
+							if (statusId != null) {
+								searchDto.setStatusId(statusId);
+							}
 
 							for (Recommendation rcmnd : recommendationList) {
-								RecommendationResponseDto responseDto = rcmnd.convertToDto();
-								List<RecommendationMessages> messageList = recommendationMessagesRepository
-										.findAllByReferenceId(rcmnd.getReferenceId());
-								responseDto.setMessageList(messageList);
-								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-										.findAllByDepartmentId(rcmnd.getDepartment().getId());
-								responseDto.setApprover(departmentApprover.get().getAgm());
-								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
-								List<RecommendationTrail> trailList = recommendationTrailRepository
-										.findAllByReferenceId(responseDto.getReferenceId());
-								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
-								for (RecommendationTrail trail : trailList) {
-									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
-								}
-								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
-										.sorted(Map.Entry.comparingByKey())
-										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+								if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
+										.longValue() != StatusEnum.No_Action.getId().longValue())
+										&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId()
+												.longValue())
+										&& (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay
+												.getId().longValue()))) {
 
-								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
-									for (Long key : sortedMap.keySet()) {
-										RecommendationTrail trail = sortedMap.get(key);
-										RecommendationTrailResponseDto response = trail.convertToDto();
-										response.setIsStatusDone(true);
-										trailResponseList.add(response);
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									responseDto.setMessageList(messageList);
+									Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+											.findAllByDepartmentId(rcmnd.getDepartment().getId());
+									responseDto.setApprover(departmentApprover.get().getAgm());
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+									List<RecommendationTrail> trailList = recommendationTrailRepository
+											.findAllByReferenceId(responseDto.getReferenceId());
+									Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+									for (RecommendationTrail trail : trailList) {
+										recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
 									}
-								} else {
-									for (RecommendationStatus status : statusList) {
-										if (sortedMap.containsKey(status.getId().longValue())) {
-											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+									Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+											.stream().sorted(Map.Entry.comparingByKey())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+													(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+									List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+									if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+										for (Long key : sortedMap.keySet()) {
+											RecommendationTrail trail = sortedMap.get(key);
 											RecommendationTrailResponseDto response = trail.convertToDto();
 											response.setIsStatusDone(true);
 											trailResponseList.add(response);
-										} else {
-											RecommendationTrail trail = new RecommendationTrail();
-											trail.setRecommendationStatus(status);
-											RecommendationTrailResponseDto response = trail.convertToDto();
-											response.setIsStatusDone(false);
-											trailResponseList.add(response);
+										}
+									} else {
+										for (RecommendationStatus status : statusList) {
+											if (sortedMap.containsKey(status.getId().longValue())) {
+												RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											} else {
+												RecommendationTrail trail = new RecommendationTrail();
+												trail.setRecommendationStatus(status);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(false);
+												trailResponseList.add(response);
+											}
 										}
 									}
-								}
-								responseDto.setTrailResponse(trailResponseList);
-								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
-									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
-								} else {
-									String priority = "";
-									if (rcmnd.getPriorityId().longValue() == 1) {
-										priority = PriorityEnum.High.getName();
-										priorityMap.put(PriorityEnum.High.getId().longValue(),
-												PriorityEnum.High.name());
-										responseDto.setPriority(priority);
-									} else if (rcmnd.getPriorityId().longValue() == 2) {
-										priority = PriorityEnum.Medium.getName();
-										priorityMap.put(PriorityEnum.High.getId().longValue(),
-												PriorityEnum.High.name());
-										responseDto.setPriority(priority);
+									responseDto.setTrailResponse(trailResponseList);
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
 									} else {
-										priority = PriorityEnum.Low.getName();
-										priorityMap.put(PriorityEnum.High.getId().longValue(),
-												PriorityEnum.High.name());
-										responseDto.setPriority(priority);
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
 									}
-								}
-								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-										.findByRecommendRefId(rcmnd.getReferenceId());
-								if (deploymentDetails != null && deploymentDetails.isPresent()) {
-									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
-								} else {
-									responseDto.setRecommendationDeploymentDetails(null);
-								}
-								approvedRecommendations.add(responseDto);
-							}
-						}
-					}
-					approvedRecommendationResponseDto.setApprovedRecommendation(approvedRecommendations);
-					return new Response<>(HttpStatus.OK.value(), "Approved Recommendation of App Owner",
-							approvedRecommendationResponseDto);
-				} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									approvedRecommendations.add(responseDto);
 
-					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();
+								} else if (searchDto.getStatusId() != null && (searchDto.getStatusId()
+										.longValue() == StatusEnum.No_Action.getId().longValue())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.OEM_recommendation.getName())) {
 
-					List<RecommendationResponseDto> approvedRecommendations = new ArrayList<>();
-					List<DepartmentApprover> departmentList = departmentApproverRepository
-							.findAllByUserId(master.get().getUserId().getId());
-					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
-							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());
-
-					if (departmentIds != null && departmentIds.size() > 0) {
-						for (Long departmentId : departmentIds) {
-							searchDto.setDepartmentId(departmentId);
-							List<Recommendation> recommendationList = recommendationRepository
-									.findAllApprovedRecommendationsOfAgmBySearchDto(searchDto);
-
-							if (searchDto.getStatusId() != null
-									&& searchDto.getStatusId() >= StatusEnum.Planned.getId()) {
-
-								if (searchDto.getStatusId() != null
-										&& searchDto.getStatusId() == StatusEnum.Planned.getId()) {
-
-									List<Recommendation> recommendationListFilter = recommendationList.stream()
-											.filter(rcmnd -> rcmnd.getRecommendationStatus()
-													.getId() == StatusEnum.Approved.getId())
-											.filter(rcmnd -> {
-
-												Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-														.findByRecommendRefId(rcmnd.getReferenceId());
-
-												List<RecommendationTrail> trail = recommendationTrailRepository
-														.findAllByReferenceId(rcmnd.getReferenceId());
-
-												if (deploymentDetails != null && trail != null
-														&& searchDto.getStatusId() == StatusEnum.Planned.getId()) {
-
-													Date endDate = deploymentDetails.get().getDevelopementEndDate();
-
-													List<RecommendationTrail> collect = trail.stream().filter(
-															rt -> rt.getReferenceId().equals(rcmnd.getReferenceId()))
-															.sorted(Comparator
-																	.comparing(RecommendationTrail::getCreatedAt)
-																	.reversed())
-															.collect(Collectors.toList());
-
-													RecommendationTrail latestTrailEntry = collect.get(0);
-													Date trailDate = latestTrailEntry.getCreatedAt();
-
-													return trailDate != null && trailDate.after(endDate);
-
-												}
-												return false;
-
-											}).collect(Collectors.toList());
-
-									for (Recommendation rcmnd : recommendationListFilter) {
 										RecommendationResponseDto responseDto = rcmnd.convertToDto();
 										List<RecommendationMessages> messageList = recommendationMessagesRepository
 												.findAllByReferenceId(rcmnd.getReferenceId());
 										responseDto.setMessageList(messageList);
-
 										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 												.findAllByDepartmentId(rcmnd.getDepartment().getId());
 										responseDto.setApprover(departmentApprover.get().getAgm());
@@ -2485,7 +4977,974 @@ public class RecommendationServiceImpl implements RecommendationService {
 										} else {
 											responseDto.setRecommendationDeploymentDetails(null);
 										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
 										approvedRecommendations.add(responseDto);
+
+									}
+								} else if (searchDto.getStatusId() != null && (searchDto.getStatusId()
+										.longValue() == StatusEnum.Delayed.getId().longValue())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.Approved.getName())) {
+
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+										responseDto.setMessageList(messageList);
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(trailResponseList);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										approvedRecommendations.add(responseDto);
+
+									}
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.Released.getName())) {
+
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+										responseDto.setMessageList(messageList);
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(trailResponseList);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										approvedRecommendations.add(responseDto);
+
+									}
+								} else {
+
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									responseDto.setMessageList(messageList);
+									Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+											.findAllByDepartmentId(rcmnd.getDepartment().getId());
+									responseDto.setApprover(departmentApprover.get().getAgm());
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+									List<RecommendationTrail> trailList = recommendationTrailRepository
+											.findAllByReferenceId(responseDto.getReferenceId());
+									Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+									for (RecommendationTrail trail : trailList) {
+										recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+									}
+									Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+											.stream().sorted(Map.Entry.comparingByKey())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+													(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+									List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+									if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+										for (Long key : sortedMap.keySet()) {
+											RecommendationTrail trail = sortedMap.get(key);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										}
+									} else {
+										for (RecommendationStatus status : statusList) {
+											if (sortedMap.containsKey(status.getId().longValue())) {
+												RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											} else {
+												RecommendationTrail trail = new RecommendationTrail();
+												trail.setRecommendationStatus(status);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(false);
+												trailResponseList.add(response);
+											}
+										}
+									}
+									responseDto.setTrailResponse(trailResponseList);
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+									} else {
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
+									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									approvedRecommendations.add(responseDto);
+
+								}
+							}
+						}
+					}
+					approvedRecommendationResponseDto.setApprovedRecommendation(approvedRecommendations);
+					return new Response<>(HttpStatus.OK.value(), "Approved Recommendation of App Owner",
+							approvedRecommendationResponseDto);
+				} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+
+					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();
+
+					List<RecommendationResponseDto> approvedRecommendations = new ArrayList<>();
+					List<DepartmentApprover> departmentList = departmentApproverRepository
+							.findAllByUserId(master.get().getUserId().getId());
+					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());
+
+					if (departmentIds != null && departmentIds.size() > 0) {
+						for (Long departmentId : departmentIds) {
+							searchDto.setDepartmentId(departmentId);
+							List<Recommendation> recommendationList = new ArrayList<>();
+							Long statusId = searchDto.getStatusId();
+							if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
+									.longValue() == StatusEnum.No_Action.getId().longValue())
+									|| (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId().longValue())
+									|| (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay.getId()
+											.longValue()))) {
+
+								searchDto.setStatusId(null);
+								recommendationList = recommendationRepository
+										.findAllApprovedRecommendationsOfAgmBySearchDto(searchDto);
+							} else {
+								recommendationList = recommendationRepository
+										.findAllApprovedRecommendationsOfAgmBySearchDto(searchDto);
+							}
+							if (statusId != null) {
+								searchDto.setStatusId(statusId);
+							}
+							if (searchDto.getStatusId() != null
+									&& searchDto.getStatusId() >= StatusEnum.Planned.getId()) {
+
+								if (searchDto.getStatusId() != null
+										&& searchDto.getStatusId() == StatusEnum.Planned.getId()) {
+
+									List<Recommendation> recommendationListFilter = recommendationList.stream()
+											.filter(rcmnd -> rcmnd.getRecommendationStatus()
+													.getId() == StatusEnum.Approved.getId())
+											.filter(rcmnd -> {
+
+												Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+														.findByRecommendRefId(rcmnd.getReferenceId());
+
+												List<RecommendationTrail> trail = recommendationTrailRepository
+														.findAllByReferenceId(rcmnd.getReferenceId());
+
+												if (deploymentDetails != null && trail != null
+														&& searchDto.getStatusId() == StatusEnum.Planned.getId()) {
+
+													Date endDate = deploymentDetails.get().getDevelopementEndDate();
+
+													List<RecommendationTrail> collect = trail.stream().filter(
+															rt -> rt.getReferenceId().equals(rcmnd.getReferenceId()))
+															.sorted(Comparator
+																	.comparing(RecommendationTrail::getCreatedAt)
+																	.reversed())
+															.collect(Collectors.toList());
+
+													RecommendationTrail latestTrailEntry = collect.get(0);
+													Date trailDate = latestTrailEntry.getCreatedAt();
+
+													return trailDate != null && trailDate.after(endDate);
+
+												}
+												return false;
+
+											}).collect(Collectors.toList());
+
+									for (Recommendation rcmnd : recommendationListFilter) {
+										if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
+												.longValue() != StatusEnum.No_Action.getId().longValue())
+												&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId()
+														.longValue())
+												&& (searchDto.getStatusId()
+														.longValue() == StatusEnum.Released_With_Delay.getId()
+																.longValue()))) {
+											RecommendationResponseDto responseDto = rcmnd.convertToDto();
+											List<RecommendationMessages> messageList = recommendationMessagesRepository
+													.findAllByReferenceId(rcmnd.getReferenceId());
+											responseDto.setMessageList(messageList);
+
+											Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+													.findAllByDepartmentId(rcmnd.getDepartment().getId());
+											responseDto.setApprover(departmentApprover.get().getAgm());
+											responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+											List<RecommendationTrail> trailList = recommendationTrailRepository
+													.findAllByReferenceId(responseDto.getReferenceId());
+											Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+											for (RecommendationTrail trail : trailList) {
+												recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+														trail);
+											}
+											Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+													.stream().sorted(Map.Entry.comparingByKey())
+													.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+															(e1, e2) -> e1,
+															LinkedHashMap<Long, RecommendationTrail>::new));
+
+											List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+											if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+												for (Long key : sortedMap.keySet()) {
+													RecommendationTrail trail = sortedMap.get(key);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												}
+											} else {
+												for (RecommendationStatus status : statusList) {
+													if (sortedMap.containsKey(status.getId().longValue())) {
+														RecommendationTrail trail = sortedMap
+																.get(status.getId().longValue());
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													} else {
+														RecommendationTrail trail = new RecommendationTrail();
+														trail.setRecommendationStatus(status);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(false);
+														trailResponseList.add(response);
+													}
+												}
+											}
+											responseDto.setTrailResponse(trailResponseList);
+											if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+												responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+											} else {
+												String priority = "";
+												if (rcmnd.getPriorityId().longValue() == 1) {
+													priority = PriorityEnum.High.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else if (rcmnd.getPriorityId().longValue() == 2) {
+													priority = PriorityEnum.Medium.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else {
+													priority = PriorityEnum.Low.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												}
+											}
+											Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+													.findByRecommendRefId(rcmnd.getReferenceId());
+											if (deploymentDetails != null && deploymentDetails.isPresent()) {
+												responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+											} else {
+												responseDto.setRecommendationDeploymentDetails(null);
+											}
+											Date rcmdDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(responseDto.getRecommendDate());
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.OEM_recommendation.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.No_Action.getId());
+												status.setStatusName(StatusEnum.No_Action.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Approved.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Delayed.getId());
+												status.setStatusName(StatusEnum.Delayed.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Released.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Released_With_Delay.getId());
+												status.setStatusName(StatusEnum.Released_With_Delay.getName());
+												responseDto.setStatus(status);
+											}
+											approvedRecommendations.add(responseDto);
+										} else if (searchDto.getStatusId() != null && (searchDto
+												.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+											Date recommendDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(rcmnd.getRecommendDate());
+											if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+													.getStatusName().equals(StatusEnum.Released.getName())) {
+
+												RecommendationResponseDto responseDto = rcmnd.convertToDto();
+												List<RecommendationMessages> messageList = recommendationMessagesRepository
+														.findAllByReferenceId(rcmnd.getReferenceId());
+												responseDto.setMessageList(messageList);
+
+												Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+														.findAllByDepartmentId(rcmnd.getDepartment().getId());
+												responseDto.setApprover(departmentApprover.get().getAgm());
+												responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+												List<RecommendationTrail> trailList = recommendationTrailRepository
+														.findAllByReferenceId(responseDto.getReferenceId());
+												Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+												for (RecommendationTrail trail : trailList) {
+													recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+															trail);
+												}
+												Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap
+														.entrySet().stream().sorted(Map.Entry.comparingByKey())
+														.collect(Collectors.toMap(Map.Entry::getKey,
+																Map.Entry::getValue, (e1, e2) -> e1,
+																LinkedHashMap<Long, RecommendationTrail>::new));
+
+												List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+												if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+													for (Long key : sortedMap.keySet()) {
+														RecommendationTrail trail = sortedMap.get(key);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													}
+												} else {
+													for (RecommendationStatus status : statusList) {
+														if (sortedMap.containsKey(status.getId().longValue())) {
+															RecommendationTrail trail = sortedMap
+																	.get(status.getId().longValue());
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(true);
+															trailResponseList.add(response);
+														} else {
+															RecommendationTrail trail = new RecommendationTrail();
+															trail.setRecommendationStatus(status);
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(false);
+															trailResponseList.add(response);
+														}
+													}
+												}
+												responseDto.setTrailResponse(trailResponseList);
+												if (priorityMap != null
+														&& priorityMap.containsKey(rcmnd.getPriorityId())) {
+													responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+												} else {
+													String priority = "";
+													if (rcmnd.getPriorityId().longValue() == 1) {
+														priority = PriorityEnum.High.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else if (rcmnd.getPriorityId().longValue() == 2) {
+														priority = PriorityEnum.Medium.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else {
+														priority = PriorityEnum.Low.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													}
+												}
+												Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+														.findByRecommendRefId(rcmnd.getReferenceId());
+												if (deploymentDetails != null && deploymentDetails.isPresent()) {
+													responseDto.setRecommendationDeploymentDetails(
+															deploymentDetails.get());
+												} else {
+													responseDto.setRecommendationDeploymentDetails(null);
+												}
+												Date rcmdDate = com.sbi.oem.util.DateUtil
+														.convertDateToNigh12AM(responseDto.getRecommendDate());
+												if (rcmdDate.before(new Date())
+														&& responseDto.getStatus().getStatusName()
+																.equals(StatusEnum.OEM_recommendation.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.No_Action.getId());
+													status.setStatusName(StatusEnum.No_Action.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Approved.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Delayed.getId());
+													status.setStatusName(StatusEnum.Delayed.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Released.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Released_With_Delay.getId());
+													status.setStatusName(StatusEnum.Released_With_Delay.getName());
+													responseDto.setStatus(status);
+												}
+												approvedRecommendations.add(responseDto);
+
+											}
+										} else if (searchDto.getStatusId() != null
+												&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+											Date recommendDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(rcmnd.getRecommendDate());
+											if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+													.getStatusName().equals(StatusEnum.OEM_recommendation.getName())) {
+
+												RecommendationResponseDto responseDto = rcmnd.convertToDto();
+												List<RecommendationMessages> messageList = recommendationMessagesRepository
+														.findAllByReferenceId(rcmnd.getReferenceId());
+												responseDto.setMessageList(messageList);
+
+												Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+														.findAllByDepartmentId(rcmnd.getDepartment().getId());
+												responseDto.setApprover(departmentApprover.get().getAgm());
+												responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+												List<RecommendationTrail> trailList = recommendationTrailRepository
+														.findAllByReferenceId(responseDto.getReferenceId());
+												Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+												for (RecommendationTrail trail : trailList) {
+													recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+															trail);
+												}
+												Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap
+														.entrySet().stream().sorted(Map.Entry.comparingByKey())
+														.collect(Collectors.toMap(Map.Entry::getKey,
+																Map.Entry::getValue, (e1, e2) -> e1,
+																LinkedHashMap<Long, RecommendationTrail>::new));
+
+												List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+												if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+													for (Long key : sortedMap.keySet()) {
+														RecommendationTrail trail = sortedMap.get(key);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													}
+												} else {
+													for (RecommendationStatus status : statusList) {
+														if (sortedMap.containsKey(status.getId().longValue())) {
+															RecommendationTrail trail = sortedMap
+																	.get(status.getId().longValue());
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(true);
+															trailResponseList.add(response);
+														} else {
+															RecommendationTrail trail = new RecommendationTrail();
+															trail.setRecommendationStatus(status);
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(false);
+															trailResponseList.add(response);
+														}
+													}
+												}
+												responseDto.setTrailResponse(trailResponseList);
+												if (priorityMap != null
+														&& priorityMap.containsKey(rcmnd.getPriorityId())) {
+													responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+												} else {
+													String priority = "";
+													if (rcmnd.getPriorityId().longValue() == 1) {
+														priority = PriorityEnum.High.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else if (rcmnd.getPriorityId().longValue() == 2) {
+														priority = PriorityEnum.Medium.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else {
+														priority = PriorityEnum.Low.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													}
+												}
+												Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+														.findByRecommendRefId(rcmnd.getReferenceId());
+												if (deploymentDetails != null && deploymentDetails.isPresent()) {
+													responseDto.setRecommendationDeploymentDetails(
+															deploymentDetails.get());
+												} else {
+													responseDto.setRecommendationDeploymentDetails(null);
+												}
+												Date rcmdDate = com.sbi.oem.util.DateUtil
+														.convertDateToNigh12AM(responseDto.getRecommendDate());
+												if (rcmdDate.before(new Date())
+														&& responseDto.getStatus().getStatusName()
+																.equals(StatusEnum.OEM_recommendation.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.No_Action.getId());
+													status.setStatusName(StatusEnum.No_Action.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Approved.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Delayed.getId());
+													status.setStatusName(StatusEnum.Delayed.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Released.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Released_With_Delay.getId());
+													status.setStatusName(StatusEnum.Released_With_Delay.getName());
+													responseDto.setStatus(status);
+												}
+												approvedRecommendations.add(responseDto);
+
+											}
+										} else if (searchDto.getStatusId() != null
+												&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+											Date recommendDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(rcmnd.getRecommendDate());
+											if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+													.getStatusName().equals(StatusEnum.Approved.getName())) {
+
+												RecommendationResponseDto responseDto = rcmnd.convertToDto();
+												List<RecommendationMessages> messageList = recommendationMessagesRepository
+														.findAllByReferenceId(rcmnd.getReferenceId());
+												responseDto.setMessageList(messageList);
+
+												Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+														.findAllByDepartmentId(rcmnd.getDepartment().getId());
+												responseDto.setApprover(departmentApprover.get().getAgm());
+												responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+												List<RecommendationTrail> trailList = recommendationTrailRepository
+														.findAllByReferenceId(responseDto.getReferenceId());
+												Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+												for (RecommendationTrail trail : trailList) {
+													recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+															trail);
+												}
+												Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap
+														.entrySet().stream().sorted(Map.Entry.comparingByKey())
+														.collect(Collectors.toMap(Map.Entry::getKey,
+																Map.Entry::getValue, (e1, e2) -> e1,
+																LinkedHashMap<Long, RecommendationTrail>::new));
+
+												List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+												if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+													for (Long key : sortedMap.keySet()) {
+														RecommendationTrail trail = sortedMap.get(key);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													}
+												} else {
+													for (RecommendationStatus status : statusList) {
+														if (sortedMap.containsKey(status.getId().longValue())) {
+															RecommendationTrail trail = sortedMap
+																	.get(status.getId().longValue());
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(true);
+															trailResponseList.add(response);
+														} else {
+															RecommendationTrail trail = new RecommendationTrail();
+															trail.setRecommendationStatus(status);
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(false);
+															trailResponseList.add(response);
+														}
+													}
+												}
+												responseDto.setTrailResponse(trailResponseList);
+												if (priorityMap != null
+														&& priorityMap.containsKey(rcmnd.getPriorityId())) {
+													responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+												} else {
+													String priority = "";
+													if (rcmnd.getPriorityId().longValue() == 1) {
+														priority = PriorityEnum.High.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else if (rcmnd.getPriorityId().longValue() == 2) {
+														priority = PriorityEnum.Medium.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else {
+														priority = PriorityEnum.Low.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													}
+												}
+												Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+														.findByRecommendRefId(rcmnd.getReferenceId());
+												if (deploymentDetails != null && deploymentDetails.isPresent()) {
+													responseDto.setRecommendationDeploymentDetails(
+															deploymentDetails.get());
+												} else {
+													responseDto.setRecommendationDeploymentDetails(null);
+												}
+												Date rcmdDate = com.sbi.oem.util.DateUtil
+														.convertDateToNigh12AM(responseDto.getRecommendDate());
+												if (rcmdDate.before(new Date())
+														&& responseDto.getStatus().getStatusName()
+																.equals(StatusEnum.OEM_recommendation.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.No_Action.getId());
+													status.setStatusName(StatusEnum.No_Action.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Approved.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Delayed.getId());
+													status.setStatusName(StatusEnum.Delayed.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Released.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Released_With_Delay.getId());
+													status.setStatusName(StatusEnum.Released_With_Delay.getName());
+													responseDto.setStatus(status);
+												}
+												approvedRecommendations.add(responseDto);
+
+											}
+										} else {
+
+											RecommendationResponseDto responseDto = rcmnd.convertToDto();
+											List<RecommendationMessages> messageList = recommendationMessagesRepository
+													.findAllByReferenceId(rcmnd.getReferenceId());
+											responseDto.setMessageList(messageList);
+
+											Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+													.findAllByDepartmentId(rcmnd.getDepartment().getId());
+											responseDto.setApprover(departmentApprover.get().getAgm());
+											responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+											List<RecommendationTrail> trailList = recommendationTrailRepository
+													.findAllByReferenceId(responseDto.getReferenceId());
+											Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+											for (RecommendationTrail trail : trailList) {
+												recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+														trail);
+											}
+											Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+													.stream().sorted(Map.Entry.comparingByKey())
+													.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+															(e1, e2) -> e1,
+															LinkedHashMap<Long, RecommendationTrail>::new));
+
+											List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+											if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+												for (Long key : sortedMap.keySet()) {
+													RecommendationTrail trail = sortedMap.get(key);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												}
+											} else {
+												for (RecommendationStatus status : statusList) {
+													if (sortedMap.containsKey(status.getId().longValue())) {
+														RecommendationTrail trail = sortedMap
+																.get(status.getId().longValue());
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													} else {
+														RecommendationTrail trail = new RecommendationTrail();
+														trail.setRecommendationStatus(status);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(false);
+														trailResponseList.add(response);
+													}
+												}
+											}
+											responseDto.setTrailResponse(trailResponseList);
+											if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+												responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+											} else {
+												String priority = "";
+												if (rcmnd.getPriorityId().longValue() == 1) {
+													priority = PriorityEnum.High.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else if (rcmnd.getPriorityId().longValue() == 2) {
+													priority = PriorityEnum.Medium.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else {
+													priority = PriorityEnum.Low.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												}
+											}
+											Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+													.findByRecommendRefId(rcmnd.getReferenceId());
+											if (deploymentDetails != null && deploymentDetails.isPresent()) {
+												responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+											} else {
+												responseDto.setRecommendationDeploymentDetails(null);
+											}
+											Date rcmdDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(responseDto.getRecommendDate());
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.OEM_recommendation.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.No_Action.getId());
+												status.setStatusName(StatusEnum.No_Action.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Approved.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Delayed.getId());
+												status.setStatusName(StatusEnum.Delayed.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Released.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Released_With_Delay.getId());
+												status.setStatusName(StatusEnum.Released_With_Delay.getName());
+												responseDto.setStatus(status);
+											}
+											approvedRecommendations.add(responseDto);
+
+										}
 
 									}
 
@@ -2554,8 +6013,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 															}
 														}
 
-														System.out.println("value = " + checkDate);
-
 														return checkDate;
 
 													}
@@ -2622,6 +6079,573 @@ public class RecommendationServiceImpl implements RecommendationService {
 											}).collect(Collectors.toList());
 
 									for (Recommendation rcmnd : recommendationListFilter) {
+										if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
+												.longValue() != StatusEnum.No_Action.getId().longValue())
+												&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId()
+														.longValue())
+												&& (searchDto.getStatusId()
+														.longValue() == StatusEnum.Released_With_Delay.getId()
+																.longValue()))) {
+											RecommendationResponseDto responseDto = rcmnd.convertToDto();
+											List<RecommendationMessages> messageList = recommendationMessagesRepository
+													.findAllByReferenceId(rcmnd.getReferenceId());
+											responseDto.setMessageList(messageList);
+
+											Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+													.findAllByDepartmentId(rcmnd.getDepartment().getId());
+											responseDto.setApprover(departmentApprover.get().getAgm());
+											responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+											List<RecommendationTrail> trailList = recommendationTrailRepository
+													.findAllByReferenceId(responseDto.getReferenceId());
+											Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+											for (RecommendationTrail trail : trailList) {
+												recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+														trail);
+											}
+											Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+													.stream().sorted(Map.Entry.comparingByKey())
+													.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+															(e1, e2) -> e1,
+															LinkedHashMap<Long, RecommendationTrail>::new));
+
+											List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+											if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+												for (Long key : sortedMap.keySet()) {
+													RecommendationTrail trail = sortedMap.get(key);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												}
+											} else {
+												for (RecommendationStatus status : statusList) {
+													if (sortedMap.containsKey(status.getId().longValue())) {
+														RecommendationTrail trail = sortedMap
+																.get(status.getId().longValue());
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													} else {
+														RecommendationTrail trail = new RecommendationTrail();
+														trail.setRecommendationStatus(status);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(false);
+														trailResponseList.add(response);
+													}
+												}
+											}
+											responseDto.setTrailResponse(trailResponseList);
+											if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+												responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+											} else {
+												String priority = "";
+												if (rcmnd.getPriorityId().longValue() == 1) {
+													priority = PriorityEnum.High.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else if (rcmnd.getPriorityId().longValue() == 2) {
+													priority = PriorityEnum.Medium.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else {
+													priority = PriorityEnum.Low.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												}
+											}
+											Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+													.findByRecommendRefId(rcmnd.getReferenceId());
+											if (deploymentDetails != null && deploymentDetails.isPresent()) {
+												responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+											} else {
+												responseDto.setRecommendationDeploymentDetails(null);
+											}
+											Date rcmdDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(responseDto.getRecommendDate());
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.OEM_recommendation.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.No_Action.getId());
+												status.setStatusName(StatusEnum.No_Action.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Approved.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Delayed.getId());
+												status.setStatusName(StatusEnum.Delayed.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Released.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Released_With_Delay.getId());
+												status.setStatusName(StatusEnum.Released_With_Delay.getName());
+												responseDto.setStatus(status);
+											}
+											approvedRecommendations.add(responseDto);
+										} else if (searchDto.getStatusId() != null && (searchDto
+												.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+											Date recommendDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(rcmnd.getRecommendDate());
+											if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+													.getStatusName().equals(StatusEnum.Released.getName())) {
+
+												RecommendationResponseDto responseDto = rcmnd.convertToDto();
+												List<RecommendationMessages> messageList = recommendationMessagesRepository
+														.findAllByReferenceId(rcmnd.getReferenceId());
+												responseDto.setMessageList(messageList);
+
+												Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+														.findAllByDepartmentId(rcmnd.getDepartment().getId());
+												responseDto.setApprover(departmentApprover.get().getAgm());
+												responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+												List<RecommendationTrail> trailList = recommendationTrailRepository
+														.findAllByReferenceId(responseDto.getReferenceId());
+												Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+												for (RecommendationTrail trail : trailList) {
+													recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+															trail);
+												}
+												Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap
+														.entrySet().stream().sorted(Map.Entry.comparingByKey())
+														.collect(Collectors.toMap(Map.Entry::getKey,
+																Map.Entry::getValue, (e1, e2) -> e1,
+																LinkedHashMap<Long, RecommendationTrail>::new));
+
+												List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+												if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+													for (Long key : sortedMap.keySet()) {
+														RecommendationTrail trail = sortedMap.get(key);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													}
+												} else {
+													for (RecommendationStatus status : statusList) {
+														if (sortedMap.containsKey(status.getId().longValue())) {
+															RecommendationTrail trail = sortedMap
+																	.get(status.getId().longValue());
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(true);
+															trailResponseList.add(response);
+														} else {
+															RecommendationTrail trail = new RecommendationTrail();
+															trail.setRecommendationStatus(status);
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(false);
+															trailResponseList.add(response);
+														}
+													}
+												}
+												responseDto.setTrailResponse(trailResponseList);
+												if (priorityMap != null
+														&& priorityMap.containsKey(rcmnd.getPriorityId())) {
+													responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+												} else {
+													String priority = "";
+													if (rcmnd.getPriorityId().longValue() == 1) {
+														priority = PriorityEnum.High.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else if (rcmnd.getPriorityId().longValue() == 2) {
+														priority = PriorityEnum.Medium.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else {
+														priority = PriorityEnum.Low.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													}
+												}
+												Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+														.findByRecommendRefId(rcmnd.getReferenceId());
+												if (deploymentDetails != null && deploymentDetails.isPresent()) {
+													responseDto.setRecommendationDeploymentDetails(
+															deploymentDetails.get());
+												} else {
+													responseDto.setRecommendationDeploymentDetails(null);
+												}
+												Date rcmdDate = com.sbi.oem.util.DateUtil
+														.convertDateToNigh12AM(responseDto.getRecommendDate());
+												if (rcmdDate.before(new Date())
+														&& responseDto.getStatus().getStatusName()
+																.equals(StatusEnum.OEM_recommendation.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.No_Action.getId());
+													status.setStatusName(StatusEnum.No_Action.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Approved.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Delayed.getId());
+													status.setStatusName(StatusEnum.Delayed.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Released.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Released_With_Delay.getId());
+													status.setStatusName(StatusEnum.Released_With_Delay.getName());
+													responseDto.setStatus(status);
+												}
+												approvedRecommendations.add(responseDto);
+
+											}
+										} else if (searchDto.getStatusId() != null
+												&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+											Date recommendDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(rcmnd.getRecommendDate());
+											if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+													.getStatusName().equals(StatusEnum.OEM_recommendation.getName())) {
+
+												RecommendationResponseDto responseDto = rcmnd.convertToDto();
+												List<RecommendationMessages> messageList = recommendationMessagesRepository
+														.findAllByReferenceId(rcmnd.getReferenceId());
+												responseDto.setMessageList(messageList);
+
+												Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+														.findAllByDepartmentId(rcmnd.getDepartment().getId());
+												responseDto.setApprover(departmentApprover.get().getAgm());
+												responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+												List<RecommendationTrail> trailList = recommendationTrailRepository
+														.findAllByReferenceId(responseDto.getReferenceId());
+												Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+												for (RecommendationTrail trail : trailList) {
+													recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+															trail);
+												}
+												Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap
+														.entrySet().stream().sorted(Map.Entry.comparingByKey())
+														.collect(Collectors.toMap(Map.Entry::getKey,
+																Map.Entry::getValue, (e1, e2) -> e1,
+																LinkedHashMap<Long, RecommendationTrail>::new));
+
+												List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+												if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+													for (Long key : sortedMap.keySet()) {
+														RecommendationTrail trail = sortedMap.get(key);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													}
+												} else {
+													for (RecommendationStatus status : statusList) {
+														if (sortedMap.containsKey(status.getId().longValue())) {
+															RecommendationTrail trail = sortedMap
+																	.get(status.getId().longValue());
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(true);
+															trailResponseList.add(response);
+														} else {
+															RecommendationTrail trail = new RecommendationTrail();
+															trail.setRecommendationStatus(status);
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(false);
+															trailResponseList.add(response);
+														}
+													}
+												}
+												responseDto.setTrailResponse(trailResponseList);
+												if (priorityMap != null
+														&& priorityMap.containsKey(rcmnd.getPriorityId())) {
+													responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+												} else {
+													String priority = "";
+													if (rcmnd.getPriorityId().longValue() == 1) {
+														priority = PriorityEnum.High.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else if (rcmnd.getPriorityId().longValue() == 2) {
+														priority = PriorityEnum.Medium.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else {
+														priority = PriorityEnum.Low.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													}
+												}
+												Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+														.findByRecommendRefId(rcmnd.getReferenceId());
+												if (deploymentDetails != null && deploymentDetails.isPresent()) {
+													responseDto.setRecommendationDeploymentDetails(
+															deploymentDetails.get());
+												} else {
+													responseDto.setRecommendationDeploymentDetails(null);
+												}
+												Date rcmdDate = com.sbi.oem.util.DateUtil
+														.convertDateToNigh12AM(responseDto.getRecommendDate());
+												if (rcmdDate.before(new Date())
+														&& responseDto.getStatus().getStatusName()
+																.equals(StatusEnum.OEM_recommendation.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.No_Action.getId());
+													status.setStatusName(StatusEnum.No_Action.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Approved.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Delayed.getId());
+													status.setStatusName(StatusEnum.Delayed.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Released.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Released_With_Delay.getId());
+													status.setStatusName(StatusEnum.Released_With_Delay.getName());
+													responseDto.setStatus(status);
+												}
+												approvedRecommendations.add(responseDto);
+
+											}
+										} else if (searchDto.getStatusId() != null
+												&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+											Date recommendDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(rcmnd.getRecommendDate());
+											if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+													.getStatusName().equals(StatusEnum.Approved.getName())) {
+
+												RecommendationResponseDto responseDto = rcmnd.convertToDto();
+												List<RecommendationMessages> messageList = recommendationMessagesRepository
+														.findAllByReferenceId(rcmnd.getReferenceId());
+												responseDto.setMessageList(messageList);
+
+												Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+														.findAllByDepartmentId(rcmnd.getDepartment().getId());
+												responseDto.setApprover(departmentApprover.get().getAgm());
+												responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+												List<RecommendationTrail> trailList = recommendationTrailRepository
+														.findAllByReferenceId(responseDto.getReferenceId());
+												Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+												for (RecommendationTrail trail : trailList) {
+													recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+															trail);
+												}
+												Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap
+														.entrySet().stream().sorted(Map.Entry.comparingByKey())
+														.collect(Collectors.toMap(Map.Entry::getKey,
+																Map.Entry::getValue, (e1, e2) -> e1,
+																LinkedHashMap<Long, RecommendationTrail>::new));
+
+												List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+												if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+													for (Long key : sortedMap.keySet()) {
+														RecommendationTrail trail = sortedMap.get(key);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													}
+												} else {
+													for (RecommendationStatus status : statusList) {
+														if (sortedMap.containsKey(status.getId().longValue())) {
+															RecommendationTrail trail = sortedMap
+																	.get(status.getId().longValue());
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(true);
+															trailResponseList.add(response);
+														} else {
+															RecommendationTrail trail = new RecommendationTrail();
+															trail.setRecommendationStatus(status);
+															RecommendationTrailResponseDto response = trail
+																	.convertToDto();
+															response.setIsStatusDone(false);
+															trailResponseList.add(response);
+														}
+													}
+												}
+												responseDto.setTrailResponse(trailResponseList);
+												if (priorityMap != null
+														&& priorityMap.containsKey(rcmnd.getPriorityId())) {
+													responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+												} else {
+													String priority = "";
+													if (rcmnd.getPriorityId().longValue() == 1) {
+														priority = PriorityEnum.High.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else if (rcmnd.getPriorityId().longValue() == 2) {
+														priority = PriorityEnum.Medium.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													} else {
+														priority = PriorityEnum.Low.getName();
+														priorityMap.put(PriorityEnum.High.getId().longValue(),
+																PriorityEnum.High.name());
+														responseDto.setPriority(priority);
+													}
+												}
+												Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+														.findByRecommendRefId(rcmnd.getReferenceId());
+												if (deploymentDetails != null && deploymentDetails.isPresent()) {
+													responseDto.setRecommendationDeploymentDetails(
+															deploymentDetails.get());
+												} else {
+													responseDto.setRecommendationDeploymentDetails(null);
+												}
+												Date rcmdDate = com.sbi.oem.util.DateUtil
+														.convertDateToNigh12AM(responseDto.getRecommendDate());
+												if (rcmdDate.before(new Date())
+														&& responseDto.getStatus().getStatusName()
+																.equals(StatusEnum.OEM_recommendation.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.No_Action.getId());
+													status.setStatusName(StatusEnum.No_Action.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Approved.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Delayed.getId());
+													status.setStatusName(StatusEnum.Delayed.getName());
+													responseDto.setStatus(status);
+												}
+												if (rcmdDate.before(new Date()) && responseDto.getStatus()
+														.getStatusName().equals(StatusEnum.Released.getName())) {
+													RecommendationStatus status = new RecommendationStatus();
+													status.setId(StatusEnum.Released_With_Delay.getId());
+													status.setStatusName(StatusEnum.Released_With_Delay.getName());
+													responseDto.setStatus(status);
+												}
+												approvedRecommendations.add(responseDto);
+
+											}
+										} else {
+
+											RecommendationResponseDto responseDto = rcmnd.convertToDto();
+											List<RecommendationMessages> messageList = recommendationMessagesRepository
+													.findAllByReferenceId(rcmnd.getReferenceId());
+											responseDto.setMessageList(messageList);
+
+											Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+													.findAllByDepartmentId(rcmnd.getDepartment().getId());
+											responseDto.setApprover(departmentApprover.get().getAgm());
+											responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+											List<RecommendationTrail> trailList = recommendationTrailRepository
+													.findAllByReferenceId(responseDto.getReferenceId());
+											Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+											for (RecommendationTrail trail : trailList) {
+												recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+														trail);
+											}
+											Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+													.stream().sorted(Map.Entry.comparingByKey())
+													.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+															(e1, e2) -> e1,
+															LinkedHashMap<Long, RecommendationTrail>::new));
+
+											List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+											if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+												for (Long key : sortedMap.keySet()) {
+													RecommendationTrail trail = sortedMap.get(key);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												}
+											} else {
+												for (RecommendationStatus status : statusList) {
+													if (sortedMap.containsKey(status.getId().longValue())) {
+														RecommendationTrail trail = sortedMap
+																.get(status.getId().longValue());
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													} else {
+														RecommendationTrail trail = new RecommendationTrail();
+														trail.setRecommendationStatus(status);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(false);
+														trailResponseList.add(response);
+													}
+												}
+											}
+											responseDto.setTrailResponse(trailResponseList);
+											if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+												responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+											} else {
+												String priority = "";
+												if (rcmnd.getPriorityId().longValue() == 1) {
+													priority = PriorityEnum.High.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else if (rcmnd.getPriorityId().longValue() == 2) {
+													priority = PriorityEnum.Medium.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else {
+													priority = PriorityEnum.Low.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												}
+											}
+											Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+													.findByRecommendRefId(rcmnd.getReferenceId());
+											if (deploymentDetails != null && deploymentDetails.isPresent()) {
+												responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+											} else {
+												responseDto.setRecommendationDeploymentDetails(null);
+											}
+											Date rcmdDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(responseDto.getRecommendDate());
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.OEM_recommendation.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.No_Action.getId());
+												status.setStatusName(StatusEnum.No_Action.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Approved.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Delayed.getId());
+												status.setStatusName(StatusEnum.Delayed.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Released.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Released_With_Delay.getId());
+												status.setStatusName(StatusEnum.Released_With_Delay.getName());
+												responseDto.setStatus(status);
+											}
+											approvedRecommendations.add(responseDto);
+
+										}
+
+									}
+
+								}
+
+							} else {
+
+								for (Recommendation rcmnd : recommendationList) {
+									if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
+											.longValue() != StatusEnum.No_Action.getId().longValue())
+											&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId()
+													.longValue())
+											&& (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay
+													.getId().longValue()))) {
 										RecommendationResponseDto responseDto = rcmnd.convertToDto();
 										List<RecommendationMessages> messageList = recommendationMessagesRepository
 												.findAllByReferenceId(rcmnd.getReferenceId());
@@ -2696,15 +6720,525 @@ public class RecommendationServiceImpl implements RecommendationService {
 										} else {
 											responseDto.setRecommendationDeploymentDetails(null);
 										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										approvedRecommendations.add(responseDto);
+									} else if (searchDto.getStatusId() != null
+											&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+										Date recommendDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(rcmnd.getRecommendDate());
+										if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+												.getStatusName().equals(StatusEnum.Released.getName())) {
+
+											RecommendationResponseDto responseDto = rcmnd.convertToDto();
+											List<RecommendationMessages> messageList = recommendationMessagesRepository
+													.findAllByReferenceId(rcmnd.getReferenceId());
+											responseDto.setMessageList(messageList);
+
+											Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+													.findAllByDepartmentId(rcmnd.getDepartment().getId());
+											responseDto.setApprover(departmentApprover.get().getAgm());
+											responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+											List<RecommendationTrail> trailList = recommendationTrailRepository
+													.findAllByReferenceId(responseDto.getReferenceId());
+											Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+											for (RecommendationTrail trail : trailList) {
+												recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+														trail);
+											}
+											Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+													.stream().sorted(Map.Entry.comparingByKey())
+													.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+															(e1, e2) -> e1,
+															LinkedHashMap<Long, RecommendationTrail>::new));
+
+											List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+											if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+												for (Long key : sortedMap.keySet()) {
+													RecommendationTrail trail = sortedMap.get(key);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												}
+											} else {
+												for (RecommendationStatus status : statusList) {
+													if (sortedMap.containsKey(status.getId().longValue())) {
+														RecommendationTrail trail = sortedMap
+																.get(status.getId().longValue());
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													} else {
+														RecommendationTrail trail = new RecommendationTrail();
+														trail.setRecommendationStatus(status);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(false);
+														trailResponseList.add(response);
+													}
+												}
+											}
+											responseDto.setTrailResponse(trailResponseList);
+											if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+												responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+											} else {
+												String priority = "";
+												if (rcmnd.getPriorityId().longValue() == 1) {
+													priority = PriorityEnum.High.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else if (rcmnd.getPriorityId().longValue() == 2) {
+													priority = PriorityEnum.Medium.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else {
+													priority = PriorityEnum.Low.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												}
+											}
+											Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+													.findByRecommendRefId(rcmnd.getReferenceId());
+											if (deploymentDetails != null && deploymentDetails.isPresent()) {
+												responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+											} else {
+												responseDto.setRecommendationDeploymentDetails(null);
+											}
+											Date rcmdDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(responseDto.getRecommendDate());
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.OEM_recommendation.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.No_Action.getId());
+												status.setStatusName(StatusEnum.No_Action.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Approved.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Delayed.getId());
+												status.setStatusName(StatusEnum.Delayed.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Released.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Released_With_Delay.getId());
+												status.setStatusName(StatusEnum.Released_With_Delay.getName());
+												responseDto.setStatus(status);
+											}
+											approvedRecommendations.add(responseDto);
+
+										}
+									} else if (searchDto.getStatusId() != null
+											&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+										Date recommendDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(rcmnd.getRecommendDate());
+										if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+												.getStatusName().equals(StatusEnum.OEM_recommendation.getName())) {
+
+											RecommendationResponseDto responseDto = rcmnd.convertToDto();
+											List<RecommendationMessages> messageList = recommendationMessagesRepository
+													.findAllByReferenceId(rcmnd.getReferenceId());
+											responseDto.setMessageList(messageList);
+
+											Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+													.findAllByDepartmentId(rcmnd.getDepartment().getId());
+											responseDto.setApprover(departmentApprover.get().getAgm());
+											responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+											List<RecommendationTrail> trailList = recommendationTrailRepository
+													.findAllByReferenceId(responseDto.getReferenceId());
+											Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+											for (RecommendationTrail trail : trailList) {
+												recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+														trail);
+											}
+											Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+													.stream().sorted(Map.Entry.comparingByKey())
+													.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+															(e1, e2) -> e1,
+															LinkedHashMap<Long, RecommendationTrail>::new));
+
+											List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+											if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+												for (Long key : sortedMap.keySet()) {
+													RecommendationTrail trail = sortedMap.get(key);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												}
+											} else {
+												for (RecommendationStatus status : statusList) {
+													if (sortedMap.containsKey(status.getId().longValue())) {
+														RecommendationTrail trail = sortedMap
+																.get(status.getId().longValue());
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													} else {
+														RecommendationTrail trail = new RecommendationTrail();
+														trail.setRecommendationStatus(status);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(false);
+														trailResponseList.add(response);
+													}
+												}
+											}
+											responseDto.setTrailResponse(trailResponseList);
+											if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+												responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+											} else {
+												String priority = "";
+												if (rcmnd.getPriorityId().longValue() == 1) {
+													priority = PriorityEnum.High.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else if (rcmnd.getPriorityId().longValue() == 2) {
+													priority = PriorityEnum.Medium.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else {
+													priority = PriorityEnum.Low.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												}
+											}
+											Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+													.findByRecommendRefId(rcmnd.getReferenceId());
+											if (deploymentDetails != null && deploymentDetails.isPresent()) {
+												responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+											} else {
+												responseDto.setRecommendationDeploymentDetails(null);
+											}
+											Date rcmdDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(responseDto.getRecommendDate());
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.OEM_recommendation.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.No_Action.getId());
+												status.setStatusName(StatusEnum.No_Action.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Approved.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Delayed.getId());
+												status.setStatusName(StatusEnum.Delayed.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Released.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Released_With_Delay.getId());
+												status.setStatusName(StatusEnum.Released_With_Delay.getName());
+												responseDto.setStatus(status);
+											}
+											approvedRecommendations.add(responseDto);
+
+										}
+									} else if (searchDto.getStatusId() != null
+											&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+										Date recommendDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(rcmnd.getRecommendDate());
+										if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+												.getStatusName().equals(StatusEnum.Approved.getName())) {
+
+											RecommendationResponseDto responseDto = rcmnd.convertToDto();
+											List<RecommendationMessages> messageList = recommendationMessagesRepository
+													.findAllByReferenceId(rcmnd.getReferenceId());
+											responseDto.setMessageList(messageList);
+
+											Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+													.findAllByDepartmentId(rcmnd.getDepartment().getId());
+											responseDto.setApprover(departmentApprover.get().getAgm());
+											responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+											List<RecommendationTrail> trailList = recommendationTrailRepository
+													.findAllByReferenceId(responseDto.getReferenceId());
+											Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+											for (RecommendationTrail trail : trailList) {
+												recommendationTrailMap.put(trail.getRecommendationStatus().getId(),
+														trail);
+											}
+											Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+													.stream().sorted(Map.Entry.comparingByKey())
+													.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+															(e1, e2) -> e1,
+															LinkedHashMap<Long, RecommendationTrail>::new));
+
+											List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+											if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+												for (Long key : sortedMap.keySet()) {
+													RecommendationTrail trail = sortedMap.get(key);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												}
+											} else {
+												for (RecommendationStatus status : statusList) {
+													if (sortedMap.containsKey(status.getId().longValue())) {
+														RecommendationTrail trail = sortedMap
+																.get(status.getId().longValue());
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(true);
+														trailResponseList.add(response);
+													} else {
+														RecommendationTrail trail = new RecommendationTrail();
+														trail.setRecommendationStatus(status);
+														RecommendationTrailResponseDto response = trail.convertToDto();
+														response.setIsStatusDone(false);
+														trailResponseList.add(response);
+													}
+												}
+											}
+											responseDto.setTrailResponse(trailResponseList);
+											if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+												responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+											} else {
+												String priority = "";
+												if (rcmnd.getPriorityId().longValue() == 1) {
+													priority = PriorityEnum.High.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else if (rcmnd.getPriorityId().longValue() == 2) {
+													priority = PriorityEnum.Medium.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												} else {
+													priority = PriorityEnum.Low.getName();
+													priorityMap.put(PriorityEnum.High.getId().longValue(),
+															PriorityEnum.High.name());
+													responseDto.setPriority(priority);
+												}
+											}
+											Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+													.findByRecommendRefId(rcmnd.getReferenceId());
+											if (deploymentDetails != null && deploymentDetails.isPresent()) {
+												responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+											} else {
+												responseDto.setRecommendationDeploymentDetails(null);
+											}
+											Date rcmdDate = com.sbi.oem.util.DateUtil
+													.convertDateToNigh12AM(responseDto.getRecommendDate());
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.OEM_recommendation.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.No_Action.getId());
+												status.setStatusName(StatusEnum.No_Action.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Approved.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Delayed.getId());
+												status.setStatusName(StatusEnum.Delayed.getName());
+												responseDto.setStatus(status);
+											}
+											if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+													.equals(StatusEnum.Released.getName())) {
+												RecommendationStatus status = new RecommendationStatus();
+												status.setId(StatusEnum.Released_With_Delay.getId());
+												status.setStatusName(StatusEnum.Released_With_Delay.getName());
+												responseDto.setStatus(status);
+											}
+											approvedRecommendations.add(responseDto);
+
+										}
+									} else {
+
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+										responseDto.setMessageList(messageList);
+
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(trailResponseList);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
 										approvedRecommendations.add(responseDto);
 
 									}
 
 								}
 
-							} else {
+							}
 
-								for (Recommendation rcmnd : recommendationList) {
+						}
+					}
+					approvedRecommendationResponseDto.setApprovedRecommendation(approvedRecommendations);
+					return new Response<>(HttpStatus.OK.value(), "Approved Recommendation of App Owner",
+							approvedRecommendationResponseDto);
+				} else if (master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+
+					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();
+
+					List<RecommendationResponseDto> approvedRecommendations = new ArrayList<>();
+					List<DepartmentApprover> departmentList = departmentApproverRepository
+							.findAllByUserId(master.get().getUserId().getId());
+					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
+							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());
+
+					searchDto.setDepartmentIds(departmentIds);
+					List<Recommendation> recommendationList = recommendationRepository
+							.findAllApprovedRecommendationsOfDgmBySearchDto(searchDto);
+
+					if (searchDto.getStatusId() != null && searchDto.getStatusId() >= StatusEnum.Planned.getId()) {
+
+						if (searchDto.getStatusId() != null && searchDto.getStatusId() == StatusEnum.Planned.getId()) {
+
+							List<Recommendation> recommendationListFilter = recommendationList.stream().filter(
+									rcmnd -> rcmnd.getRecommendationStatus().getId() == StatusEnum.Approved.getId())
+									.filter(rcmnd -> {
+
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+
+										List<RecommendationTrail> trail = recommendationTrailRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+
+										if (deploymentDetails != null && trail != null
+												&& searchDto.getStatusId() == StatusEnum.Planned.getId()) {
+
+											Date endDate = deploymentDetails.get().getDevelopementEndDate();
+
+											List<RecommendationTrail> collect = trail.stream()
+													.filter(rt -> rt.getReferenceId().equals(rcmnd.getReferenceId()))
+													.sorted(Comparator.comparing(RecommendationTrail::getCreatedAt)
+															.reversed())
+													.collect(Collectors.toList());
+
+											RecommendationTrail latestTrailEntry = collect.get(0);
+											Date trailDate = latestTrailEntry.getCreatedAt();
+
+											return trailDate != null && trailDate.after(endDate);
+
+										}
+										return false;
+
+									}).collect(Collectors.toList());
+
+							for (Recommendation rcmnd : recommendationListFilter) {
+								if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
+										.longValue() != StatusEnum.No_Action.getId().longValue())
+										&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId()
+												.longValue())
+										&& (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay
+												.getId().longValue()))) {
 									RecommendationResponseDto responseDto = rcmnd.convertToDto();
 									List<RecommendationMessages> messageList = recommendationMessagesRepository
 											.findAllByReferenceId(rcmnd.getReferenceId());
@@ -2778,140 +7312,452 @@ public class RecommendationServiceImpl implements RecommendationService {
 									} else {
 										responseDto.setRecommendationDeploymentDetails(null);
 									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
 									approvedRecommendations.add(responseDto);
-								}
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.Released.getName())) {
 
-							}
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+										responseDto.setMessageList(messageList);
 
-						}
-					}
-					approvedRecommendationResponseDto.setApprovedRecommendation(approvedRecommendations);
-					return new Response<>(HttpStatus.OK.value(), "Approved Recommendation of App Owner",
-							approvedRecommendationResponseDto);
-				} else if (master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
 
-					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();
-
-					List<RecommendationResponseDto> approvedRecommendations = new ArrayList<>();
-					List<DepartmentApprover> departmentList = departmentApproverRepository
-							.findAllByUserId(master.get().getUserId().getId());
-					List<Long> departmentIds = departmentList.stream().filter(e -> e.getDepartment().getId() != null)
-							.map(e -> e.getDepartment().getId()).distinct().collect(Collectors.toList());
-
-					searchDto.setDepartmentIds(departmentIds);
-					List<Recommendation> recommendationList = recommendationRepository
-							.findAllApprovedRecommendationsOfDgmBySearchDto(searchDto);
-
-					if (searchDto.getStatusId() != null && searchDto.getStatusId() >= StatusEnum.Planned.getId()) {
-
-						if (searchDto.getStatusId() != null && searchDto.getStatusId() == StatusEnum.Planned.getId()) {
-
-							List<Recommendation> recommendationListFilter = recommendationList.stream().filter(
-									rcmnd -> rcmnd.getRecommendationStatus().getId() == StatusEnum.Approved.getId())
-									.filter(rcmnd -> {
-
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(trailResponseList);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
 										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
 												.findByRecommendRefId(rcmnd.getReferenceId());
-
-										List<RecommendationTrail> trail = recommendationTrailRepository
-												.findAllByReferenceId(rcmnd.getReferenceId());
-
-										if (deploymentDetails != null && trail != null
-												&& searchDto.getStatusId() == StatusEnum.Planned.getId()) {
-
-											Date endDate = deploymentDetails.get().getDevelopementEndDate();
-
-											List<RecommendationTrail> collect = trail.stream()
-													.filter(rt -> rt.getReferenceId().equals(rcmnd.getReferenceId()))
-													.sorted(Comparator.comparing(RecommendationTrail::getCreatedAt)
-															.reversed())
-													.collect(Collectors.toList());
-
-											RecommendationTrail latestTrailEntry = collect.get(0);
-											Date trailDate = latestTrailEntry.getCreatedAt();
-
-											return trailDate != null && trailDate.after(endDate);
-
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
 										}
-										return false;
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										approvedRecommendations.add(responseDto);
 
-									}).collect(Collectors.toList());
+									}
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.OEM_recommendation.getName())) {
 
-							for (Recommendation rcmnd : recommendationListFilter) {
-								RecommendationResponseDto responseDto = rcmnd.convertToDto();
-								List<RecommendationMessages> messageList = recommendationMessagesRepository
-										.findAllByReferenceId(rcmnd.getReferenceId());
-								responseDto.setMessageList(messageList);
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+										responseDto.setMessageList(messageList);
 
-								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-										.findAllByDepartmentId(rcmnd.getDepartment().getId());
-								responseDto.setApprover(departmentApprover.get().getAgm());
-								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
-								List<RecommendationTrail> trailList = recommendationTrailRepository
-										.findAllByReferenceId(responseDto.getReferenceId());
-								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
-								for (RecommendationTrail trail : trailList) {
-									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
-								}
-								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
-										.sorted(Map.Entry.comparingByKey())
-										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
 
-								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
-									for (Long key : sortedMap.keySet()) {
-										RecommendationTrail trail = sortedMap.get(key);
-										RecommendationTrailResponseDto response = trail.convertToDto();
-										response.setIsStatusDone(true);
-										trailResponseList.add(response);
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(trailResponseList);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										approvedRecommendations.add(responseDto);
+
+									}
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.Approved.getName())) {
+
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+										responseDto.setMessageList(messageList);
+
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(trailResponseList);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										approvedRecommendations.add(responseDto);
+
 									}
 								} else {
-									for (RecommendationStatus status : statusList) {
-										if (sortedMap.containsKey(status.getId().longValue())) {
-											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									responseDto.setMessageList(messageList);
+
+									Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+											.findAllByDepartmentId(rcmnd.getDepartment().getId());
+									responseDto.setApprover(departmentApprover.get().getAgm());
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+									List<RecommendationTrail> trailList = recommendationTrailRepository
+											.findAllByReferenceId(responseDto.getReferenceId());
+									Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+									for (RecommendationTrail trail : trailList) {
+										recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+									}
+									Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+											.stream().sorted(Map.Entry.comparingByKey())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+													(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+									List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+									if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+										for (Long key : sortedMap.keySet()) {
+											RecommendationTrail trail = sortedMap.get(key);
 											RecommendationTrailResponseDto response = trail.convertToDto();
 											response.setIsStatusDone(true);
 											trailResponseList.add(response);
-										} else {
-											RecommendationTrail trail = new RecommendationTrail();
-											trail.setRecommendationStatus(status);
-											RecommendationTrailResponseDto response = trail.convertToDto();
-											response.setIsStatusDone(false);
-											trailResponseList.add(response);
+										}
+									} else {
+										for (RecommendationStatus status : statusList) {
+											if (sortedMap.containsKey(status.getId().longValue())) {
+												RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											} else {
+												RecommendationTrail trail = new RecommendationTrail();
+												trail.setRecommendationStatus(status);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(false);
+												trailResponseList.add(response);
+											}
 										}
 									}
-								}
-								responseDto.setTrailResponse(trailResponseList);
-								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
-									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
-								} else {
-									String priority = "";
-									if (rcmnd.getPriorityId().longValue() == 1) {
-										priority = PriorityEnum.High.getName();
-										priorityMap.put(PriorityEnum.High.getId().longValue(),
-												PriorityEnum.High.name());
-										responseDto.setPriority(priority);
-									} else if (rcmnd.getPriorityId().longValue() == 2) {
-										priority = PriorityEnum.Medium.getName();
-										priorityMap.put(PriorityEnum.High.getId().longValue(),
-												PriorityEnum.High.name());
-										responseDto.setPriority(priority);
+									responseDto.setTrailResponse(trailResponseList);
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
 									} else {
-										priority = PriorityEnum.Low.getName();
-										priorityMap.put(PriorityEnum.High.getId().longValue(),
-												PriorityEnum.High.name());
-										responseDto.setPriority(priority);
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
 									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									approvedRecommendations.add(responseDto);
+
 								}
-								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-										.findByRecommendRefId(rcmnd.getReferenceId());
-								if (deploymentDetails != null && deploymentDetails.isPresent()) {
-									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
-								} else {
-									responseDto.setRecommendationDeploymentDetails(null);
-								}
-								approvedRecommendations.add(responseDto);
 
 							}
 
@@ -2975,8 +7821,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 													}
 												}
 
-												System.out.println("value = " + checkDate);
-
 												return checkDate;
 
 											}
@@ -3039,6 +7883,544 @@ public class RecommendationServiceImpl implements RecommendationService {
 									}).collect(Collectors.toList());
 
 							for (Recommendation rcmnd : recommendationListFilter) {
+								if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
+										.longValue() != StatusEnum.No_Action.getId().longValue())
+										&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId()
+												.longValue())
+										&& (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay
+												.getId().longValue()))) {
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									responseDto.setMessageList(messageList);
+
+									Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+											.findAllByDepartmentId(rcmnd.getDepartment().getId());
+									responseDto.setApprover(departmentApprover.get().getAgm());
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+									List<RecommendationTrail> trailList = recommendationTrailRepository
+											.findAllByReferenceId(responseDto.getReferenceId());
+									Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+									for (RecommendationTrail trail : trailList) {
+										recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+									}
+									Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+											.stream().sorted(Map.Entry.comparingByKey())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+													(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+									List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+									if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+										for (Long key : sortedMap.keySet()) {
+											RecommendationTrail trail = sortedMap.get(key);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										}
+									} else {
+										for (RecommendationStatus status : statusList) {
+											if (sortedMap.containsKey(status.getId().longValue())) {
+												RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											} else {
+												RecommendationTrail trail = new RecommendationTrail();
+												trail.setRecommendationStatus(status);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(false);
+												trailResponseList.add(response);
+											}
+										}
+									}
+									responseDto.setTrailResponse(trailResponseList);
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+									} else {
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
+									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									approvedRecommendations.add(responseDto);
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.Released.getName())) {
+
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+										responseDto.setMessageList(messageList);
+
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(trailResponseList);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										approvedRecommendations.add(responseDto);
+
+									}
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.OEM_recommendation.getName())) {
+
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+										responseDto.setMessageList(messageList);
+
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(trailResponseList);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										approvedRecommendations.add(responseDto);
+
+									}
+								} else if (searchDto.getStatusId() != null
+										&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+									Date recommendDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(rcmnd.getRecommendDate());
+									if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus()
+											.getStatusName().equals(StatusEnum.Approved.getName())) {
+
+										RecommendationResponseDto responseDto = rcmnd.convertToDto();
+										List<RecommendationMessages> messageList = recommendationMessagesRepository
+												.findAllByReferenceId(rcmnd.getReferenceId());
+										responseDto.setMessageList(messageList);
+
+										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+												.findAllByDepartmentId(rcmnd.getDepartment().getId());
+										responseDto.setApprover(departmentApprover.get().getAgm());
+										responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+										List<RecommendationTrail> trailList = recommendationTrailRepository
+												.findAllByReferenceId(responseDto.getReferenceId());
+										Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+										for (RecommendationTrail trail : trailList) {
+											recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+										}
+										Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+												.stream().sorted(Map.Entry.comparingByKey())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+														(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+										List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+										if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+											for (Long key : sortedMap.keySet()) {
+												RecommendationTrail trail = sortedMap.get(key);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											}
+										} else {
+											for (RecommendationStatus status : statusList) {
+												if (sortedMap.containsKey(status.getId().longValue())) {
+													RecommendationTrail trail = sortedMap
+															.get(status.getId().longValue());
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(true);
+													trailResponseList.add(response);
+												} else {
+													RecommendationTrail trail = new RecommendationTrail();
+													trail.setRecommendationStatus(status);
+													RecommendationTrailResponseDto response = trail.convertToDto();
+													response.setIsStatusDone(false);
+													trailResponseList.add(response);
+												}
+											}
+										}
+										responseDto.setTrailResponse(trailResponseList);
+										if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+											responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+										} else {
+											String priority = "";
+											if (rcmnd.getPriorityId().longValue() == 1) {
+												priority = PriorityEnum.High.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else if (rcmnd.getPriorityId().longValue() == 2) {
+												priority = PriorityEnum.Medium.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											} else {
+												priority = PriorityEnum.Low.getName();
+												priorityMap.put(PriorityEnum.High.getId().longValue(),
+														PriorityEnum.High.name());
+												responseDto.setPriority(priority);
+											}
+										}
+										Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+												.findByRecommendRefId(rcmnd.getReferenceId());
+										if (deploymentDetails != null && deploymentDetails.isPresent()) {
+											responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+										} else {
+											responseDto.setRecommendationDeploymentDetails(null);
+										}
+										Date rcmdDate = com.sbi.oem.util.DateUtil
+												.convertDateToNigh12AM(responseDto.getRecommendDate());
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.OEM_recommendation.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.No_Action.getId());
+											status.setStatusName(StatusEnum.No_Action.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Approved.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Delayed.getId());
+											status.setStatusName(StatusEnum.Delayed.getName());
+											responseDto.setStatus(status);
+										}
+										if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+												.equals(StatusEnum.Released.getName())) {
+											RecommendationStatus status = new RecommendationStatus();
+											status.setId(StatusEnum.Released_With_Delay.getId());
+											status.setStatusName(StatusEnum.Released_With_Delay.getName());
+											responseDto.setStatus(status);
+										}
+										approvedRecommendations.add(responseDto);
+
+									}
+								} else {
+
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									responseDto.setMessageList(messageList);
+
+									Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+											.findAllByDepartmentId(rcmnd.getDepartment().getId());
+									responseDto.setApprover(departmentApprover.get().getAgm());
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+									List<RecommendationTrail> trailList = recommendationTrailRepository
+											.findAllByReferenceId(responseDto.getReferenceId());
+									Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+									for (RecommendationTrail trail : trailList) {
+										recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+									}
+									Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+											.stream().sorted(Map.Entry.comparingByKey())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+													(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+									List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+									if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+										for (Long key : sortedMap.keySet()) {
+											RecommendationTrail trail = sortedMap.get(key);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										}
+									} else {
+										for (RecommendationStatus status : statusList) {
+											if (sortedMap.containsKey(status.getId().longValue())) {
+												RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											} else {
+												RecommendationTrail trail = new RecommendationTrail();
+												trail.setRecommendationStatus(status);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(false);
+												trailResponseList.add(response);
+											}
+										}
+									}
+									responseDto.setTrailResponse(trailResponseList);
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+									} else {
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
+									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									approvedRecommendations.add(responseDto);
+
+								}
+
+							}
+
+						}
+
+					} else {
+
+						for (Recommendation rcmnd : recommendationList) {
+							if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
+									.longValue() != StatusEnum.No_Action.getId().longValue())
+									&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId().longValue())
+									&& (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay.getId()
+											.longValue()))) {
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
@@ -3112,86 +8494,450 @@ public class RecommendationServiceImpl implements RecommendationService {
 								} else {
 									responseDto.setRecommendationDeploymentDetails(null);
 								}
+								Date rcmdDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(responseDto.getRecommendDate());
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.No_Action.getId());
+									status.setStatusName(StatusEnum.No_Action.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Delayed.getId());
+									status.setStatusName(StatusEnum.Delayed.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Released_With_Delay.getId());
+									status.setStatusName(StatusEnum.Released_With_Delay.getName());
+									responseDto.setStatus(status);
+								}
+								approvedRecommendations.add(responseDto);
+							} else if (searchDto.getStatusId() != null
+									&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
+								Date recommendDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(rcmnd.getRecommendDate());
+								if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									responseDto.setMessageList(messageList);
+
+									Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+											.findAllByDepartmentId(rcmnd.getDepartment().getId());
+									responseDto.setApprover(departmentApprover.get().getAgm());
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+									List<RecommendationTrail> trailList = recommendationTrailRepository
+											.findAllByReferenceId(responseDto.getReferenceId());
+									Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+									for (RecommendationTrail trail : trailList) {
+										recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+									}
+									Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+											.stream().sorted(Map.Entry.comparingByKey())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+													(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+									List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+									if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+										for (Long key : sortedMap.keySet()) {
+											RecommendationTrail trail = sortedMap.get(key);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										}
+									} else {
+										for (RecommendationStatus status : statusList) {
+											if (sortedMap.containsKey(status.getId().longValue())) {
+												RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											} else {
+												RecommendationTrail trail = new RecommendationTrail();
+												trail.setRecommendationStatus(status);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(false);
+												trailResponseList.add(response);
+											}
+										}
+									}
+									responseDto.setTrailResponse(trailResponseList);
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+									} else {
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
+									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									approvedRecommendations.add(responseDto);
+
+								}
+							} else if (searchDto.getStatusId() != null
+									&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
+								Date recommendDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(rcmnd.getRecommendDate());
+								if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									responseDto.setMessageList(messageList);
+
+									Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+											.findAllByDepartmentId(rcmnd.getDepartment().getId());
+									responseDto.setApprover(departmentApprover.get().getAgm());
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+									List<RecommendationTrail> trailList = recommendationTrailRepository
+											.findAllByReferenceId(responseDto.getReferenceId());
+									Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+									for (RecommendationTrail trail : trailList) {
+										recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+									}
+									Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+											.stream().sorted(Map.Entry.comparingByKey())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+													(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+									List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+									if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+										for (Long key : sortedMap.keySet()) {
+											RecommendationTrail trail = sortedMap.get(key);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										}
+									} else {
+										for (RecommendationStatus status : statusList) {
+											if (sortedMap.containsKey(status.getId().longValue())) {
+												RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											} else {
+												RecommendationTrail trail = new RecommendationTrail();
+												trail.setRecommendationStatus(status);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(false);
+												trailResponseList.add(response);
+											}
+										}
+									}
+									responseDto.setTrailResponse(trailResponseList);
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+									} else {
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
+									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									approvedRecommendations.add(responseDto);
+
+								}
+							} else if (searchDto.getStatusId() != null
+									&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
+								Date recommendDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(rcmnd.getRecommendDate());
+								if (recommendDate.before(new Date()) && rcmnd.getRecommendationStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+
+									RecommendationResponseDto responseDto = rcmnd.convertToDto();
+									List<RecommendationMessages> messageList = recommendationMessagesRepository
+											.findAllByReferenceId(rcmnd.getReferenceId());
+									responseDto.setMessageList(messageList);
+
+									Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+											.findAllByDepartmentId(rcmnd.getDepartment().getId());
+									responseDto.setApprover(departmentApprover.get().getAgm());
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+									List<RecommendationTrail> trailList = recommendationTrailRepository
+											.findAllByReferenceId(responseDto.getReferenceId());
+									Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+									for (RecommendationTrail trail : trailList) {
+										recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+									}
+									Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet()
+											.stream().sorted(Map.Entry.comparingByKey())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+													(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+									List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+									if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+										for (Long key : sortedMap.keySet()) {
+											RecommendationTrail trail = sortedMap.get(key);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										}
+									} else {
+										for (RecommendationStatus status : statusList) {
+											if (sortedMap.containsKey(status.getId().longValue())) {
+												RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(true);
+												trailResponseList.add(response);
+											} else {
+												RecommendationTrail trail = new RecommendationTrail();
+												trail.setRecommendationStatus(status);
+												RecommendationTrailResponseDto response = trail.convertToDto();
+												response.setIsStatusDone(false);
+												trailResponseList.add(response);
+											}
+										}
+									}
+									responseDto.setTrailResponse(trailResponseList);
+									if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+										responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+									} else {
+										String priority = "";
+										if (rcmnd.getPriorityId().longValue() == 1) {
+											priority = PriorityEnum.High.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else if (rcmnd.getPriorityId().longValue() == 2) {
+											priority = PriorityEnum.Medium.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										} else {
+											priority = PriorityEnum.Low.getName();
+											priorityMap.put(PriorityEnum.High.getId().longValue(),
+													PriorityEnum.High.name());
+											responseDto.setPriority(priority);
+										}
+									}
+									Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+											.findByRecommendRefId(rcmnd.getReferenceId());
+									if (deploymentDetails != null && deploymentDetails.isPresent()) {
+										responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+									} else {
+										responseDto.setRecommendationDeploymentDetails(null);
+									}
+									Date rcmdDate = com.sbi.oem.util.DateUtil
+											.convertDateToNigh12AM(responseDto.getRecommendDate());
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.OEM_recommendation.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.No_Action.getId());
+										status.setStatusName(StatusEnum.No_Action.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Approved.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Delayed.getId());
+										status.setStatusName(StatusEnum.Delayed.getName());
+										responseDto.setStatus(status);
+									}
+									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+											.equals(StatusEnum.Released.getName())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+									}
+									approvedRecommendations.add(responseDto);
+
+								}
+							} else {
+
+								RecommendationResponseDto responseDto = rcmnd.convertToDto();
+								List<RecommendationMessages> messageList = recommendationMessagesRepository
+										.findAllByReferenceId(rcmnd.getReferenceId());
+								responseDto.setMessageList(messageList);
+
+								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+										.findAllByDepartmentId(rcmnd.getDepartment().getId());
+								responseDto.setApprover(departmentApprover.get().getAgm());
+								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+								List<RecommendationTrail> trailList = recommendationTrailRepository
+										.findAllByReferenceId(responseDto.getReferenceId());
+								Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
+								for (RecommendationTrail trail : trailList) {
+									recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
+								}
+								Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
+										.sorted(Map.Entry.comparingByKey())
+										.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+												(e1, e2) -> e1, LinkedHashMap<Long, RecommendationTrail>::new));
+
+								List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
+								if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
+									for (Long key : sortedMap.keySet()) {
+										RecommendationTrail trail = sortedMap.get(key);
+										RecommendationTrailResponseDto response = trail.convertToDto();
+										response.setIsStatusDone(true);
+										trailResponseList.add(response);
+									}
+								} else {
+									for (RecommendationStatus status : statusList) {
+										if (sortedMap.containsKey(status.getId().longValue())) {
+											RecommendationTrail trail = sortedMap.get(status.getId().longValue());
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(true);
+											trailResponseList.add(response);
+										} else {
+											RecommendationTrail trail = new RecommendationTrail();
+											trail.setRecommendationStatus(status);
+											RecommendationTrailResponseDto response = trail.convertToDto();
+											response.setIsStatusDone(false);
+											trailResponseList.add(response);
+										}
+									}
+								}
+								responseDto.setTrailResponse(trailResponseList);
+								if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
+									responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
+								} else {
+									String priority = "";
+									if (rcmnd.getPriorityId().longValue() == 1) {
+										priority = PriorityEnum.High.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else if (rcmnd.getPriorityId().longValue() == 2) {
+										priority = PriorityEnum.Medium.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									} else {
+										priority = PriorityEnum.Low.getName();
+										priorityMap.put(PriorityEnum.High.getId().longValue(),
+												PriorityEnum.High.name());
+										responseDto.setPriority(priority);
+									}
+								}
+								Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+										.findByRecommendRefId(rcmnd.getReferenceId());
+								if (deploymentDetails != null && deploymentDetails.isPresent()) {
+									responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
+								} else {
+									responseDto.setRecommendationDeploymentDetails(null);
+								}
+								Date rcmdDate = com.sbi.oem.util.DateUtil
+										.convertDateToNigh12AM(responseDto.getRecommendDate());
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.OEM_recommendation.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.No_Action.getId());
+									status.setStatusName(StatusEnum.No_Action.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Approved.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Delayed.getId());
+									status.setStatusName(StatusEnum.Delayed.getName());
+									responseDto.setStatus(status);
+								}
+								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+										.equals(StatusEnum.Released.getName())) {
+									RecommendationStatus status = new RecommendationStatus();
+									status.setId(StatusEnum.Released_With_Delay.getId());
+									status.setStatusName(StatusEnum.Released_With_Delay.getName());
+									responseDto.setStatus(status);
+								}
 								approvedRecommendations.add(responseDto);
 
 							}
 
-						}
-
-					} else {
-
-						for (Recommendation rcmnd : recommendationList) {
-							RecommendationResponseDto responseDto = rcmnd.convertToDto();
-							List<RecommendationMessages> messageList = recommendationMessagesRepository
-									.findAllByReferenceId(rcmnd.getReferenceId());
-							responseDto.setMessageList(messageList);
-
-							Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-									.findAllByDepartmentId(rcmnd.getDepartment().getId());
-							responseDto.setApprover(departmentApprover.get().getAgm());
-							responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
-							List<RecommendationTrail> trailList = recommendationTrailRepository
-									.findAllByReferenceId(responseDto.getReferenceId());
-							Map<Long, RecommendationTrail> recommendationTrailMap = new HashMap<>();
-							for (RecommendationTrail trail : trailList) {
-								recommendationTrailMap.put(trail.getRecommendationStatus().getId(), trail);
-							}
-							Map<Long, RecommendationTrail> sortedMap = recommendationTrailMap.entrySet().stream()
-									.sorted(Map.Entry.comparingByKey())
-									.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
-											LinkedHashMap<Long, RecommendationTrail>::new));
-
-							List<RecommendationTrailResponseDto> trailResponseList = new ArrayList<>();
-							if (sortedMap.containsKey(StatusEnum.Rejected.getId().longValue())) {
-								for (Long key : sortedMap.keySet()) {
-									RecommendationTrail trail = sortedMap.get(key);
-									RecommendationTrailResponseDto response = trail.convertToDto();
-									response.setIsStatusDone(true);
-									trailResponseList.add(response);
-								}
-							} else {
-								for (RecommendationStatus status : statusList) {
-									if (sortedMap.containsKey(status.getId().longValue())) {
-										RecommendationTrail trail = sortedMap.get(status.getId().longValue());
-										RecommendationTrailResponseDto response = trail.convertToDto();
-										response.setIsStatusDone(true);
-										trailResponseList.add(response);
-									} else {
-										RecommendationTrail trail = new RecommendationTrail();
-										trail.setRecommendationStatus(status);
-										RecommendationTrailResponseDto response = trail.convertToDto();
-										response.setIsStatusDone(false);
-										trailResponseList.add(response);
-									}
-								}
-							}
-							responseDto.setTrailResponse(trailResponseList);
-							if (priorityMap != null && priorityMap.containsKey(rcmnd.getPriorityId())) {
-								responseDto.setPriority(priorityMap.get(rcmnd.getPriorityId()));
-							} else {
-								String priority = "";
-								if (rcmnd.getPriorityId().longValue() == 1) {
-									priority = PriorityEnum.High.getName();
-									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-									responseDto.setPriority(priority);
-								} else if (rcmnd.getPriorityId().longValue() == 2) {
-									priority = PriorityEnum.Medium.getName();
-									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-									responseDto.setPriority(priority);
-								} else {
-									priority = PriorityEnum.Low.getName();
-									priorityMap.put(PriorityEnum.High.getId().longValue(), PriorityEnum.High.name());
-									responseDto.setPriority(priority);
-								}
-							}
-							Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
-									.findByRecommendRefId(rcmnd.getReferenceId());
-							if (deploymentDetails != null && deploymentDetails.isPresent()) {
-								responseDto.setRecommendationDeploymentDetails(deploymentDetails.get());
-							} else {
-								responseDto.setRecommendationDeploymentDetails(null);
-							}
-							approvedRecommendations.add(responseDto);
 						}
 
 					}
@@ -4020,9 +9766,4 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	}
 
-	@Override
-	public void changeRecommendationStatusByScheduler() {
-		List<Recommendation> recommendationList
-		
-	}
 }
