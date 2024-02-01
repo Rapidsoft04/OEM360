@@ -963,12 +963,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 							}
 							return new Response<>(HttpStatus.OK.value(), responseText, null);
 						} else {
+							responseText = "Recommendation reject request sent successfully. ";
 							if (recommendObj.get().getRecommendationStatus().getId() != StatusEnum.Rejected.getId()
 									.longValue()) {
 								recommendObj.get().setIsAgmApproved(false);
 								recommendObj.get().setRecommendationStatus(new RecommendationStatus(4L));
 								recommendObj.get().setIsAgmRejected(true);
-								recommendationRepository.save(recommendObj.get());
+								Recommendation updateRecommendation = recommendationRepository.save(recommendObj.get());
 								RecommendationTrail trailData = new RecommendationTrail();
 								trailData.setCreatedAt(new Date());
 								trailData.setRecommendationStatus(
@@ -986,6 +987,20 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 								emailTemplateService.sendMailRecommendationMessages(messages,
 										RecommendationStatusEnum.RECCOMENDATION_REJECTED);
+
+								Department rcmdDepartment = updateRecommendation.getDepartment();
+								Optional<DepartmentApprover> approver = departmentApproverRepository
+										.findAllByDepartmentId(rcmdDepartment.getId());
+								if (approver != null && approver.isPresent()) {
+									if (approver.get().getApplicationOwner() != null
+											&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+										responseText += "Email will be sent to both Appowner("
+												+ approver.get().getApplicationOwner().getEmail() + ") and OEM("
+												+ recommendObj.get().getCreatedBy().getEmail() + ")";
+										return new Response<>(HttpStatus.OK.value(), responseText, null);
+									}
+								}
+
 								return new Response<>(HttpStatus.OK.value(), "Recommendation rejected successfully.",
 										null);
 							} else {
