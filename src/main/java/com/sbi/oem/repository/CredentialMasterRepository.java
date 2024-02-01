@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.CredentialMaster;
 
 @Repository
@@ -16,5 +17,7 @@ public interface CredentialMasterRepository extends JpaRepository<CredentialMast
 
 	@Query(value = "select * from credential_master where phone_no=?1 or email=?2",nativeQuery = true)
 	List<CredentialMaster> findAllByPhoneNoEmail(String phoneNo, String phoneNo2);
+	
+	List<CredentialMaster> findByUserTypeId(UserType userType);
 
 }
