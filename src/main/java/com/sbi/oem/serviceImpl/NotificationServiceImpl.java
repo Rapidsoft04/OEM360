@@ -24,6 +24,7 @@ import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.enums.StatusEnum;
+import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentApprover;
@@ -68,6 +69,9 @@ public class NotificationServiceImpl implements NotificationService {
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
 
+	@Autowired
+	private CredentialMasterRepository credentialMasterRepository;
+
 	@Override
 	public void save(Recommendation recommendation, RecommendationStatusEnum status, String rejectionMessage,
 			String additionalInformation) {
@@ -86,6 +90,11 @@ public class NotificationServiceImpl implements NotificationService {
 
 				List<CredentialMaster> seniorManagementList = credentialMasterRepository
 						.findByUserTypeId(UserType.GM_IT_INFRA);
+				List<User> seniorManagementUsers = new ArrayList<>();
+				if (seniorManagementList != null && seniorManagementList.size() > 0) {
+					seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
+							.collect(Collectors.toList());
+				}
 
 				rejectionMessage = (rejectionMessage != null) ? rejectionMessage : "NA";
 				additionalInformation = (additionalInformation != null) ? additionalInformation : "NA";
@@ -134,7 +143,10 @@ public class NotificationServiceImpl implements NotificationService {
 									recommendationStatus);
 						}
 					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {
+						List<User> userList = new ArrayList<>();
 						User agm = departmentApprover.get().getAgm();
+						userList.add(agm);
+						userList.addAll(seniorManagementUsers);
 						String text = "App owner has accepted a new recommendation.";
 
 						String descriptions = "Your recommendation with referenceId = "
@@ -177,14 +189,13 @@ public class NotificationServiceImpl implements NotificationService {
 
 								User departmentAgm = departmentApproverImpactDept.get().getAgm();
 								User appOwner = departmentApproverImpactDept.get().getApplicationOwner();
-								List<User> userList = new ArrayList<>();
+
 								if (departmentApprover.get().getApplicationOwner().getId().longValue() != appOwner
 										.getId().longValue()) {
 									userList.add(appOwner);
 								}
 								userList.add(departmentAgm);
-								List<User> seniorManagementUsers = seniorManagementList.stream()
-										.map(CredentialMaster::getUserId).collect(Collectors.toList());
+
 								userList.addAll(seniorManagementUsers);
 
 								text = "New Recommendation deployment may affected your department";
@@ -213,8 +224,6 @@ public class NotificationServiceImpl implements NotificationService {
 							userList.add(agm);
 						}
 
-						List<User> seniorManagementUsers = seniorManagementList.stream()
-								.map(CredentialMaster::getUserId).collect(Collectors.toList());
 						userList.addAll(seniorManagementUsers);
 
 						String text = "App owner has rejected a recommendation.";
@@ -256,8 +265,6 @@ public class NotificationServiceImpl implements NotificationService {
 					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
 						List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
 								departmentApprover.get().getApplicationOwner());
-						List<User> seniorManagementUsers = seniorManagementList.stream()
-								.map(CredentialMaster::getUserId).collect(Collectors.toList());
 						userList.addAll(seniorManagementUsers);
 						String text = "Your recommendation request has been approved by AGM.";
 
@@ -300,8 +307,6 @@ public class NotificationServiceImpl implements NotificationService {
 						List<User> userList = new ArrayList<>();
 						User appOwner = departmentApprover.get().getApplicationOwner();
 						userList.add(appOwner);
-						List<User> seniorManagementUsers = seniorManagementList.stream()
-								.map(CredentialMaster::getUserId).collect(Collectors.toList());
 						userList.addAll(seniorManagementUsers);
 						String text = "";
 						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId()
@@ -324,8 +329,7 @@ public class NotificationServiceImpl implements NotificationService {
 					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_AGM)) {
 						User appOwner = departmentApprover.get().getApplicationOwner();
 						List<User> userList = new ArrayList<>();
-						List<User> seniorManagementUsers = seniorManagementList.stream()
-								.map(CredentialMaster::getUserId).collect(Collectors.toList());
+						userList.add(appOwner);
 						userList.addAll(seniorManagementUsers);
 						String text = "";
 						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId().longValue()
@@ -346,8 +350,6 @@ public class NotificationServiceImpl implements NotificationService {
 						List<User> userList = new ArrayList<>();
 						userList.add(appOwner);
 						userList.add(oem);
-						List<User> seniorManagementUsers = seniorManagementList.stream()
-								.map(CredentialMaster::getUserId).collect(Collectors.toList());
 						userList.addAll(seniorManagementUsers);
 						String text = "";
 						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId().longValue()
@@ -381,8 +383,6 @@ public class NotificationServiceImpl implements NotificationService {
 						List<User> userList = new ArrayList<>();
 						User agm = departmentApprover.get().getAgm();
 						userList.add(agm);
-						List<User> seniorManagementUsers = seniorManagementList.stream()
-								.map(CredentialMaster::getUserId).collect(Collectors.toList());
 						userList.addAll(seniorManagementUsers);
 
 						String text = "Recommendation deployment details has been updated";
@@ -416,7 +416,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
-						createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
+						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
 								recommendationStatus);
 
 						String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(", ");
@@ -458,8 +458,6 @@ public class NotificationServiceImpl implements NotificationService {
 						List<User> userList = new ArrayList<>();
 						userList.add(agm);
 						userList.add(oem);
-						List<User> seniorManagementUsers = seniorManagementList.stream()
-								.map(CredentialMaster::getUserId).collect(Collectors.toList());
 						userList.addAll(seniorManagementUsers);
 						String text = "Recommendation status has been changed";
 
@@ -481,6 +479,7 @@ public class NotificationServiceImpl implements NotificationService {
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_RELEASED)) {
 						List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
 								departmentApprover.get().getAgm());
+						userList.addAll(seniorManagementUsers);
 						String text = "Recommendation has been released.";
 
 						String descriptions = "Your recommendation with referenceId = "
