@@ -761,7 +761,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 									RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-									responseText += "(" + approver.get().getAgm().getEmail() + ") and senior management ";
+									responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
 									
 									for(User user : seniorManagementUsers) {
 										responseText += "(" + user.getEmail() + ") ";
@@ -812,8 +812,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 									recommendationDetailsRequestDto, RecommendationStatusEnum.APPROVED_BY_APPOWNER);
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-									responseText += "(" + approver.get().getAgm().getEmail() + ")";
-									return new Response<>(HttpStatus.CREATED.value(), responseText, null);
+									responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
+									
+									for(User user : seniorManagementUsers) {
+										responseText += "(" + user.getEmail() + ") ";
+									}
+									
+									return new Response<>(HttpStatus.OK.value(), responseText, null);
 								}
 							}
 							return new Response<>(HttpStatus.CREATED.value(), responseText, null);
