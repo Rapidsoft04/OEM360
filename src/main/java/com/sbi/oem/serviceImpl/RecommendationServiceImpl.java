@@ -125,7 +125,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
-	
+
 	@Autowired
 	private CredentialMasterRepository credentialMasterRepository;
 
@@ -705,7 +705,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 					Optional<Recommendation> recommendation = recommendationRepository
 							.findByReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
-					
+
 					List<CredentialMaster> seniorManagementList = credentialMasterRepository
 							.findByUserTypeId(UserType.GM_IT_INFRA);
 					List<User> seniorManagementUsers = new ArrayList<>();
@@ -762,11 +762,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
 									responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
-									
-									for(User user : seniorManagementUsers) {
+
+									for (User user : seniorManagementUsers) {
 										responseText += "(" + user.getEmail() + ") ";
 									}
-									
+
 									return new Response<>(HttpStatus.OK.value(), responseText, null);
 								}
 							}
@@ -813,11 +813,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
 									responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
-									
-									for(User user : seniorManagementUsers) {
+
+									for (User user : seniorManagementUsers) {
 										responseText += "(" + user.getEmail() + ") ";
 									}
-									
+
 									return new Response<>(HttpStatus.OK.value(), responseText, null);
 								}
 							}
@@ -849,6 +849,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+
+					List<CredentialMaster> seniorManagementList = credentialMasterRepository
+							.findByUserTypeId(UserType.GM_IT_INFRA);
+					List<User> seniorManagementUsers = new ArrayList<>();
+					if (seniorManagementList != null && seniorManagementList.size() > 0) {
+						seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
+								.collect(Collectors.toList());
+					}
+
 					String responseText = "Recommendation rejected successfully. An email will be sent to the ";
 
 					Optional<Recommendation> recommendObj = recommendationRepository
@@ -883,12 +892,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 					if (approver != null && approver.isPresent() && (recommendObj.get().getPriorityId()
 							.longValue() != PriorityEnum.High.getId().longValue())) {
 						if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-							responseText += "AGM (" + approver.get().getAgm().getEmail() + ")";
+							responseText += "AGM (" + approver.get().getAgm().getEmail() + ") and GM ";
+							for (User user : seniorManagementUsers) {
+								responseText += "(" + user.getEmail() + ") ";
+							}
+
 							return new Response<>(HttpStatus.OK.value(), responseText, null);
 						}
 					} else {
 						if (approver.get().getDgm() != null && !approver.get().getDgm().getEmail().isBlank()) {
-							responseText += "DGM (" + approver.get().getDgm().getEmail() + ")";
+							responseText += "DGM (" + approver.get().getDgm().getEmail() + ") and GM ";
+							for (User user : seniorManagementUsers) {
+								responseText += "(" + user.getEmail() + ") ";
+							}
 							return new Response<>(HttpStatus.OK.value(), responseText, null);
 						}
 					}
@@ -914,6 +930,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+					
+					List<CredentialMaster> seniorManagementList = credentialMasterRepository
+							.findByUserTypeId(UserType.GM_IT_INFRA);
+					List<User> seniorManagementUsers = new ArrayList<>();
+					if (seniorManagementList != null && seniorManagementList.size() > 0) {
+						seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
+								.collect(Collectors.toList());
+					}
+					
 					String responseText = "Approval request reverted successfully. An email will be sent to the Appowner";
 					RecommendationMessages messages = new RecommendationMessages();
 					messages.setCreatedBy(recommendationRejectionRequestDto.getCreatedBy());
@@ -941,7 +966,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 					if (approver != null && approver.isPresent()) {
 						if (approver.get().getApplicationOwner() != null
 								&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-							responseText += "(" + approver.get().getApplicationOwner().getEmail() + ")";
+							responseText += "(" + approver.get().getApplicationOwner().getEmail() + ") and GM";
+							for (User user : seniorManagementUsers) {
+								responseText += "(" + user.getEmail() + ") ";
+							}
 							return new Response<>(HttpStatus.OK.value(), responseText, null);
 						}
 					}
@@ -968,6 +996,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+					
+					List<CredentialMaster> seniorManagementList = credentialMasterRepository
+							.findByUserTypeId(UserType.GM_IT_INFRA);
+					List<User> seniorManagementUsers = new ArrayList<>();
+					if (seniorManagementList != null && seniorManagementList.size() > 0) {
+						seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
+								.collect(Collectors.toList());
+					}
+					
 					Optional<Recommendation> recommendObj = recommendationRepository
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					if (recommendObj != null && recommendObj.isPresent()) {
@@ -992,7 +1029,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getApplicationOwner() != null
 										&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-									responseText += "(" + approver.get().getApplicationOwner().getEmail() + ")";
+									responseText += "(" + approver.get().getApplicationOwner().getEmail() + ") and GM ";
+									for (User user : seniorManagementUsers) {
+										responseText += "(" + user.getEmail() + ") ";
+									}
 									return new Response<>(HttpStatus.OK.value(), responseText, null);
 								}
 							}
@@ -1029,9 +1069,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 								if (approver != null && approver.isPresent()) {
 									if (approver.get().getApplicationOwner() != null
 											&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-										responseText += "Email will be sent to both Appowner("
-												+ approver.get().getApplicationOwner().getEmail() + ") and OEM("
-												+ recommendObj.get().getCreatedBy().getEmail() + ")";
+										responseText += "Email will be sent to Appowner("
+												+ approver.get().getApplicationOwner().getEmail() + "), OEM("
+												+ recommendObj.get().getCreatedBy().getEmail() + ") and GM ";
+										for (User user : seniorManagementUsers) {
+											responseText += "(" + user.getEmail() + ") ";
+										}
 										return new Response<>(HttpStatus.OK.value(), responseText, null);
 									}
 								}
@@ -1069,6 +1112,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findByReferenceId(recommendationRejectionRequestDto.getRecommendRefId());
 					if (recommendObj.get().getIsAppOwnerApproved() != null
 							&& recommendObj.get().getIsAppOwnerApproved().booleanValue() == true) {
+						
+						List<CredentialMaster> seniorManagementList = credentialMasterRepository
+								.findByUserTypeId(UserType.GM_IT_INFRA);
+						List<User> seniorManagementUsers = new ArrayList<>();
+						if (seniorManagementList != null && seniorManagementList.size() > 0) {
+							seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
+									.collect(Collectors.toList());
+						}
+						
 						String responseText = "Recommendation request accepted. ";
 						recommendObj.get().setIsAgmApproved(true);
 						recommendObj.get().setRecommendationStatus(
@@ -1104,9 +1156,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 						if (approver != null && approver.isPresent()) {
 							if (approver.get().getApplicationOwner() != null
 									&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
-								responseText += "Email will be sent to both Appowner("
-										+ approver.get().getApplicationOwner().getEmail() + ") and OEM("
-										+ recommendObj.get().getCreatedBy().getEmail() + ")";
+								responseText += "Email will be sent to Appowner("
+										+ approver.get().getApplicationOwner().getEmail() + "), OEM("
+										+ recommendObj.get().getCreatedBy().getEmail() + ") and GM ";
+								for (User user : seniorManagementUsers) {
+									responseText += "(" + user.getEmail() + ") ";
+								}
 								return new Response<>(HttpStatus.OK.value(), responseText, null);
 							}
 						}
@@ -1137,6 +1192,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 					Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
 							.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
 					if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
+						
+						List<CredentialMaster> seniorManagementList = credentialMasterRepository
+								.findByUserTypeId(UserType.GM_IT_INFRA);
+						List<User> seniorManagementUsers = new ArrayList<>();
+						if (seniorManagementList != null && seniorManagementList.size() > 0) {
+							seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
+									.collect(Collectors.toList());
+						}
+						
 						String responseText = "Deployment details updated successfully";
 						RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
 						details.setId(recommendDeployDetails.get().getId());
@@ -1168,7 +1232,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findAllByDepartmentId(rcmdDepartment.getId());
 						if (approver != null && approver.isPresent()) {
 							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
-								responseText += "(" + approver.get().getAgm().getEmail() + ")";
+								responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
+								for (User user : seniorManagementUsers) {
+									responseText += "(" + user.getEmail() + ") ";
+								}
 								return new Response<>(HttpStatus.OK.value(), responseText, null);
 							}
 						}
