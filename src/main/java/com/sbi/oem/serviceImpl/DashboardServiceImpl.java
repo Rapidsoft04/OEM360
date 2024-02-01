@@ -114,7 +114,8 @@ public class DashboardServiceImpl implements DashboardService {
 			DashboardResponseDto dashboardResponse = new DashboardResponseDto();
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
+						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
 					Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 							.findByAgmId(master.get().getUserId().getId());
 					List<Recommendation> recommendationList = new ArrayList<>();
@@ -204,8 +205,7 @@ public class DashboardServiceImpl implements DashboardService {
 
 						return new Response<>(HttpStatus.OK.value(), "Dashboard response.", dashboardResponse);
 					}
-				} else if (master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name())
-						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+				} else if (master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name())) {
 					List<Recommendation> recommendationList = new ArrayList<>();
 					if (!value.equals(Constant.TILL_TODAY)) {
 						recommendationList = recommendationRepository.getAllDataForGMAndUpdatedAtBetween(fromDate,

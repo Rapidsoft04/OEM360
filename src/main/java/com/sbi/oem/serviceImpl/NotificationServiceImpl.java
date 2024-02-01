@@ -6,6 +6,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -17,18 +19,18 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.sbi.oem.dto.RecommendationRejectionRequestDto;
+import com.sbi.oem.dto.RecommendationResponseDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.enums.StatusEnum;
-import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Notification;
 import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.model.RecommendationDeplyomentDetails;
+import com.sbi.oem.model.RecommendationMessages;
 import com.sbi.oem.model.RecommendationStatus;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.CredentialMasterRepository;
@@ -36,8 +38,9 @@ import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.DepartmentRepository;
 import com.sbi.oem.repository.NotificationRepository;
 import com.sbi.oem.repository.RecommendationDeplyomentDetailsRepository;
+import com.sbi.oem.repository.RecommendationMessagesRepository;
 import com.sbi.oem.repository.RecommendationRepository;
-import com.sbi.oem.repository.UserRepository;
+import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.NotificationService;
 
 @Service
@@ -60,7 +63,10 @@ public class NotificationServiceImpl implements NotificationService {
 	private RecommendationDeplyomentDetailsRepository recommendationdeplyomentDetailsRepository;
 
 	@Autowired
-	private CredentialMasterRepository credentialMasterRepository;
+	private RecommendationMessagesRepository recommendationMessagesRepository;
+
+	@Autowired
+	private JwtUserDetailsService userDetailsService;
 
 	@Override
 	public void save(Recommendation recommendation, RecommendationStatusEnum status, String rejectionMessage,
@@ -539,8 +545,45 @@ public class NotificationServiceImpl implements NotificationService {
 	@Override
 	public Response<?> getNotificationByUserId(Long userId) {
 		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			List<Notification> list = notificationRepository.findByUserId(userId);
-			return new Response<>(HttpStatus.OK.value(), "success", list);
+			List<RecommendationResponseDto> recommendationResponseDto = new ArrayList<>();
+			for (Notification notification : list) {
+				Optional<Recommendation> recommendationObj = recommendationRepository
+						.findByReferenceId(notification.getReferenceId());
+				Optional<RecommendationDeplyomentDetails> deploymentDetailsObj = recommendationdeplyomentDetailsRepository
+						.findByRecommendRefId(notification.getReferenceId());
+				List<RecommendationMessages> recommendationMessages = recommendationMessagesRepository
+						.findAllByReferenceId(notification.getReferenceId());
+				RecommendationResponseDto dto = recommendationObj.get().convertToDto();
+				dto.setNotification(notification);
+				if (deploymentDetailsObj != null && deploymentDetailsObj.isPresent()) {
+					dto.setRecommendationDeploymentDetails(deploymentDetailsObj.get());
+				}
+
+				if (recommendationMessages != null && recommendationMessages.size() > 0) {
+					List<RecommendationMessages> updatedMessageList = recommendationMessages
+							.stream().filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
+									.longValue() == master.get().getUserId().getId().longValue())
+							.collect(Collectors.toList());
+					Collections.sort(updatedMessageList,
+							Comparator.comparing(RecommendationMessages::getCreatedAt).reversed());
+					if (updatedMessageList != null && updatedMessageList.size() > 0) {
+						String message = "";
+						if (updatedMessageList.get(0).getRejectionReason() != null) {
+							message = updatedMessageList.get(0).getRejectionReason();
+						} else {
+							message = updatedMessageList.get(0).getAdditionalMessage();
+						}
+						dto.setPastExperienceComment(message);
+					}
+					dto.setMessageList(updatedMessageList);
+				} else {
+					dto.setMessageList(null);
+				}
+				recommendationResponseDto.add(dto);
+			}
+			return new Response<>(HttpStatus.OK.value(), "success", recommendationResponseDto);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);

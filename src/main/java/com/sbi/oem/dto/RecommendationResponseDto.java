@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.Department;
+import com.sbi.oem.model.Notification;
 import com.sbi.oem.model.RecommendationDeplyomentDetails;
 import com.sbi.oem.model.RecommendationMessages;
 import com.sbi.oem.model.RecommendationStatus;
@@ -67,6 +68,8 @@ public class RecommendationResponseDto {
 	private RecommendationDeplyomentDetails recommendationDeploymentDetails;
 
 	private List<RecommendationTrailResponseDto> trailResponse;
+
+	private Notification notification;
 
 	private String pastExperienceComment;
 
@@ -321,6 +324,37 @@ public class RecommendationResponseDto {
 
 	public RecommendationResponseDto() {
 		super();
+	}
+
+	public Notification getNotification() {
+		return notification;
+	}
+
+	public void setNotification(Notification notification) {
+		this.notification = notification;
+	}
+
+	public RecommendationResponseDto(Long id, String referenceId, String descriptions,
+			RecommendationType recommendationType, String priority, Date recommendDate, Department department,
+			Component component, String expectedImpact, String impactedDepartment, String documentUrl, String fileUrl,
+			Date createdAt, User createdBy, RecommendationStatus status, String pastExperienceComment) {
+		super();
+		this.id = id;
+		this.referenceId = referenceId;
+		this.descriptions = descriptions;
+		this.recommendationType = recommendationType;
+		this.priority = priority;
+		this.recommendDate = recommendDate;
+		this.department = department;
+		this.component = component;
+		this.expectedImpact = expectedImpact;
+		this.impactedDepartment = impactedDepartment;
+		this.documentUrl = documentUrl;
+		this.fileUrl = fileUrl;
+		this.createdAt = createdAt;
+		this.createdBy = createdBy;
+		this.status = status;
+		this.pastExperienceComment = pastExperienceComment;
 	}
 
 }
