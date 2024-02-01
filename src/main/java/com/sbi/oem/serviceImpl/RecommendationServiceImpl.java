@@ -770,7 +770,16 @@ public class RecommendationServiceImpl implements RecommendationService {
 									new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
 							trail.setReferenceId(details.getRecommendRefId());
 							recommendationTrailRepository.save(trail);
-
+							if (recommendationDetailsRequestDto.getDescription() != null
+									&& (recommendationDetailsRequestDto.getDescription() != "")
+									&& (!recommendationDetailsRequestDto.getDescription().equals(""))) {
+								RecommendationMessages messages = new RecommendationMessages();
+								messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
+								messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
+								messages.setCreatedAt(new Date());
+								messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
+								recommendationMessagesRepository.save(messages);
+							}
 							Department rcmdDepartment = updateRecommendation.getDepartment();
 							Optional<DepartmentApprover> approver = departmentApproverRepository
 									.findAllByDepartmentId(rcmdDepartment.getId());
