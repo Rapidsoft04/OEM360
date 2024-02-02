@@ -1,5 +1,12 @@
 package com.sbi.oem.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.poi.xwpf.converter.pdf.PdfConverter;
+import org.apache.poi.xwpf.converter.pdf.PdfOptions;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,4 +58,33 @@ public class FileValidation {
 			}
 		
 	}
+	
+	 public static String getFileExtension(MultipartFile file) {
+	        String originalFileName = file.getOriginalFilename();
+	        if (originalFileName != null && originalFileName.contains(".")) {
+	            return originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
+	        }
+	        return null; // If the file has no extension or originalFileName is null
+	    }
+	 
+	 public static byte[] convertDocxToPdf(MultipartFile docxFile) {
+	        try (InputStream is = docxFile.getInputStream()) {
+	            XWPFDocument document = new XWPFDocument(is);
+
+	            // Create options for PDF conversion
+	            PdfOptions options = PdfOptions.create();
+
+	            // Customize options if needed
+	            // options.set...
+
+	            // Convert the document to PDF
+	            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	            PdfConverter.getInstance().convert(document, baos, options);
+
+	            return baos.toByteArray();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            return null;
+	        }
+	    }
 }

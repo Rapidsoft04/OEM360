@@ -1,32 +1,20 @@
 package com.sbi.oem.config;
 
-import java.io.IOException;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "file.upload")
+@ConfigurationProperties(prefix = "file")
 public class FileUploadProperties {
 
-	private String location;
+	private String uploadDir;
 
-	public FileUploadProperties(String location) throws IOException {
-		super();
-		System.out.println(location);
-		this.location = location;
+	public String getUploadDir() {
+		return uploadDir;
 	}
 
-	public FileUploadProperties() throws IOException {
-		super();
-	}
-
-	public String getLocation() {
-		return location;
-	}
-
-	public void setLocation(String location) {
-		this.location = location;
+	public void setUploadDir(String uploadDir) {
+		this.uploadDir = uploadDir;
 	}
 
 }

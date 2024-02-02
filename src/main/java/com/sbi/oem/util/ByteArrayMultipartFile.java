@@ -8,18 +8,22 @@ import java.io.InputStream;
 
 import org.springframework.web.multipart.MultipartFile;
 
-public class CompressedMultipartFile implements MultipartFile {
+public class ByteArrayMultipartFile implements MultipartFile {
 	private final byte[] content;
+	private final String name;
 	private final String originalFilename;
+	private final String contentType;
 
-	public CompressedMultipartFile(byte[] content, String originalFilename) {
+	public ByteArrayMultipartFile(byte[] content, String name, String originalFilename, String contentType) {
 		this.content = content;
+		this.name = name;
 		this.originalFilename = originalFilename;
+		this.contentType = contentType;
 	}
 
 	@Override
 	public String getName() {
-		return null;
+		return name;
 	}
 
 	@Override
@@ -29,12 +33,12 @@ public class CompressedMultipartFile implements MultipartFile {
 
 	@Override
 	public String getContentType() {
-		return null;
+		return contentType;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return content == null || content.length == 0;
+		return content.length == 0;
 	}
 
 	@Override
@@ -43,7 +47,7 @@ public class CompressedMultipartFile implements MultipartFile {
 	}
 
 	@Override
-	public byte[] getBytes() {
+	public byte[] getBytes() throws IOException {
 		return content;
 	}
 
@@ -53,8 +57,14 @@ public class CompressedMultipartFile implements MultipartFile {
 	}
 
 	@Override
+	public void transferTo(java.nio.file.Path dest) throws IOException, IllegalStateException {
+		// Implement this method if needed
+	}
+
+	@Override
 	public void transferTo(File dest) throws IOException, IllegalStateException {
-		new FileOutputStream(dest).write(content);
+		// TODO Auto-generated method stub
+
 	}
 
 }

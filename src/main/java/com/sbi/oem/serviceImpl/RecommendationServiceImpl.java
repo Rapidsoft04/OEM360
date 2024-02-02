@@ -36,6 +36,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.aspectj.util.FileUtil;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
@@ -44,6 +45,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.google.gson.JsonObject;
 import com.sbi.oem.constant.Constant;
@@ -85,6 +87,8 @@ import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
+import com.sbi.oem.util.ByteArrayMultipartFile;
+import com.sbi.oem.util.FileValidation;
 import com.sbi.oem.util.Pagination;
 
 @Service
@@ -218,32 +222,42 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 					String fileUrl = null;
 					if (recommendationAddRequestDto.getFile() != null) {
-						if (recommendationAddRequestDto.getFile().getSize() > 1048576) {
-							FileOutputStream fos = new FileOutputStream("compressed.zip");
-							ZipOutputStream zipOut = new ZipOutputStream(fos);
-
-							InputStream fis = recommendationAddRequestDto.getFile().getInputStream();
-
-							File fileToZip = new File(recommendationAddRequestDto.getFile().getOriginalFilename());
-							ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
-							zipOut.putNextEntry(zipEntry);
-
-							byte[] bytes = new byte[1024];
-							int length;
-							while ((length = fis.read(bytes)) >= 0) {
-								zipOut.write(bytes, 0, length);
-							}
-
-							zipOut.close();
-							fis.close();
-							fos.close();
-
-							fileUrl = fileSystemStorageService
-									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
-						} else {
-							fileUrl = fileSystemStorageService
-									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
-						}
+						fileUrl=fileSystemStorageService.storeFile(recommendationAddRequestDto.getFile(),new Date().getTime());
+						fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+				                .path("/downloadFile/")
+				                .path(fileUrl)
+				                .toUriString();
+//						if(fileExtension.equals("docx")) {
+//							byte[] pdfBytes = FileValidation.convertDocxToPdf(recommendationAddRequestDto.getFile());
+//							MultipartFile multipartFile = new ByteArrayMultipartFile(pdfBytes, "output.pdf", "output.pdf", "application/pdf");
+//							fileUrl = fileSystemStorageService.getUserExpenseFileUrl(multipartFile);
+//						}
+//						if (recommendationAddRequestDto.getFile().getSize() > 1048576) {
+//							FileOutputStream fos = new FileOutputStream("compressed.zip");
+//							ZipOutputStream zipOut = new ZipOutputStream(fos);
+//
+//							InputStream fis = recommendationAddRequestDto.getFile().getInputStream();
+//
+//							File fileToZip = new File(recommendationAddRequestDto.getFile().getOriginalFilename());
+//							ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
+//							zipOut.putNextEntry(zipEntry);
+//
+//							byte[] bytes = new byte[1024];
+//							int length;
+//							while ((length = fis.read(bytes)) >= 0) {
+//								zipOut.write(bytes, 0, length);
+//							}
+//
+//							zipOut.close();
+//							fis.close();
+//							fos.close();
+//
+//							fileUrl = fileSystemStorageService
+//									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
+//						} else {
+//							fileUrl = fileSystemStorageService
+//									.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
+//						}
 
 					}
 					String responseText = "Recommendation created successfully. An email will be sent to the application owner ";

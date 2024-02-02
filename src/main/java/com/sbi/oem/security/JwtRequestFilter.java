@@ -127,20 +127,4 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 		chain.doFilter(request, response);
 	}
 
-	private String getRequestPayload(HttpServletRequest request) {
-		ContentCachingRequestWrapper wrapper = WebUtils.getNativeRequest(request, ContentCachingRequestWrapper.class);
-		if (wrapper != null) {
-			byte[] buf = wrapper.getContentAsByteArray();
-			if (buf.length > 0) {
-				int length = buf.length;
-				try {
-					return new String(buf, 0, length, wrapper.getCharacterEncoding());
-				} catch (UnsupportedEncodingException ex) {
-					return "[unknown]";
-				}
-			}
-		}
-		return "";
-	}
-
 }
