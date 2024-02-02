@@ -34,6 +34,10 @@ public class SearchDto {
 
 	private String searchKey;
 
+	private String chartSearchKey;
+
+	private String dateFilterKey;
+
 	public StatusEnum getStatus() {
 		return status;
 	}
@@ -136,6 +140,22 @@ public class SearchDto {
 
 	public void setSearchKey(String searchKey) {
 		this.searchKey = searchKey;
+	}
+
+	public String getChartSearchKey() {
+		return chartSearchKey;
+	}
+
+	public void setChartSearchKey(String chartSearchKey) {
+		this.chartSearchKey = chartSearchKey;
+	}
+
+	public String getDateFilterKey() {
+		return dateFilterKey;
+	}
+
+	public void setDateFilterKey(String dateFilterKey) {
+		this.dateFilterKey = dateFilterKey;
 	}
 
 }
