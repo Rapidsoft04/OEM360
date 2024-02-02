@@ -92,8 +92,11 @@ public class NotificationServiceImpl implements NotificationService {
 						.findByUserTypeId(UserType.GM_IT_INFRA);
 				List<User> seniorManagementUsers = new ArrayList<>();
 				if (seniorManagementList != null && seniorManagementList.size() > 0) {
-					seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
-							.collect(Collectors.toList());
+					for(CredentialMaster master:seniorManagementList) {
+						seniorManagementUsers.add(master.getUserId());
+					}
+//					seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
+//							.collect(Collectors.toList());
 				}
 
 				rejectionMessage = (rejectionMessage != null) ? rejectionMessage : "NA";
@@ -576,7 +579,7 @@ public class NotificationServiceImpl implements NotificationService {
 						}
 						dto.setPastExperienceComment(message);
 					}
-					dto.setMessageList(updatedMessageList);
+					dto.setMessageList(recommendationMessages);
 				} else {
 					dto.setMessageList(null);
 				}
