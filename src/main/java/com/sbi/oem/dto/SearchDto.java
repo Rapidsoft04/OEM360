@@ -18,9 +18,9 @@ public class SearchDto {
 
 	private Long statusId;
 
-	private Date fromDate;
+	private String fromDate;
 
-	private Date toDate;
+	private String toDate;
 
 	private Long createdBy;
 
@@ -86,19 +86,19 @@ public class SearchDto {
 		this.statusId = statusId;
 	}
 
-	public Date getFromDate() {
+	public String getFromDate() {
 		return fromDate;
 	}
 
-	public void setFromDate(Date fromDate) {
+	public void setFromDate(String fromDate) {
 		this.fromDate = fromDate;
 	}
 
-	public Date getToDate() {
+	public String getToDate() {
 		return toDate;
 	}
 
-	public void setToDate(Date toDate) {
+	public void setToDate(String toDate) {
 		this.toDate = toDate;
 	}
 

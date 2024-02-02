@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -4762,6 +4763,70 @@ public class RecommendationServiceImpl implements RecommendationService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
+				if((searchDto.getChartSearchKey()!=null) && (!searchDto.getChartSearchKey().isBlank())) {
+					String fromDate = "";
+					String toDate = "";
+					String addedFromTime = "00:00:00";
+					String addedToTime = "23:59:59";
+					if (searchDto.getDateFilterKey().equals(Constant.TODAY)) {
+						Date todayDate = new Date();
+						SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+						String formattedDate = formatter.format(todayDate);
+						fromDate = formattedDate + " " + addedFromTime;
+						toDate = formattedDate + " " + addedToTime;
+					} else if (searchDto.getDateFilterKey().equals(Constant.YESTERDAY)) {
+						Calendar today = Calendar.getInstance();
+						Calendar yesterday = (Calendar) today.clone();
+						yesterday.add(Calendar.DAY_OF_MONTH, -1);
+						Date utilYesterday = yesterday.getTime();
+						SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+						String formattedDate = formatter.format(utilYesterday);
+						fromDate = formattedDate + " " + addedFromTime;
+						toDate = formattedDate + " " + addedToTime;
+					} else if (searchDto.getDateFilterKey().equals(Constant.THIS_MONTH)) {
+						Calendar calendar = Calendar.getInstance();
+						calendar.set(Calendar.DAY_OF_MONTH, 1);
+						Date startDate = calendar.getTime();
+						calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+						Date endDate = calendar.getTime();
+						SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+						String formattedStartDate = dateFormat.format(startDate);
+						String formattedEndDate = dateFormat.format(endDate);
+						fromDate = formattedStartDate + " " + addedFromTime;
+						toDate = formattedEndDate + " " + addedToTime;
+					} else if (searchDto.getDateFilterKey().equals(Constant.THIS_WEEK)) {
+						Calendar calendar = Calendar.getInstance();
+						calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+						Date startDate = calendar.getTime();
+						calendar.add(Calendar.DAY_OF_WEEK, 6);
+						Date endDate = calendar.getTime();
+						SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+						String formattedStartDate = dateFormat.format(startDate);
+						String formattedEndDate = dateFormat.format(endDate);
+						fromDate = formattedStartDate + " " + addedFromTime;
+						toDate = formattedEndDate + " " + addedToTime;
+					} else if (searchDto.getDateFilterKey().equals(Constant.LAST_MONTH)) {
+						Calendar calendar = Calendar.getInstance();
+						calendar.set(Calendar.DAY_OF_MONTH, 1);
+						calendar.add(Calendar.MONTH, -1);
+						Date lastMonthStartDate = calendar.getTime();
+						calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+						Date lastMonthEndDate = calendar.getTime();
+						SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+						String formattedLastMonthStartDate = dateFormat.format(lastMonthStartDate);
+						String formattedLastMonthEndDate = dateFormat.format(lastMonthEndDate);
+						fromDate = formattedLastMonthStartDate + " " + addedFromTime;
+						toDate = formattedLastMonthEndDate + " " + addedToTime;
+					} else {
+						Date todayDate = new Date();
+						SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+						String formattedDate = formatter.format(todayDate);
+						fromDate = formattedDate + " " + addedFromTime;
+						toDate = formattedDate + " " + addedToTime;
+					}
+					searchDto.setFromDate(fromDate);
+					searchDto.setToDate(toDate);
+				}
 				List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 					RecommendationResponseDto approvedRecommendationResponseDto = new RecommendationResponseDto();

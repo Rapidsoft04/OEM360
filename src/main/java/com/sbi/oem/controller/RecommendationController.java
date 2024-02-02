@@ -152,8 +152,8 @@ public class RecommendationController {
 			@RequestParam(name = "referenceId", required = false) String referenceId,
 			@RequestParam(name = "departmentId", required = false) Long departmentId,
 			@RequestParam(name = "statusId", required = false) Long statusId,
-			@RequestParam(name = "fromDate", required = false) Date fromDate,
-			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "fromDate", required = false) String fromDate,
+			@RequestParam(name = "toDate", required = false) String toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
 			@RequestParam(name = "updatedAt", required = false) Date updatedAt,
 			@RequestParam(name = "searchKey", required = false) String searchKey) {
@@ -180,11 +180,13 @@ public class RecommendationController {
 			@RequestParam(name = "referenceId", required = false) String referenceId,
 			@RequestParam(name = "departmentId", required = false) Long departmentId,
 			@RequestParam(name = "statusId", required = false) Long statusId,
-			@RequestParam(name = "fromDate", required = false) Date fromDate,
-			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "fromDate", required = false) String fromDate,
+			@RequestParam(name = "toDate", required = false) String toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
 			@RequestParam(name = "updatedAt", required = false) Date updatedAt,
-			@RequestParam(name = "searchKey", required = false) String searchKey) {
+			@RequestParam(name = "searchKey", required = false) String searchKey,
+			@RequestParam(name = "chartSearchKey", required = false) String chartSearchKey,
+			@RequestParam(name = "dateFilterKey", required = false) String dateFilterKey) {
 		SearchDto newSearchDto = new SearchDto();
 		newSearchDto.setRecommendationType(recommendationType);
 		newSearchDto.setPriorityId(priorityId);
@@ -196,6 +198,8 @@ public class RecommendationController {
 		newSearchDto.setCreatedBy(createdBy);
 		newSearchDto.setUpdatedAt(updatedAt);
 		newSearchDto.setSearchKey(searchKey);
+		newSearchDto.setChartSearchKey(chartSearchKey);
+		newSearchDto.setDateFilterKey(dateFilterKey);
 		Response<?> response = recommendationService.approvedRecommendationRequestForAppOwner(newSearchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
@@ -209,8 +213,8 @@ public class RecommendationController {
 			@RequestParam(name = "referenceId", required = false) String referenceId,
 			@RequestParam(name = "departmentId", required = false) Long departmentId,
 			@RequestParam(name = "statusId", required = false) Long statusId,
-			@RequestParam(name = "fromDate", required = false) Date fromDate,
-			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "fromDate", required = false) String fromDate,
+			@RequestParam(name = "toDate", required = false) String toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
 			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
 
@@ -239,8 +243,8 @@ public class RecommendationController {
 			@RequestParam(name = "referenceId", required = false) String referenceId,
 			@RequestParam(name = "departmentId", required = false) Long departmentId,
 			@RequestParam(name = "statusId", required = false) Long statusId,
-			@RequestParam(name = "fromDate", required = false) Date fromDate,
-			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "fromDate", required = false) String fromDate,
+			@RequestParam(name = "toDate", required = false) String toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
 			@RequestParam(name = "updatedAt", required = false) Date updatedAt, SearchDto searchDto) {
 
@@ -267,8 +271,8 @@ public class RecommendationController {
 			@RequestParam(name = "referenceId", required = false) String referenceId,
 			@RequestParam(name = "departmentId", required = false) Long departmentId,
 			@RequestParam(name = "statusId", required = false) Long statusId,
-			@RequestParam(name = "fromDate", required = false) Date fromDate,
-			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "fromDate", required = false) String fromDate,
+			@RequestParam(name = "toDate", required = false) String toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
 			@RequestParam(name = "updatedAt", required = false) Date updatedAt,
 			@RequestParam(name = "searchKey", required = false) String searchKey) {
@@ -300,8 +304,8 @@ public class RecommendationController {
 			@RequestParam(name = "referenceId", required = false) String referenceId,
 			@RequestParam(name = "departmentId", required = false) Long departmentId,
 			@RequestParam(name = "statusId", required = false) Long statusId,
-			@RequestParam(name = "fromDate", required = false) Date fromDate,
-			@RequestParam(name = "toDate", required = false) Date toDate,
+			@RequestParam(name = "fromDate", required = false) String fromDate,
+			@RequestParam(name = "toDate", required = false) String toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
 			@RequestParam(name = "updatedAt", required = false) Date updatedAt) {
 

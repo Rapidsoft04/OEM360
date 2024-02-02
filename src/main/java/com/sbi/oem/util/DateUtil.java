@@ -7,10 +7,16 @@ import java.util.Date;
 public class DateUtil {
 
 	public static Date convertISTtoUTC(Date fromDate) {
-		long longDate=fromDate.getTime();
-		longDate=longDate-19800000;
-		Date updatedDate=new Date(longDate);
-		return updatedDate;
+		try {
+			long longDate=fromDate.getTime();
+			longDate=longDate-19800000;
+			Date updatedDate=new Date(longDate);
+			return updatedDate;
+		} catch (Exception e) {
+			// TODO: handle exception
+			return null;
+		}
+		
 	}
 	
 	public static Date convertUTCTOIST(Date fromDate) {
