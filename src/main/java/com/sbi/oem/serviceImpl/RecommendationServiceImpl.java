@@ -4531,6 +4531,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+					
+					List<CredentialMaster> seniorManagementList = credentialMasterRepository
+							.findByUserTypeId(UserType.GM_IT_INFRA);
+					List<User> seniorManagementUsers = new ArrayList<>();
+					if (seniorManagementList != null && seniorManagementList.size() > 0) {
+						seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
+								.collect(Collectors.toList());
+					}
+					
 					Optional<Recommendation> recommendationObj = recommendationRepository
 							.findByReferenceId(recommendationRequestDto.getRecommendRefId());
 					if (recommendationObj != null && recommendationObj.isPresent()) {
@@ -4577,9 +4586,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 								if (approver != null && approver.isPresent()) {
 									if (approver.get().getAgm() != null
 											&& !approver.get().getAgm().getEmail().isBlank()) {
-										responseText += "Email will be sent to both AGM("
-												+ approver.get().getAgm().getEmail() + ") and OEM("
-												+ updatedRecommendation.getCreatedBy().getEmail() + ")";
+										responseText += "Email will be sent to AGM("
+												+ approver.get().getAgm().getEmail() + "), OEM("
+												+ updatedRecommendation.getCreatedBy().getEmail() + ") and GM";
+										for (User user : seniorManagementUsers) {
+											responseText += "(" + user.getEmail() + ") ";
+										}
 									}
 								}
 								notificationService.save(updatedRecommendation,
@@ -4592,8 +4604,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 									if (approver.get().getAgm() != null
 											&& !approver.get().getAgm().getEmail().isBlank()) {
 										responseText += ". Email will be sent to AGM("
-												+ approver.get().getAgm().getEmail() + ")" + " " + "also send to OEM("
-												+ recommendationObj.get().getCreatedBy().getEmail() + ")";
+												+ approver.get().getAgm().getEmail() + ")" + " " + ", OEM("
+												+ recommendationObj.get().getCreatedBy().getEmail() + ") and GM";
+										for (User user : seniorManagementUsers) {
+											responseText += "(" + user.getEmail() + ") ";
+										}
 									}
 								}
 								notificationService.save(updatedRecommendation,
