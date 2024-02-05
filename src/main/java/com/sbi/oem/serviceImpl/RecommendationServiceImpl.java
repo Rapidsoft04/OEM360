@@ -2,8 +2,6 @@ package com.sbi.oem.serviceImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -36,10 +34,10 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.aspectj.util.FileUtil;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -87,8 +85,6 @@ import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
-import com.sbi.oem.util.ByteArrayMultipartFile;
-import com.sbi.oem.util.FileValidation;
 import com.sbi.oem.util.Pagination;
 
 @Service
@@ -134,6 +130,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private CredentialMasterRepository credentialMasterRepository;
+	
+	@Value("${application.name}")
+	private String applicationName;
 
 	@SuppressWarnings("rawtypes")
 	@Lookup
@@ -227,6 +226,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 				                .path("/downloadFile/")
 				                .path(fileUrl)
 				                .toUriString();
+						if (fileUrl.contains("/"+applicationName+"/")) {
+				            
+							fileUrl = fileUrl.replace("/"+applicationName+"/", "/backend/");
+				        }
 //						if(fileExtension.equals("docx")) {
 //							byte[] pdfBytes = FileValidation.convertDocxToPdf(recommendationAddRequestDto.getFile());
 //							MultipartFile multipartFile = new ByteArrayMultipartFile(pdfBytes, "output.pdf", "output.pdf", "application/pdf");
