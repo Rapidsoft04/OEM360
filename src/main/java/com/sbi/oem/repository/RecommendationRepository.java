@@ -718,7 +718,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate)));
 			}
 
 			if (searchDto.getToDate() != null) {
@@ -736,7 +736,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				}
 				Date currentDate = DateUtil.convertISTtoUTC(new Date());
 				predicates
-						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, currentDate)));
 			}
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
@@ -748,7 +748,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
 			}
 			if (searchDto.getSearchKey() != null) {
 				predicates.add(criteriaBuilder.or(
@@ -806,7 +806,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate)));
 
 			}
 
@@ -821,7 +821,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				}
 				Date currentDate = DateUtil.convertISTtoUTC(new Date());
 				predicates
-						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, currentDate)));
 			}
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
@@ -833,7 +833,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
 			}
 
 			if (searchDto.getCreatedBy() != null) {
@@ -909,7 +909,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate)));
 
 			}
 
@@ -924,7 +924,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				}
 				Date currentDate = DateUtil.convertISTtoUTC(new Date());
 				predicates
-						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, currentDate)));
 			}
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
@@ -936,7 +936,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
 			}
 
 			if (searchDto.getCreatedBy() != null) {
@@ -998,7 +998,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, toDate)));
+				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate)));
 
 			}
 
@@ -1013,7 +1013,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				}
 				Date currentDate = DateUtil.convertISTtoUTC(new Date());
 				predicates
-						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("updatedAt"), fromDate, currentDate)));
+						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, currentDate)));
 			}
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
@@ -1025,7 +1025,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("updatedAt"), toDate));
+				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
 			}
 
 			if (searchDto.getCreatedBy() != null) {

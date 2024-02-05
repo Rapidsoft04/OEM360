@@ -36,7 +36,9 @@ public class RecommendationDataController {
 			@RequestParam(name = "toDate", required = false) String toDate,
 			@RequestParam(name = "createdBy", required = false) Long createdBy,
 			@RequestParam(name = "updatedAt", required = false) Date updatedAt,
-			@RequestParam(name = "searchKey", required = false) String searchKey) {
+			@RequestParam(name = "searchKey", required = false) String searchKey,
+			@RequestParam(name = "chartSearchKey", required = false) String chartSearchKey,
+			@RequestParam(name = "dateFilterKey", required = false) String dateFilterKey) {
 
 		SearchDto newSearchDto = new SearchDto();
 		newSearchDto.setRecommendationType(recommendationType);
@@ -49,6 +51,8 @@ public class RecommendationDataController {
 		newSearchDto.setCreatedBy(createdBy);
 		newSearchDto.setUpdatedAt(updatedAt);
 		newSearchDto.setSearchKey(searchKey);
+		newSearchDto.setChartSearchKey(chartSearchKey);
+		newSearchDto.setDateFilterKey(dateFilterKey);
 		Response<?> response = pendingRecommendationService.pendingRecommendationRequestForAppOwner(newSearchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
