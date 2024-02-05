@@ -18,8 +18,6 @@ public interface RecommendationService {
 
 	Response<?> getAllRecommendedStatus();
 
-	Response<?> getAllRecommendations();
-
 	Response<?> setRecommendationDeploymentDetails(RecommendationDetailsRequestDto recommendationDetailsRequestDto);
 
 	Response<?> rejectRecommendationByAppOwner(RecommendationRejectionRequestDto recommendation);
@@ -35,20 +33,20 @@ public interface RecommendationService {
 
 	Response<?> addRecommendationThroughExcel(MultipartFile file);
 
-	Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto);
+//	Response<?> pendingRecommendationRequestForAppOwner(SearchDto searchDto);
 
-	Response<?> approvedRecommendationRequestForAppOwner(SearchDto searchDto);
+//	Response<?> approvedRecommendationRequestForAppOwner(SearchDto searchDto);
 
-	Response<?> viewRecommendationDetailsForOemAndAgmAndGmPagination(SearchDto searchDto, long pageNumber,
-			long pageSize);
+//	Response<?> viewRecommendationDetailsForOemAndAgmAndGmPagination(SearchDto searchDto, long pageNumber,
+//			long pageSize);
 
-	Response<?> pendingRecommendationRequestForAppOwnerThroughPagination(SearchDto newSearchDto, Integer pageNumber,
-			Integer pageSize);
+//	Response<?> pendingRecommendationRequestForAppOwnerThroughPagination(SearchDto newSearchDto, Integer pageNumber,
+//			Integer pageSize);
 
-	Response<?> approvedRecommendationRequestForAppOwnerThroughPagination(SearchDto searchDto, Integer pageNumber,
-			Integer pageSize);
-
-	Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto);
+//	Response<?> approvedRecommendationRequestForAppOwnerThroughPagination(SearchDto searchDto, Integer pageNumber,
+//			Integer pageSize);
+//
+//	Response<?> viewRecommendationDetailsForOemAndAgmAndGm(SearchDto searchDto);
 
 	Response<?> updateRecommendationStatus(RecommendationDetailsRequestDto recommendationRequestDto);
 
