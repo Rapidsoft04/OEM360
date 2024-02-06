@@ -5199,7 +5199,7 @@ public class PendingRecommendationServiceImpl implements PendingRecommendationSe
 				}
 
 			} else {
-				if (searchDto.getChartSearchKey() == null && searchDto.getChartSearchKey().isBlank()) {
+				if (searchDto.getChartSearchKey() == null || searchDto.getChartSearchKey().isBlank()) {
 					if (searchDto.getStatusId() != null && (searchDto.getStatusId() != StatusEnum.Delayed.getId()
 							|| searchDto.getStatusId() != StatusEnum.No_Action.getId()
 							|| searchDto.getStatusId() != StatusEnum.Released_With_Delay.getId())) {
