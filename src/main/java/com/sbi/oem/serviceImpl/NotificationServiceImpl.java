@@ -149,7 +149,10 @@ public class NotificationServiceImpl implements NotificationService {
 						List<User> userList = new ArrayList<>();
 						User agm = departmentApprover.get().getAgm();
 						userList.add(agm);
-						userList.addAll(seniorManagementUsers);
+						for(User user:seniorManagementUsers) {
+							userList.add(user);
+						}
+
 						String text = "App owner has accepted a new recommendation.";
 
 						String descriptions = "Your recommendation with referenceId = "
@@ -228,7 +231,9 @@ public class NotificationServiceImpl implements NotificationService {
 							userList.add(agm);
 						}
 
-						userList.addAll(seniorManagementUsers);
+						for (User user : seniorManagementUsers) {
+							userList.add(user);
+						}
 
 						String text = "App owner has rejected a recommendation.";
 						String descriptions = "";
@@ -267,10 +272,12 @@ public class NotificationServiceImpl implements NotificationService {
 						createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
 								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
-						List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
-								departmentApprover.get().getApplicationOwner());
-						userList.addAll(seniorManagementUsers);
-						String text = "Your recommendation request has been approved by AGM.";
+						List<User> userList = new ArrayList<>();
+						userList.add(departmentApprover.get().getApplicationOwner());
+						for (User user : seniorManagementUsers) {
+							userList.add(user);
+						}
+						String text = "Recommendation request has been approved by AGM.";
 
 						String descriptions = "Your recommendation with referenceId = "
 								+ recommendation.getReferenceId()
@@ -338,9 +345,9 @@ public class NotificationServiceImpl implements NotificationService {
 						String text = "";
 						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId().longValue()
 								&& recommendationObj.get().getIsAppOwnerRejected().booleanValue() == true) {
-							text = "Your recommendation request has been rejected by DGM.";
+							text = "Recommendation request has been rejected by DGM.";
 						} else {
-							text = "Your recommendation request has been rejected by AGM.";
+							text = "Recommendation request has been rejected by AGM.";
 						}
 
 						String descriptions = rejectionMessage;
@@ -560,12 +567,26 @@ public class NotificationServiceImpl implements NotificationService {
 						.findByRecommendRefId(notification.getReferenceId());
 				List<RecommendationMessages> recommendationMessages = recommendationMessagesRepository
 						.findAllByReferenceId(notification.getReferenceId());
+
 				RecommendationResponseDto dto = recommendationObj.get().convertToDto();
 				dto.setNotification(notification);
 				if (deploymentDetailsObj != null && deploymentDetailsObj.isPresent()) {
 					dto.setRecommendationDeploymentDetails(deploymentDetailsObj.get());
 				}
-
+				if (recommendationObj.get().getPriorityId() != null) {
+					String priority = "";
+					if (recommendationObj.get().getPriorityId().longValue() == 1) {
+						priority = PriorityEnum.High.getName();
+					} else if (recommendationObj.get().getPriorityId().longValue() == 2) {
+						priority = PriorityEnum.Medium.getName();
+					} else {
+						priority = PriorityEnum.Low.getName();
+					}
+					dto.setPriority(priority);
+				}
+				Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+						.findAllByDepartmentId(recommendationObj.get().getDepartment().getId());
+				dto.setApprover(departmentApprover.get().getAgm());
 				if (recommendationMessages != null && recommendationMessages.size() > 0) {
 					List<RecommendationMessages> updatedMessageList = recommendationMessages
 							.stream().filter(e -> e.getCreatedBy() != null && e.getCreatedBy().getId()
