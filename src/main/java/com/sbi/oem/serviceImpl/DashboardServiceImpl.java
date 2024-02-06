@@ -27,6 +27,7 @@ import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.DashboardService;
+import com.sbi.oem.util.DateUtil;
 
 @Service
 public class DashboardServiceImpl implements DashboardService {
@@ -143,15 +144,15 @@ public class DashboardServiceImpl implements DashboardService {
 								if (recommendation.getRecommendationStatus().getId().longValue() == StatusEnum.Released
 										.getId().longValue()) {
 									releasedRecommendationCount = releasedRecommendationCount + 1L;
-									Optional<RecommendationDeplyomentDetails> recommendationDeploymentDetails = recommendationDeplyomentDetailsRepository
-											.findByRecommendRefId(recommendation.getReferenceId());
 									Optional<RecommendationTrail> trailObj = recommendationTrailRepository
 											.findAllByReferenceIdAndStatusId(recommendation.getReferenceId(),
 													StatusEnum.Released.getId());
-									if (trailObj.get().getCreatedAt()
-											.before(recommendationDeploymentDetails.get().getDeploymentDate())) {
+									Date rcmdDate = DateUtil.convertDateToNigh12AM(recommendation.getRecommendDate());
+
+									if (rcmdDate.before(trailObj.get().getCreatedAt())) {
 										onTimeDoneRecommendationCount = onTimeDoneRecommendationCount + 1L;
 									} else {
+
 										delayRecommendationCount = delayRecommendationCount + 1L;
 									}
 								}
@@ -222,6 +223,7 @@ public class DashboardServiceImpl implements DashboardService {
 						Long delayRecommendationCount = 0L;
 						Long approvedRecommendationNotYetReleasedCount = 0L;
 						for (Recommendation recommendation : recommendationList) {
+							Date rcmdDate = DateUtil.convertDateToNigh12AM(recommendation.getRecommendDate());
 							if (recommendation.getRecommendationStatus().getId().longValue() < StatusEnum.Approved
 									.getId().longValue()) {
 								pendingForApprovalCount = pendingForApprovalCount + 1L;
@@ -229,13 +231,10 @@ public class DashboardServiceImpl implements DashboardService {
 							if (recommendation.getRecommendationStatus().getId().longValue() == StatusEnum.Released
 									.getId().longValue()) {
 								releasedRecommendationCount = releasedRecommendationCount + 1L;
-								Optional<RecommendationDeplyomentDetails> recommendationDeploymentDetails = recommendationDeplyomentDetailsRepository
-										.findByRecommendRefId(recommendation.getReferenceId());
 								Optional<RecommendationTrail> trailObj = recommendationTrailRepository
 										.findAllByReferenceIdAndStatusId(recommendation.getReferenceId(),
 												StatusEnum.Released.getId());
-								if (trailObj.get().getCreatedAt()
-										.before(recommendationDeploymentDetails.get().getDeploymentDate())) {
+								if (trailObj.get().getCreatedAt().before(rcmdDate)) {
 									onTimeDoneRecommendationCount = onTimeDoneRecommendationCount + 1L;
 								} else {
 									delayRecommendationCount = delayRecommendationCount + 1L;

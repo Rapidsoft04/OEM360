@@ -92,7 +92,7 @@ public class NotificationServiceImpl implements NotificationService {
 						.findByUserTypeId(UserType.GM_IT_INFRA);
 				List<User> seniorManagementUsers = new ArrayList<>();
 				if (seniorManagementList != null && seniorManagementList.size() > 0) {
-					for(CredentialMaster master:seniorManagementList) {
+					for (CredentialMaster master : seniorManagementList) {
 						seniorManagementUsers.add(master.getUserId());
 					}
 //					seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
@@ -192,26 +192,27 @@ public class NotificationServiceImpl implements NotificationService {
 
 								User departmentAgm = departmentApproverImpactDept.get().getAgm();
 								User appOwner = departmentApproverImpactDept.get().getApplicationOwner();
+								if (departmentAgm.getId().longValue() != agm.getId().longValue()) {
+									if (departmentApprover.get().getApplicationOwner().getId().longValue() != appOwner
+											.getId().longValue()) {
+										userList.add(appOwner);
+									}
+									userList.add(departmentAgm);
 
-								if (departmentApprover.get().getApplicationOwner().getId().longValue() != appOwner
-										.getId().longValue()) {
-									userList.add(appOwner);
+									userList.addAll(seniorManagementUsers);
+
+									text = "New Recommendation deployment may affected your department";
+
+									descriptions = "Related to recommendation with referenceId = "
+											+ recommendation.getReferenceId()
+											+ ".  Please note that the implementation of this"
+											+ " new recommendation could have impact on your department.";
+
+									recommendationStatus = recommendation.getRecommendationStatus();
+
+									createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
+											recommendationStatus);
 								}
-								userList.add(departmentAgm);
-
-								userList.addAll(seniorManagementUsers);
-
-								text = "New Recommendation deployment may affected your department";
-
-								descriptions = "Related to recommendation with referenceId = "
-										+ recommendation.getReferenceId()
-										+ ".  Please note that the implementation of this"
-										+ " new recommendation could have impact on your department.";
-
-								recommendationStatus = recommendation.getRecommendationStatus();
-
-								createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
-										recommendationStatus);
 
 							}
 						}
@@ -432,25 +433,27 @@ public class NotificationServiceImpl implements NotificationService {
 
 								User departmentAgm = departmentApproverImpactDept.get().getAgm();
 								User appOwner = departmentApproverImpactDept.get().getApplicationOwner();
-								List<User> userList2 = new ArrayList<>();
-								if (departmentApprover.get().getApplicationOwner().getId().longValue() != appOwner
-										.getId().longValue()) {
-									userList2.add(appOwner);
+								if (departmentAgm.getId().longValue() != agm.getId().longValue()) {
+									List<User> userList2 = new ArrayList<>();
+									if (departmentApprover.get().getApplicationOwner().getId().longValue() != appOwner
+											.getId().longValue()) {
+										userList2.add(appOwner);
+									}
+									userList2.add(departmentAgm);
+									userList2.addAll(seniorManagementUsers);
+
+									text = "New Recommendation deployment may affected your department";
+
+									descriptions = "Related to recommendation with referenceId = "
+											+ recommendation.getReferenceId()
+											+ ".  Please note that the implementation of this"
+											+ " new recommendation could have impact on your department.";
+
+									recommendationStatus = recommendation.getRecommendationStatus();
+
+									createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList2,
+											recommendationStatus);
 								}
-								userList2.add(departmentAgm);
-								userList2.addAll(seniorManagementUsers);
-
-								text = "New Recommendation deployment may affected your department";
-
-								descriptions = "Related to recommendation with referenceId = "
-										+ recommendation.getReferenceId()
-										+ ".  Please note that the implementation of this"
-										+ " new recommendation could have impact on your department.";
-
-								recommendationStatus = recommendation.getRecommendationStatus();
-
-								createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList2,
-										recommendationStatus);
 
 							}
 						}

@@ -221,6 +221,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						if (fileUrl.contains("/"+applicationName+"/")) {
 				            
 							fileUrl = fileUrl.replace("/"+applicationName+"/", "/backend/");
+							fileUrl= fileUrl.replace("http", "https");
 				        }
 //						if(fileExtension.equals("docx")) {
 //							byte[] pdfBytes = FileValidation.convertDocxToPdf(recommendationAddRequestDto.getFile());
