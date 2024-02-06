@@ -5753,7 +5753,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 						}
 
 					} else {
-						if (searchDto.getChartSearchKey() != null && searchDto.getChartSearchKey().isBlank()) {
+						if (searchDto.getChartSearchKey() == null || searchDto.getChartSearchKey().isBlank()) {
 							if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
 									.longValue() != StatusEnum.No_Action.getId().longValue())
 									&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId().longValue())
