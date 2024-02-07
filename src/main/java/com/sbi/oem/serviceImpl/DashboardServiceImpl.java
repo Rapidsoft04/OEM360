@@ -149,10 +149,9 @@ public class DashboardServiceImpl implements DashboardService {
 													StatusEnum.Released.getId());
 									Date rcmdDate = DateUtil.convertDateToNigh12AM(recommendation.getRecommendDate());
 
-									if (rcmdDate.before(trailObj.get().getCreatedAt())) {
+									if (trailObj.get().getCreatedAt().before(rcmdDate)) {
 										onTimeDoneRecommendationCount = onTimeDoneRecommendationCount + 1L;
 									} else {
-
 										delayRecommendationCount = delayRecommendationCount + 1L;
 									}
 								}

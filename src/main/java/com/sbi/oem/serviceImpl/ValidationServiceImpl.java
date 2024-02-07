@@ -99,7 +99,7 @@ public class ValidationServiceImpl implements ValidationService {
 	public Response<?> checkForUpdateRecommendationStatusPayload(
 			RecommendationDetailsRequestDto recommendationRequestDto) {
 		if (recommendationRequestDto.getRecommendRefId() == null
-				|| recommendationRequestDto.getRecommendRefId().isBlank()
+				|| recommendationRequestDto.getRecommendRefId().isEmpty()
 				|| recommendationRequestDto.getRecommendRefId().equals("")) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the reference id.", null);
 		} else if (recommendationRequestDto.getRecommendationStatus() == null) {
@@ -143,7 +143,7 @@ public class ValidationServiceImpl implements ValidationService {
 	public Response<?> checkForRevertRequestByAgmOrDgm(
 			RecommendationDetailsRequestDto recommendationRejectionRequestDto) {
 		if (recommendationRejectionRequestDto.getDescription() == null
-				|| recommendationRejectionRequestDto.getDescription().isBlank()
+				|| recommendationRejectionRequestDto.getDescription().isEmpty()
 				|| recommendationRejectionRequestDto.getDescription().equals("")) {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Plese provide the description details.", null);
 		} else {

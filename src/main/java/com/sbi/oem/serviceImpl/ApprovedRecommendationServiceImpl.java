@@ -96,7 +96,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if ((searchDto.getDateFilterKey() != null) && (!searchDto.getDateFilterKey().isBlank())) {
+				if ((searchDto.getDateFilterKey() != null) && (!searchDto.getDateFilterKey().isEmpty())) {
 					String fromDate = "";
 					String toDate = "";
 					String addedFromTime = "00:00:00";
@@ -877,7 +877,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 			List<RecommendationResponseDto> recommendations = new ArrayList<>();
 
 			if (master != null && master.isPresent()) {
-				if ((searchDto.getDateFilterKey() != null) && (!searchDto.getDateFilterKey().isBlank())) {
+				if ((searchDto.getDateFilterKey() != null) && (!searchDto.getDateFilterKey().isEmpty())) {
 					String fromDate = "";
 					String toDate = "";
 					String addedFromTime = "00:00:00";
@@ -2070,7 +2070,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 				for (Recommendation rcmnd : recommendationList) {
 					if (searchDto.getChartSearchKey() != null
-							&& (!searchDto.getChartSearchKey().isBlank()
+							&& (!searchDto.getChartSearchKey().isEmpty()
 									&& searchDto.getChartSearchKey().equals(Constant.Pending_For_Approval))
 							&& rcmnd.getRecommendationStatus().getId().longValue() < StatusEnum.Approved.getId()
 									.longValue()) {
@@ -2592,7 +2592,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 						}
 
-					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 							&& searchDto.getChartSearchKey().equals(Constant.Completed)
 							&& rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Released.getId()
 									.longValue()) {
@@ -3114,7 +3114,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 						}
 
-					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 							&& searchDto.getChartSearchKey().equals(Constant.Implementation)
 							&& (rcmnd.getIsAgmApproved() != null && rcmnd.getIsAgmApproved().booleanValue() == true
 									&& (rcmnd.getRecommendationStatus().getId().longValue() >= StatusEnum.Approved
@@ -3639,7 +3639,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 						}
 
-					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 							&& searchDto.getChartSearchKey().equals(Constant.Rejected)
 							&& (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Rejected.getId()
 									.longValue())) {
@@ -4161,7 +4161,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 						}
 
-					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 							&& searchDto.getChartSearchKey().equals(Constant.Planned)
 							&& (rcmnd.getIsAgmApproved() != null && rcmnd.getIsAgmApproved().booleanValue() == true
 									&& (rcmnd.getRecommendationStatus().getId().longValue() >= StatusEnum.Approved
@@ -4686,16 +4686,15 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 						}
 
-					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 							&& searchDto.getChartSearchKey().equals(Constant.On_Time)
-							&& (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Released.getId()
-									.longValue())) {
+							) {
 						Optional<RecommendationDeplyomentDetails> recommendationDeploymentDetails = deplyomentDetailsRepository
 								.findByRecommendRefId(rcmnd.getReferenceId());
 						Optional<RecommendationTrail> trailObj = recommendationTrailRepository
 								.findAllByReferenceIdAndStatusId(rcmnd.getReferenceId(), StatusEnum.Released.getId());
-						if ((trailObj.get().getCreatedAt()
-								.before(recommendationDeploymentDetails.get().getDeploymentDate()))) {
+						Date rcmndDate = DateUtil.convertDateToNigh12AM(rcmnd.getRecommendDate());
+						if (rcmnd.getRecommendationStatus().getId().longValue()==StatusEnum.Released.getId().longValue()) {
 							if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
 									.longValue() != StatusEnum.No_Action.getId().longValue())
 									&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId().longValue())
@@ -5106,7 +5105,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 										status.setStatusName(StatusEnum.Delayed.getName());
 										responseDto.setStatus(status);
 									}
-									if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
+									if (rcmdDate.after(new Date()) && responseDto.getStatus().getStatusName()
 											.equals(StatusEnum.Released.getName())) {
 										RecommendationStatus status = new RecommendationStatus();
 										status.setId(StatusEnum.Released_With_Delay.getId());
@@ -5207,28 +5206,24 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 									status.setStatusName(StatusEnum.Delayed.getName());
 									responseDto.setStatus(status);
 								}
-								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
-										.equals(StatusEnum.Released.getName())) {
-									RecommendationStatus status = new RecommendationStatus();
-									status.setId(StatusEnum.Released_With_Delay.getId());
-									status.setStatusName(StatusEnum.Released_With_Delay.getName());
-									responseDto.setStatus(status);
+								if (rcmdDate.after(trailObj.get().getCreatedAt()) ) {
+									
+									approvedRecommendations.add(responseDto);
 								}
-								approvedRecommendations.add(responseDto);
+								
 
 							}
 						}
 
-					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
-							&& searchDto.getChartSearchKey().equals(Constant.Delayed)
-							&& (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Released.getId()
-									.longValue())) {
+					} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
+							&& searchDto.getChartSearchKey().equals(Constant.Delayed)) {
 						Optional<RecommendationDeplyomentDetails> recommendationDeploymentDetails = deplyomentDetailsRepository
 								.findByRecommendRefId(rcmnd.getReferenceId());
+						Date rcmndDate = DateUtil.convertDateToNigh12AM(rcmnd.getRecommendDate());
 						Optional<RecommendationTrail> trailObj = recommendationTrailRepository
 								.findAllByReferenceIdAndStatusId(rcmnd.getReferenceId(), StatusEnum.Released.getId());
-						if ((trailObj.get().getCreatedAt()
-								.after(recommendationDeploymentDetails.get().getDeploymentDate()))) {
+						if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Released.getId()
+								.longValue()) {
 							if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
 									.longValue() != StatusEnum.No_Action.getId().longValue())
 									&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId().longValue())
@@ -5650,7 +5645,6 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 								}
 							} else {
-
 								RecommendationResponseDto responseDto = rcmnd.convertToDto();
 								List<RecommendationMessages> messageList = recommendationMessagesRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
@@ -5724,37 +5718,23 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 								} else {
 									responseDto.setRecommendationDeploymentDetails(null);
 								}
-								Date rcmdDate = com.sbi.oem.util.DateUtil
-										.convertDateToNigh12AM(responseDto.getRecommendDate());
-								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
-										.equals(StatusEnum.OEM_recommendation.getName())) {
-									RecommendationStatus status = new RecommendationStatus();
-									status.setId(StatusEnum.No_Action.getId());
-									status.setStatusName(StatusEnum.No_Action.getName());
-									responseDto.setStatus(status);
-								}
-								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
-										.equals(StatusEnum.Approved.getName())) {
-									RecommendationStatus status = new RecommendationStatus();
-									status.setId(StatusEnum.Delayed.getId());
-									status.setStatusName(StatusEnum.Delayed.getName());
-									responseDto.setStatus(status);
-								}
-								if (rcmdDate.before(new Date()) && responseDto.getStatus().getStatusName()
-										.equals(StatusEnum.Released.getName())) {
+
+								
+								if (rcmndDate.before(trailObj.get().getCreatedAt())) {
 									RecommendationStatus status = new RecommendationStatus();
 									status.setId(StatusEnum.Released_With_Delay.getId());
 									status.setStatusName(StatusEnum.Released_With_Delay.getName());
 									responseDto.setStatus(status);
+									approvedRecommendations.add(responseDto);
 								}
-								approvedRecommendations.add(responseDto);
+								
 
 							}
 
 						}
 
 					} else {
-						if (searchDto.getChartSearchKey() == null || searchDto.getChartSearchKey().isBlank()) {
+						if (searchDto.getChartSearchKey() == null || searchDto.getChartSearchKey().isEmpty()) {
 							if (searchDto.getStatusId() != null && ((searchDto.getStatusId()
 									.longValue() != StatusEnum.No_Action.getId().longValue())
 									&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId().longValue())
@@ -6296,7 +6276,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 		List<RecommendationResponseDto> recommendations = new ArrayList<>();
 		for (Recommendation rcmnd : recomendationListGm) {
-			if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+			if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 					&& searchDto.getChartSearchKey().equals(Constant.Completed)
 					&& rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Released.getId().longValue()) {
 
@@ -6873,7 +6853,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 				}
 
-			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 					&& searchDto.getChartSearchKey().equals(Constant.Pending_For_Approval) && (rcmnd
 							.getRecommendationStatus().getId().longValue() < StatusEnum.Approved.getId().longValue())) {
 
@@ -7450,7 +7430,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 				}
 
-			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 					&& searchDto.getChartSearchKey().equals(Constant.Implementation)
 					&& (rcmnd.getIsAgmApproved() != null && rcmnd.getIsAgmApproved().booleanValue() == true
 							&& (rcmnd.getRecommendationStatus().getId().longValue() >= StatusEnum.Approved.getId()
@@ -8031,7 +8011,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 				}
 
-			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 					&& searchDto.getChartSearchKey().equals(Constant.Rejected) && (rcmnd.getRecommendationStatus()
 							.getId().longValue() == StatusEnum.Rejected.getId().longValue())) {
 
@@ -8608,7 +8588,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 				}
 
-			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 					&& searchDto.getChartSearchKey().equals(Constant.Planned)
 					&& (rcmnd.getIsAgmApproved() != null && rcmnd.getIsAgmApproved().booleanValue() == true
 							&& (rcmnd.getRecommendationStatus().getId().longValue() >= StatusEnum.Approved.getId()
@@ -9189,7 +9169,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 				}
 
-			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 					&& searchDto.getChartSearchKey().equals(Constant.On_Time) && (rcmnd.getRecommendationStatus()
 							.getId().longValue() == StatusEnum.Released.getId().longValue())) {
 				Optional<RecommendationTrail> trailObj = recommendationTrailRepository
@@ -9548,8 +9528,8 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 					} else if (searchDto.getStatusId() != null
 							&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
 						Date recommendDate = com.sbi.oem.util.DateUtil.convertDateToNigh12AM(rcmnd.getRecommendDate());
-						if (rcmndDate.before(trailObj.get().getCreatedAt()) && rcmnd.getRecommendationStatus().getStatusName()
-								.equals(StatusEnum.Released.getName())) {
+						if (rcmndDate.before(trailObj.get().getCreatedAt()) && rcmnd.getRecommendationStatus()
+								.getStatusName().equals(StatusEnum.Released.getName())) {
 
 							RecommendationResponseDto responseDto = rcmnd.convertToDto();
 							List<RecommendationMessages> messageList = recommendationMessagesRepository
@@ -9755,11 +9735,11 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 					}
 				}
 
-			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isBlank())
+			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
 					&& searchDto.getChartSearchKey().equals(Constant.Delayed)) {
-				
+
 				if (rcmnd.getRecommendationStatus().getId().longValue() == StatusEnum.Released.getId().longValue()) {
-					
+
 					Optional<RecommendationTrail> trailObj = recommendationTrailRepository
 							.findAllByReferenceIdAndStatusId(rcmnd.getReferenceId(), StatusEnum.Released.getId());
 					Optional<RecommendationDeplyomentDetails> recommendationDeploymentDetails = deplyomentDetailsRepository
@@ -10356,7 +10336,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 				}
 
 			} else {
-				if (searchDto.getChartSearchKey() == null || searchDto.getChartSearchKey().isBlank()) {
+				if (searchDto.getChartSearchKey() == null || searchDto.getChartSearchKey().isEmpty()) {
 					if (searchDto.getStatusId() != null
 							&& ((searchDto.getStatusId().longValue() != StatusEnum.No_Action.getId().longValue())
 									&& (searchDto.getStatusId().longValue() == StatusEnum.Delayed.getId().longValue())

@@ -119,7 +119,7 @@ public class NotificationServiceImpl implements NotificationService {
 					RecommendationStatus = StatusEnum.Released.getName();
 				}
 
-				if (departmentApprover != null && !departmentApprover.isEmpty()) {
+				if (departmentApprover != null && departmentApprover.isPresent()) {
 					if (status.equals(RecommendationStatusEnum.CREATED)) {
 						List<User> userList = Arrays.asList(departmentApprover.get().getAgm(),
 								departmentApprover.get().getApplicationOwner());
@@ -681,7 +681,7 @@ public class NotificationServiceImpl implements NotificationService {
 					RecommendationStatus = StatusEnum.Released.getName();
 				}
 
-				if (departmentApprover != null && !departmentApprover.isEmpty()) {
+				if (departmentApprover != null && departmentApprover.isPresent()) {
 					if (status.equals(RecommendationStatusEnum.CREATED)) {
 
 						User appOwner = departmentApprover.get().getApplicationOwner();
@@ -699,7 +699,7 @@ public class NotificationServiceImpl implements NotificationService {
 										: "NA")
 								+ " RecommendationStatus is " + RecommendationStatus
 								+ ". The expected impact and affected department are succinctly conveyed ";
-						if (recommendation.getExpectedImpact() == null || recommendation.getExpectedImpact().isBlank()
+						if (recommendation.getExpectedImpact() == null || recommendation.getExpectedImpact().isEmpty()
 								|| recommendation.getExpectedImpact().equals("")) {
 							descriptions = descriptions + "NA";
 						} else {

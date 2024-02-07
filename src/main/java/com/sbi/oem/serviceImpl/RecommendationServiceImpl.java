@@ -304,7 +304,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 									.findAllByDepartmentId(id);
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getApplicationOwner() != null
-										&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+										&& !approver.get().getApplicationOwner().getEmail().isEmpty()) {
 									responseText = responseText + approver.get().getApplicationOwner().getUserName()
 											+ "(" + approver.get().getDepartment().getName() + ")";
 									responseText += "(" + approver.get().getApplicationOwner().getEmail() + ") ";
@@ -452,7 +452,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 									recommendationDetailsRequestDto,
 									RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 							if (approver != null && approver.isPresent()) {
-								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isEmpty()) {
 									responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
 
 									for (User user : seniorManagementUsers) {
@@ -503,7 +503,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							emailTemplateService.sendMailRecommendationDeplyomentDetails(
 									recommendationDetailsRequestDto, RecommendationStatusEnum.APPROVED_BY_APPOWNER);
 							if (approver != null && approver.isPresent()) {
-								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isEmpty()) {
 									responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
 
 									for (User user : seniorManagementUsers) {
@@ -594,7 +594,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								RecommendationStatusEnum.REJECTED_BY_APPOWNER);
 						if (approver != null && approver.isPresent() && (recommendObj.get().getPriorityId()
 								.longValue() != PriorityEnum.High.getId().longValue())) {
-							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isEmpty()) {
 								responseText += "AGM (" + approver.get().getAgm().getEmail() + ") and GM ";
 								for (User user : seniorManagementUsers) {
 									responseText += "(" + user.getEmail() + ") ";
@@ -603,7 +603,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								return new Response<>(HttpStatus.OK.value(), responseText, null);
 							}
 						} else {
-							if (approver.get().getDgm() != null && !approver.get().getDgm().getEmail().isBlank()) {
+							if (approver.get().getDgm() != null && !approver.get().getDgm().getEmail().isEmpty()) {
 								responseText += "DGM (" + approver.get().getDgm().getEmail() + ") and GM ";
 								for (User user : seniorManagementUsers) {
 									responseText += "(" + user.getEmail() + ") ";
@@ -673,7 +673,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							.findAllByDepartmentId(rcmdDepartment.getId());
 					if (approver != null && approver.isPresent()) {
 						if (approver.get().getApplicationOwner() != null
-								&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+								&& !approver.get().getApplicationOwner().getEmail().isEmpty()) {
 							responseText += "(" + approver.get().getApplicationOwner().getEmail() + ") and GM";
 							for (User user : seniorManagementUsers) {
 								responseText += "(" + user.getEmail() + ") ";
@@ -736,7 +736,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 									.findAllByDepartmentId(rcmdDepartment.getId());
 							if (approver != null && approver.isPresent()) {
 								if (approver.get().getApplicationOwner() != null
-										&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+										&& !approver.get().getApplicationOwner().getEmail().isEmpty()) {
 									responseText += "(" + approver.get().getApplicationOwner().getEmail() + ") and GM ";
 									for (User user : seniorManagementUsers) {
 										responseText += "(" + user.getEmail() + ") ";
@@ -776,7 +776,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 										.findAllByDepartmentId(rcmdDepartment.getId());
 								if (approver != null && approver.isPresent()) {
 									if (approver.get().getApplicationOwner() != null
-											&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+											&& !approver.get().getApplicationOwner().getEmail().isEmpty()) {
 										responseText += "Email will be sent to Appowner("
 												+ approver.get().getApplicationOwner().getEmail() + "), OEM("
 												+ recommendObj.get().getCreatedBy().getEmail() + ") and GM ";
@@ -863,7 +863,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findAllByDepartmentId(rcmdDepartment.getId());
 						if (approver != null && approver.isPresent()) {
 							if (approver.get().getApplicationOwner() != null
-									&& !approver.get().getApplicationOwner().getEmail().isBlank()) {
+									&& !approver.get().getApplicationOwner().getEmail().isEmpty()) {
 								responseText += "Email will be sent to Appowner("
 										+ approver.get().getApplicationOwner().getEmail() + "), OEM("
 										+ recommendObj.get().getCreatedBy().getEmail() + ") and GM ";
@@ -939,7 +939,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						Optional<DepartmentApprover> approver = departmentApproverRepository
 								.findAllByDepartmentId(rcmdDepartment.getId());
 						if (approver != null && approver.isPresent()) {
-							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isBlank()) {
+							if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isEmpty()) {
 								responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
 								for (User user : seniorManagementUsers) {
 									responseText += "(" + user.getEmail() + ") ";
@@ -994,7 +994,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						componentMap.put(component.getName().trim().toUpperCase(), component);
 					}
 					List<String> stringList = Arrays.asList(expectedColumnNames);
-					Boolean isBlankSheet = false;
+					Boolean isEmptySheet = false;
 					for (int i = 0; i < numberOfSheets; i++) {
 						Sheet sheet = workbook.getSheetAt(i);
 						Row topRowData = sheet.getRow(0);
@@ -1009,7 +1009,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 						if (isValidFile) {
 							if (!(sheet.getPhysicalNumberOfRows() > 1)) {
-								isBlankSheet = true;
+								isEmptySheet = true;
 							} else {
 								for (Row row : sheet) {
 
@@ -1071,7 +1071,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 					}
 					if (isValidFile) {
-						if (!isBlankSheet) {
+						if (!isEmptySheet) {
 							List<String> updatedList = new ArrayList<>();
 							for (int i = 1; i < cellValueString.size(); i++) {
 								updatedList.add(cellValueString.get(i));
@@ -1338,7 +1338,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 									.getId()) {
 								if (approver != null && approver.isPresent()) {
 									if (approver.get().getAgm() != null
-											&& !approver.get().getAgm().getEmail().isBlank()) {
+											&& !approver.get().getAgm().getEmail().isEmpty()) {
 										responseText += "Email will be sent to AGM("
 												+ approver.get().getAgm().getEmail() + "), OEM("
 												+ updatedRecommendation.getCreatedBy().getEmail() + ") and GM";
@@ -1355,7 +1355,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							} else {
 								if (approver != null && approver.isPresent()) {
 									if (approver.get().getAgm() != null
-											&& !approver.get().getAgm().getEmail().isBlank()) {
+											&& !approver.get().getAgm().getEmail().isEmpty()) {
 										responseText += ". Email will be sent to AGM("
 												+ approver.get().getAgm().getEmail() + ")" + " " + ", OEM("
 												+ recommendationObj.get().getCreatedBy().getEmail() + ") and GM";
@@ -1406,7 +1406,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 					if (recommendationAddRequestDto.getReferenceId() != null
-							&& !recommendationAddRequestDto.getReferenceId().toString().isBlank()
+							&& !recommendationAddRequestDto.getReferenceId().toString().isEmpty()
 							&& !recommendationAddRequestDto.getReferenceId().toString().isEmpty()) {
 
 						Optional<Recommendation> rcmd = recommendationRepository
@@ -1463,43 +1463,43 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 	}
 
-	private MultipartFile compressFile(MultipartFile file) throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ZipOutputStream zipOut = new ZipOutputStream(bos);
-		zipOut.setLevel(Deflater.DEFAULT_COMPRESSION);
+//	private MultipartFile compressFile(MultipartFile file) throws IOException {
+//		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//		ZipOutputStream zipOut = new ZipOutputStream(bos);
+//		zipOut.setLevel(Deflater.DEFAULT_COMPRESSION);
+//
+//		zipOut.putNextEntry(new ZipEntry(file.getOriginalFilename()));
+//
+//		byte[] buffer = new byte[1024];
+//		int bytesRead;
+//
+//		InputStream inputStream = new ByteArrayInputStream(file.getBytes());
+//		while ((bytesRead = inputStream.read(buffer)) != -1) {
+//			zipOut.write(buffer, 0, bytesRead);
+//		}
+//
+//		zipOut.closeEntry();
+//		zipOut.close();
+//		inputStream.close();
+//		MultipartFile multipartFile = convertToMultipartFile(bos, file.getOriginalFilename());
+//
+//		return multipartFile;
+//	}
 
-		zipOut.putNextEntry(new ZipEntry(file.getOriginalFilename()));
-
-		byte[] buffer = new byte[1024];
-		int bytesRead;
-
-		InputStream inputStream = new ByteArrayInputStream(file.getBytes());
-		while ((bytesRead = inputStream.read(buffer)) != -1) {
-			zipOut.write(buffer, 0, bytesRead);
-		}
-
-		zipOut.closeEntry();
-		zipOut.close();
-		inputStream.close();
-		MultipartFile multipartFile = convertToMultipartFile(bos, file.getOriginalFilename());
-
-		return multipartFile;
-	}
-
-	public static MultipartFile convertToMultipartFile(ByteArrayOutputStream byteArrayOutputStream, String fileName)
-			throws IOException {
-		InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-
-		DiskFileItemFactory factory = new DiskFileItemFactory();
-		FileItem fileItem = factory.createItem("file", "text/plain", true, fileName);
-		try (InputStream fileInputStream = inputStream) {
-			fileItem.getOutputStream().write(inputStream.readAllBytes());
-		}
-
-		MultipartFile multipartFile = new CommonsMultipartFile(fileItem);
-
-		return multipartFile;
-	}
+//	public static MultipartFile convertToMultipartFile(ByteArrayOutputStream byteArrayOutputStream, String fileName)
+//			throws IOException {
+//		InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+//
+//		DiskFileItemFactory factory = new DiskFileItemFactory();
+//		FileItem fileItem = factory.createItem("file", "text/plain", true, fileName);
+//		try (InputStream fileInputStream = inputStream) {
+//			fileItem.getOutputStream().write(inputStream.re());
+//		}
+//
+//		MultipartFile multipartFile = new CommonsMultipartFile(fileItem);
+//
+//		return multipartFile;
+//	}
 
 	public Boolean checkIfRecommendationAlreadyExist(RecommendationAddRequestDto addRequestDto) {
 		List<Recommendation> rcmds = recommendationRepository.findAllRecommendationsByData(addRequestDto);

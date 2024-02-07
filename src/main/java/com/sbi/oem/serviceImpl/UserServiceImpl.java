@@ -126,7 +126,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Response<?> forgetPassword(ForgetPasswordRequestDto forgetPassword) {
 		Optional<CredentialMaster> userData = credentialMasterRepository.findByEmail(forgetPassword.getEmail());
-		if (userData != null && !userData.isEmpty()) {
+		if (userData != null && userData.isPresent()) {
 			if (forgetPassword.getPassword().equals(forgetPassword.getRetypePassword())) {
 				userData.get().setPassword(userData.get().passwordEncoder(forgetPassword.getPassword()));
 			}
