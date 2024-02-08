@@ -428,7 +428,7 @@ public class NotificationServiceImpl implements NotificationService {
 								recommendationStatus);
 
 						String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(", ");
-
+						List<User> userList2 = new ArrayList<>();
 						for (Department eachDepartment : findAllDepartment) {
 							if (Arrays.asList(impactedDepartmentsArray).contains(eachDepartment.getName())) {
 
@@ -438,7 +438,7 @@ public class NotificationServiceImpl implements NotificationService {
 								User departmentAgm = departmentApproverImpactDept.get().getAgm();
 								User appOwner = departmentApproverImpactDept.get().getApplicationOwner();
 								if (departmentAgm.getId().longValue() != agm.getId().longValue()) {
-									List<User> userList2 = new ArrayList<>();
+
 									if (departmentApprover.get().getApplicationOwner().getId().longValue() != appOwner
 											.getId().longValue()) {
 										userList2.add(appOwner);
@@ -454,12 +454,12 @@ public class NotificationServiceImpl implements NotificationService {
 
 									recommendationStatus = recommendation.getRecommendationStatus();
 
-									createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList2,
-											recommendationStatus);
 								}
 
 							}
 						}
+						createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList2,
+								recommendationStatus);
 
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
 						User agm = departmentApprover.get().getAgm();
