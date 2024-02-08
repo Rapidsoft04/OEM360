@@ -91,6 +91,8 @@ public class NotificationServiceImpl implements NotificationService {
 				List<CredentialMaster> seniorManagementList = credentialMasterRepository
 						.findByUserTypeId(UserType.GM_IT_INFRA);
 				List<User> seniorManagementUsers = new ArrayList<>();
+				List<User> seniorManagementUserList = seniorManagementList.stream().filter(e -> e.getUserId() != null)
+						.map(e -> e.getUserId()).collect(Collectors.toList());
 				if (seniorManagementList != null && seniorManagementList.size() > 0) {
 					for (CredentialMaster master : seniorManagementList) {
 						seniorManagementUsers.add(master.getUserId());
@@ -149,10 +151,6 @@ public class NotificationServiceImpl implements NotificationService {
 						List<User> userList = new ArrayList<>();
 						User agm = departmentApprover.get().getAgm();
 						userList.add(agm);
-						for (User user : seniorManagementUsers) {
-							userList.add(user);
-						}
-
 						String text = "App owner has accepted a new recommendation.";
 
 						String descriptions = "Your recommendation with referenceId = "
@@ -185,6 +183,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
 								recommendationStatus);
+						List<User> userListForAffectedDept = new ArrayList<>();
 						String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(", ");
 						for (Department eachDepartment : findAllDepartment) {
 							if (Arrays.asList(impactedDepartmentsArray).contains(eachDepartment.getName())) {
@@ -197,9 +196,9 @@ public class NotificationServiceImpl implements NotificationService {
 								if (departmentAgm.getId().longValue() != agm.getId().longValue()) {
 									if (departmentApprover.get().getApplicationOwner().getId().longValue() != appOwner
 											.getId().longValue()) {
-										userList.add(appOwner);
+										userListForAffectedDept.add(appOwner);
 									}
-									userList.add(departmentAgm);
+									userListForAffectedDept.add(departmentAgm);
 
 									text = "New Recommendation deployment may affected your department";
 
@@ -214,8 +213,8 @@ public class NotificationServiceImpl implements NotificationService {
 
 							}
 						}
-						createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
-								recommendationStatus);
+						createNotificationV2(recommendation.getReferenceId(), text, descriptions,
+								userListForAffectedDept, recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
 						List<User> userList = new ArrayList<>();
 						User agm = new User();
@@ -391,7 +390,6 @@ public class NotificationServiceImpl implements NotificationService {
 						List<User> userList = new ArrayList<>();
 						User agm = departmentApprover.get().getAgm();
 						userList.add(agm);
-						userList.addAll(seniorManagementUsers);
 
 						String text = "Recommendation deployment details has been updated";
 
@@ -486,9 +484,11 @@ public class NotificationServiceImpl implements NotificationService {
 								recommendationStatus);
 
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_RELEASED)) {
-						List<User> userList = Arrays.asList(recommendation.getCreatedBy(),
-								departmentApprover.get().getAgm());
-						userList.addAll(seniorManagementUsers);
+						List<User> userList = new ArrayList<>();
+						userList.add(recommendation.getCreatedBy());
+						userList.add(departmentApprover.get().getAgm());
+						userList.addAll(seniorManagementUserList);
+
 						String text = "Recommendation has been released.";
 
 						String descriptions = "Your recommendation with referenceId = "
