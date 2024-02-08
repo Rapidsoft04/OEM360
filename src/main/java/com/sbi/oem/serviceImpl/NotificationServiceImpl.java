@@ -149,7 +149,7 @@ public class NotificationServiceImpl implements NotificationService {
 						List<User> userList = new ArrayList<>();
 						User agm = departmentApprover.get().getAgm();
 						userList.add(agm);
-						for(User user:seniorManagementUsers) {
+						for (User user : seniorManagementUsers) {
 							userList.add(user);
 						}
 
@@ -186,7 +186,6 @@ public class NotificationServiceImpl implements NotificationService {
 						createNotification(recommendation.getReferenceId(), text, descriptions, agm,
 								recommendationStatus);
 						String[] impactedDepartmentsArray = deplyomentDetails.get().getImpactedDepartment().split(", ");
-
 						for (Department eachDepartment : findAllDepartment) {
 							if (Arrays.asList(impactedDepartmentsArray).contains(eachDepartment.getName())) {
 
@@ -202,8 +201,6 @@ public class NotificationServiceImpl implements NotificationService {
 									}
 									userList.add(departmentAgm);
 
-									userList.addAll(seniorManagementUsers);
-
 									text = "New Recommendation deployment may affected your department";
 
 									descriptions = "Related to recommendation with referenceId = "
@@ -213,12 +210,12 @@ public class NotificationServiceImpl implements NotificationService {
 
 									recommendationStatus = recommendation.getRecommendationStatus();
 
-									createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
-											recommendationStatus);
 								}
 
 							}
 						}
+						createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
+								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_APPOWNER)) {
 						List<User> userList = new ArrayList<>();
 						User agm = new User();
@@ -447,7 +444,6 @@ public class NotificationServiceImpl implements NotificationService {
 										userList2.add(appOwner);
 									}
 									userList2.add(departmentAgm);
-									userList2.addAll(seniorManagementUsers);
 
 									text = "New Recommendation deployment may affected your department";
 
