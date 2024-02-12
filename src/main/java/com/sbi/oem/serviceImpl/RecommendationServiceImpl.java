@@ -581,9 +581,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendationTrailRepository.save(recommendTrail);
 						Optional<RecommendationDeplyomentDetails> recommendDeploymentDetails = deplyomentDetailsRepository
 								.findByRecommendRefId(recommendation.getRecommendRefId());
-						if (recommendDeploymentDetails != null && recommendDeploymentDetails.isPresent()) {
-							deplyomentDetailsRepository.delete(recommendDeploymentDetails.get());
-						}
+//						if (recommendDeploymentDetails != null && recommendDeploymentDetails.isPresent()) {
+//							deplyomentDetailsRepository.delete(recommendDeploymentDetails.get());
+//						}
 
 						Department rcmdDepartment = updateRecommendation.getDepartment();
 						Optional<DepartmentApprover> approver = departmentApproverRepository
@@ -1405,6 +1405,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
+					if (checkIfRecommendationAlreadyExist(recommendationAddRequestDto).equals(Boolean.valueOf(true))) {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation already reported", null);
+					}
 					if (recommendationAddRequestDto.getReferenceId() != null
 							&& !recommendationAddRequestDto.getReferenceId().toString().isEmpty()
 							&& !recommendationAddRequestDto.getReferenceId().toString().isEmpty()) {

@@ -269,6 +269,7 @@ public class NotificationServiceImpl implements NotificationService {
 								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
 						List<User> userList = new ArrayList<>();
+						userList.add(recommendation.getCreatedBy());
 						userList.add(departmentApprover.get().getApplicationOwner());
 						for (User user : seniorManagementUsers) {
 							userList.add(user);
