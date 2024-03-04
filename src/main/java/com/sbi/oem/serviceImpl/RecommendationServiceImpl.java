@@ -122,7 +122,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private CredentialMasterRepository credentialMasterRepository;
-	
+
 	@Value("${application.name}")
 	private String applicationName;
 
@@ -213,16 +213,15 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 					String fileUrl = null;
 					if (recommendationAddRequestDto.getFile() != null) {
-						fileUrl=fileSystemStorageService.storeFile(recommendationAddRequestDto.getFile(),new Date().getTime());
-						fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-				                .path("/downloadFile/")
-				                .path(fileUrl)
-				                .toUriString();
-						if (fileUrl.contains("/"+applicationName+"/")) {
-				            
-							fileUrl = fileUrl.replace("/"+applicationName+"/", "/backend/");
-							fileUrl= fileUrl.replace("http", "https");
-				        }
+						fileUrl = fileSystemStorageService.storeFile(recommendationAddRequestDto.getFile(),
+								new Date().getTime());
+						fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/")
+								.path(fileUrl).toUriString();
+						if (fileUrl.contains("/" + applicationName + "/")) {
+
+							fileUrl = fileUrl.replace("/" + applicationName + "/", "/backend/");
+							fileUrl = fileUrl.replace("http", "https");
+						}
 //						if(fileExtension.equals("docx")) {
 //							byte[] pdfBytes = FileValidation.convertDocxToPdf(recommendationAddRequestDto.getFile());
 //							MultipartFile multipartFile = new ByteArrayMultipartFile(pdfBytes, "output.pdf", "output.pdf", "application/pdf");
@@ -416,104 +415,117 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 					if (recommendation.get().getRecommendDate().after(new Date())) {
 
-						Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
-								.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
-						if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
-							String responseText = "Deployment details updated successfully. An email will be sent to the AGM ";
-							RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
-							details.setId(recommendDeployDetails.get().getId());
-							RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
-									.save(details);
+						if (recommendation.get().getRecommendDate()
+								.after(recommendationDetailsRequestDto.getDeploymentDate())) {
+
+							Optional<RecommendationDeplyomentDetails> recommendDeployDetails = deplyomentDetailsRepository
+									.findByRecommendRefId(recommendationDetailsRequestDto.getRecommendRefId());
+							if (recommendDeployDetails != null && recommendDeployDetails.isPresent()) {
+								String responseText = "Deployment details updated successfully. An email will be sent to the AGM ";
+								RecommendationDeplyomentDetails details = recommendationDetailsRequestDto
+										.convertToEntity();
+								details.setId(recommendDeployDetails.get().getId());
+								RecommendationDeplyomentDetails savedDeploymentDetails = deplyomentDetailsRepository
+										.save(details);
 
 //							recommendation.get()
 //									.setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
-							recommendation.get().setIsAppOwnerApproved(true);
-							recommendation.get().setUpdatedAt(new Date());
-							Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
-							if (recommendationDetailsRequestDto.getDescription() != null
-									&& (recommendationDetailsRequestDto.getDescription() != "")
-									&& (!recommendationDetailsRequestDto.getDescription().equals(""))) {
-								RecommendationMessages messages = new RecommendationMessages();
-								messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
-								messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
-								messages.setCreatedAt(new Date());
-								messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
-								recommendationMessagesRepository.save(messages);
-							}
-							Department rcmdDepartment = updateRecommendation.getDepartment();
-							Optional<DepartmentApprover> approver = departmentApproverRepository
-									.findAllByDepartmentId(rcmdDepartment.getId());
-
-							notificationService.save(recommendation.get(),
-									RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null,
-									recommendationDetailsRequestDto.getDescription());
-
-							emailTemplateService.sendMailRecommendationDeplyomentDetails(
-									recommendationDetailsRequestDto,
-									RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
-							if (approver != null && approver.isPresent()) {
-								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isEmpty()) {
-									responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
-
-									for (User user : seniorManagementUsers) {
-										responseText += "(" + user.getEmail() + ") ";
-									}
-
-									return new Response<>(HttpStatus.OK.value(), responseText, null);
+								recommendation.get().setIsAppOwnerApproved(true);
+								recommendation.get().setUpdatedAt(new Date());
+								Recommendation updateRecommendation = recommendationRepository
+										.save(recommendation.get());
+								if (recommendationDetailsRequestDto.getDescription() != null
+										&& (recommendationDetailsRequestDto.getDescription() != "")
+										&& (!recommendationDetailsRequestDto.getDescription().equals(""))) {
+									RecommendationMessages messages = new RecommendationMessages();
+									messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
+									messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
+									messages.setCreatedAt(new Date());
+									messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
+									recommendationMessagesRepository.save(messages);
 								}
-							}
-							return new Response<>(HttpStatus.OK.value(), responseText, null);
+								Department rcmdDepartment = updateRecommendation.getDepartment();
+								Optional<DepartmentApprover> approver = departmentApproverRepository
+										.findAllByDepartmentId(rcmdDepartment.getId());
 
+								notificationService.save(recommendation.get(),
+										RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS, null,
+										recommendationDetailsRequestDto.getDescription());
+
+								emailTemplateService.sendMailRecommendationDeplyomentDetails(
+										recommendationDetailsRequestDto,
+										RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
+								if (approver != null && approver.isPresent()) {
+									if (approver.get().getAgm() != null
+											&& !approver.get().getAgm().getEmail().isEmpty()) {
+										responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
+
+										for (User user : seniorManagementUsers) {
+											responseText += "(" + user.getEmail() + ") ";
+										}
+
+										return new Response<>(HttpStatus.OK.value(), responseText, null);
+									}
+								}
+								return new Response<>(HttpStatus.OK.value(), responseText, null);
+
+							} else {
+								String responseText = "Deployment details added successfully. An email will be sent to the AGM";
+								RecommendationDeplyomentDetails details = recommendationDetailsRequestDto
+										.convertToEntity();
+								details.setCreatedAt(new Date());
+								deplyomentDetailsRepository.save(details);
+								recommendation.get().setRecommendationStatus(
+										new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
+								recommendation.get().setIsAppOwnerApproved(true);
+//							recommendation.get()
+//									.setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
+								recommendation.get()
+										.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
+								recommendation.get().setUpdatedAt(new Date());
+								Recommendation updateRecommendation = recommendationRepository
+										.save(recommendation.get());
+								RecommendationTrail trail = new RecommendationTrail();
+								trail.setCreatedAt(new Date());
+								trail.setRecommendationStatus(
+										new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
+								trail.setReferenceId(details.getRecommendRefId());
+								recommendationTrailRepository.save(trail);
+								if (recommendationDetailsRequestDto.getDescription() != null
+										&& (recommendationDetailsRequestDto.getDescription() != "")
+										&& (!recommendationDetailsRequestDto.getDescription().equals(""))) {
+									RecommendationMessages messages = new RecommendationMessages();
+									messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
+									messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
+									messages.setCreatedAt(new Date());
+									messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
+									recommendationMessagesRepository.save(messages);
+								}
+								Department rcmdDepartment = updateRecommendation.getDepartment();
+								Optional<DepartmentApprover> approver = departmentApproverRepository
+										.findAllByDepartmentId(rcmdDepartment.getId());
+
+								notificationService.save(recommendation.get(),
+										RecommendationStatusEnum.APPROVED_BY_APPOWNER, null, null);
+								emailTemplateService.sendMailRecommendationDeplyomentDetails(
+										recommendationDetailsRequestDto, RecommendationStatusEnum.APPROVED_BY_APPOWNER);
+								if (approver != null && approver.isPresent()) {
+									if (approver.get().getAgm() != null
+											&& !approver.get().getAgm().getEmail().isEmpty()) {
+										responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
+
+										for (User user : seniorManagementUsers) {
+											responseText += "(" + user.getEmail() + ") ";
+										}
+
+										return new Response<>(HttpStatus.OK.value(), responseText, null);
+									}
+								}
+								return new Response<>(HttpStatus.CREATED.value(), responseText, null);
+							}
 						} else {
-							String responseText = "Deployment details added successfully. An email will be sent to the AGM";
-							RecommendationDeplyomentDetails details = recommendationDetailsRequestDto.convertToEntity();
-							details.setCreatedAt(new Date());
-							deplyomentDetailsRepository.save(details);
-							recommendation.get().setRecommendationStatus(
-									new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
-							recommendation.get().setIsAppOwnerApproved(true);
-//							recommendation.get()
-//									.setExpectedImpact(recommendationDetailsRequestDto.getImpactedDepartment());
-							recommendation.get()
-									.setImpactedDepartment(recommendationDetailsRequestDto.getImpactedDepartment());
-							recommendation.get().setUpdatedAt(new Date());
-							Recommendation updateRecommendation = recommendationRepository.save(recommendation.get());
-							RecommendationTrail trail = new RecommendationTrail();
-							trail.setCreatedAt(new Date());
-							trail.setRecommendationStatus(
-									new RecommendationStatus(StatusEnum.Review_process.getId().longValue()));
-							trail.setReferenceId(details.getRecommendRefId());
-							recommendationTrailRepository.save(trail);
-							if (recommendationDetailsRequestDto.getDescription() != null
-									&& (recommendationDetailsRequestDto.getDescription() != "")
-									&& (!recommendationDetailsRequestDto.getDescription().equals(""))) {
-								RecommendationMessages messages = new RecommendationMessages();
-								messages.setAdditionalMessage(recommendationDetailsRequestDto.getDescription());
-								messages.setCreatedBy(recommendationDetailsRequestDto.getCreatedBy());
-								messages.setCreatedAt(new Date());
-								messages.setReferenceId(recommendationDetailsRequestDto.getRecommendRefId());
-								recommendationMessagesRepository.save(messages);
-							}
-							Department rcmdDepartment = updateRecommendation.getDepartment();
-							Optional<DepartmentApprover> approver = departmentApproverRepository
-									.findAllByDepartmentId(rcmdDepartment.getId());
-
-							notificationService.save(recommendation.get(),
-									RecommendationStatusEnum.APPROVED_BY_APPOWNER, null, null);
-							emailTemplateService.sendMailRecommendationDeplyomentDetails(
-									recommendationDetailsRequestDto, RecommendationStatusEnum.APPROVED_BY_APPOWNER);
-							if (approver != null && approver.isPresent()) {
-								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isEmpty()) {
-									responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
-
-									for (User user : seniorManagementUsers) {
-										responseText += "(" + user.getEmail() + ") ";
-									}
-
-									return new Response<>(HttpStatus.OK.value(), responseText, null);
-								}
-							}
-							return new Response<>(HttpStatus.CREATED.value(), responseText, null);
+							return new Response<>(HttpStatus.BAD_REQUEST.value(),
+									"Deployment date should be before the recommendation end date", null);
 						}
 					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(),
@@ -1284,7 +1296,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
-					
+
 					List<CredentialMaster> seniorManagementList = credentialMasterRepository
 							.findByUserTypeId(UserType.GM_IT_INFRA);
 					List<User> seniorManagementUsers = new ArrayList<>();
@@ -1292,7 +1304,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						seniorManagementUsers = seniorManagementList.stream().map(CredentialMaster::getUserId)
 								.collect(Collectors.toList());
 					}
-					
+
 					Optional<Recommendation> recommendationObj = recommendationRepository
 							.findByReferenceId(recommendationRequestDto.getRecommendRefId());
 					if (recommendationObj != null && recommendationObj.isPresent()) {
