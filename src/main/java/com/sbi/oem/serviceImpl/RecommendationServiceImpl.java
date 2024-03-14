@@ -268,7 +268,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
 							recommendation.setCreatedAt(new Date());
 							recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
-							recommendation.setCreatedBy(new User(recommendationAddRequestDto.getCreatedBy()));
+							recommendation.setCreatedBy(master.get().getUserId());
 							recommendation.setDepartment(new Department(id));
 							recommendation.setComponent(new Component(recommendationAddRequestDto.getComponentId()));
 							recommendation.setPriorityId(recommendationAddRequestDto.getPriorityId());
@@ -976,6 +976,311 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 	}
 
+//	@Override
+//	public Response<?> addRecommendationThroughExcel(MultipartFile file) {
+//		try {
+//			Workbook workbook = WorkbookFactory.create(file.getInputStream());
+//			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+//			if (master != null && master.isPresent()) {
+//				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
+//					int numberOfSheets = workbook.getNumberOfSheets();
+//					List<String> headerList = new ArrayList<>();
+//					List<String> cellValueString = new ArrayList<>();
+//					List<JsonObject> objectList = new ArrayList<>();
+//					Boolean isValidFile = false;
+//					String[] expectedColumnNames = { "Descriptions", "Type", "Priority", "Recommend end date",
+//							"Department", "Component name", "Expected Impact", "Document link" };
+//					List<RecommendationType> recommendationTypeList = recommendationTypeRepository.findAll();
+//					List<Department> departmentList = departmentRepository.findAll();
+//					List<Component> componentList = componentRepository.findAll();
+//					Map<String, RecommendationType> recommendationTypeMap = new HashMap<>();
+//					for (RecommendationType type : recommendationTypeList) {
+//						recommendationTypeMap.put(type.getName().trim().toUpperCase(), type);
+//					}
+//					Map<String, Department> departmentMap = new HashMap<>();
+//					for (Department department : departmentList) {
+//						departmentMap.put(department.getName().trim().toUpperCase(), department);
+//					}
+//					Map<String, Component> componentMap = new HashMap<>();
+//					for (Component component : componentList) {
+//						componentMap.put(component.getName().trim().toUpperCase(), component);
+//					}
+//					List<String> stringList = Arrays.asList(expectedColumnNames);
+//					Boolean isEmptySheet = false;
+//					for (int i = 0; i < numberOfSheets; i++) {
+//						Sheet sheet = workbook.getSheetAt(i);
+//						Row topRowData = sheet.getRow(0);
+//						int noOfTopData = 0;
+//						for (Cell topCell : topRowData) {
+//							headerList.add(topCell.toString().trim());
+//							noOfTopData += 1;
+//						}
+//
+//						if (headerList.equals(stringList)) {
+//							isValidFile = true;
+//						}
+//						if (isValidFile) {
+//							if (!(sheet.getPhysicalNumberOfRows() > 1)) {
+//								isEmptySheet = true;
+//							} else {
+//								for (Row row : sheet) {
+//
+//									String str = "";
+//									if (row != null && !isRowEmpty(row)) {
+//										for (int j = 0; j < noOfTopData; j++) {
+//											Cell cel = row.getCell(j);
+//
+//											String cellName = "";
+//											if (cel == null) {
+//												if (str == "") {
+//													str = str + "" + "/n";
+//												} else {
+//													str = str + " " + "/n";
+//												}
+//											} else {
+//												cellName = cel.toString();
+//												if (cel.toString().contains(".") && cel.toString().contains("E")) {
+//													String[] stringArray = cel.toString().split("E");
+//													List<String> wordList = Arrays.asList(stringArray);
+//													String firstString = wordList.get(0);
+//													String lastString = wordList.get(1);
+//													if (firstString != null && !firstString.isEmpty()
+//															&& lastString != null && !lastString.isEmpty()) {
+//														try {
+//															cellName = new DecimalFormat("#.##")
+//																	.format(Double.parseDouble(firstString) * Math
+//																			.pow(10, Double.parseDouble(lastString)));
+//														} catch (Exception e) {
+//														}
+//													}
+//												}
+//												if (cel.getCellType() == CellType.NUMERIC
+//														&& DateUtil.isCellDateFormatted(cel)) {
+//													Date javaDate = cel.getDateCellValue();
+//													SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+//													cellName = formatter.format(javaDate);
+//												}
+//												if (str == "") {
+//													str = str + cellName + " " + "/n";
+//												} else {
+//													str = str + cellName + " " + "/n";
+//												}
+//
+//											}
+//
+//										}
+//										if (!str.isEmpty() && str != "") {
+//											cellValueString.add(str);
+//											str = "";
+//										} else {
+//											str = "";
+//										}
+//									}
+//
+//								}
+//							}
+//						}
+//
+//					}
+//					if (isValidFile) {
+//						if (!isEmptySheet) {
+//							List<String> updatedList = new ArrayList<>();
+//							for (int i = 1; i < cellValueString.size(); i++) {
+//								updatedList.add(cellValueString.get(i));
+//							}
+//							for (String str : updatedList) {
+//								String[] commaSeparatedArray = str.split("/n");
+//								List<String> wordList = Arrays.asList(commaSeparatedArray);
+//								JsonObject obj = new JsonObject();
+//
+//								for (int i = 0; i < headerList.size(); i++) {
+//									obj.addProperty(headerList.get(i), wordList.get(i));
+//								}
+//								objectList.add(obj);
+//
+//							}
+//							List<Recommendation> recommendationList = new ArrayList<>();
+//							for (Object obj : objectList) {
+//								Recommendation recommendation = new Recommendation();
+//								JSONObject object = new JSONObject(obj.toString());
+//								if (object.has("Descriptions")) {
+//									if (object.get("Descriptions") == null || object.get("Descriptions").equals(" ")
+//											|| object.get("Descriptions").equals("")) {
+//										recommendation.setDescriptions(null);
+//									} else {
+//										recommendation.setDescriptions(object.getString("Descriptions").trim());
+//									}
+//								}
+//								if (object.has("Type")) {
+//									if (object.get("Type") == null || object.get("Type").equals(" ")
+//											|| object.get("Type").equals("")) {
+//										recommendation.setDescriptions(null);
+//									} else {
+//										if (recommendationTypeMap
+//												.containsKey(object.get("Type").toString().trim().toUpperCase())) {
+//											recommendation.setRecommendationType(recommendationTypeMap
+//													.get(object.get("Type").toString().trim().toUpperCase()));
+//										} else {
+//											recommendation.setRecommendationType(null);
+//										}
+//									}
+//								}
+//								if (object.has("Priority")) {
+//									if (object.get("Priority") == null || object.get("Priority").equals(" ")
+//											|| object.get("Priority").equals("")) {
+//										recommendation.setPriorityId(null);
+//									} else {
+//										if (object.get("Priority").toString().trim().toUpperCase().equals("HIGH")) {
+//											recommendation.setPriorityId(PriorityEnum.High.getId().longValue());
+//										} else if (object.get("Priority").toString().trim().toUpperCase()
+//												.equals("MEDIUM")) {
+//											recommendation.setPriorityId(PriorityEnum.Medium.getId().longValue());
+//										} else if (object.get("Priority").toString().trim().toUpperCase()
+//												.equals("LOW")) {
+//											recommendation.setPriorityId(PriorityEnum.Low.getId().longValue());
+//										} else {
+//											recommendation.setPriorityId(null);
+//										}
+//									}
+//								}
+//								if (object.has("Recommend end date")) {
+//									if (object.get("Recommend end date") == null
+//											|| object.get("Recommend end date").equals(" ")
+//											|| object.get("Recommend end date").equals("")) {
+//										recommendation.setRecommendDate(null);
+//									} else {
+//										DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+//										Date date = formatter.parse(object.get("Recommend end date").toString().trim());
+//										recommendation.setRecommendDate(date);
+//									}
+//								}
+//								if (object.has("Department")) {
+//									if (object.get("Department") == null || object.get("Department").equals(" ")
+//											|| object.get("Department").equals("")) {
+//										recommendation.setDepartment(null);
+//									} else {
+//										if (departmentMap.containsKey(
+//												object.get("Department").toString().trim().toUpperCase())) {
+//											recommendation.setDepartment(departmentMap
+//													.get(object.get("Department").toString().trim().toUpperCase()));
+//										} else {
+//											recommendation.setDepartment(null);
+//										}
+//									}
+//								}
+//								if (object.has("Component name")) {
+//									if (object.get("Component name") == null || object.get("Component name").equals(" ")
+//											|| object.get("Component name").equals("")) {
+//										recommendation.setComponent(null);
+//									} else {
+//										if (componentMap.containsKey(
+//												object.get("Component name").toString().trim().toUpperCase())) {
+//											recommendation.setComponent(componentMap
+//													.get(object.get("Component name").toString().trim().toUpperCase()));
+//										} else {
+//											recommendation.setComponent(null);
+//										}
+//									}
+//								}
+//								if (object.has("Expected Impact")) {
+//									if (object.get("Expected Impact") == null
+//											|| object.get("Expected Impact").equals(" ")
+//											|| object.get("Expected Impact").equals("")) {
+//										recommendation.setExpectedImpact(null);
+//									} else {
+//										recommendation
+//												.setExpectedImpact(object.get("Expected Impact").toString().trim());
+//									}
+//								}
+//								if (object.has("Document link")) {
+//									if (object.get("Document link") == null || object.get("Document link").equals(" ")
+//											|| object.get("Document link").equals("")) {
+//										recommendation.setDocumentUrl(null);
+//									} else {
+//										recommendation.setDocumentUrl(object.get("Document link").toString().trim());
+//									}
+//								}
+//								recommendation.setCreatedAt(new Date());
+//								recommendation.setUpdatedAt(new Date());
+//								List<Recommendation> recommendationListObj = recommendationRepository.findAll();
+//								recommendation.setReferenceId(generateReferenceId(recommendationListObj.size()));
+//								recommendation.setRecommendationStatus(
+//										new RecommendationStatus(StatusEnum.OEM_recommendation.getId().longValue()));
+//								RecommendationTrail trailData = new RecommendationTrail();
+//								trailData.setCreatedAt(new Date());
+//								trailData.setRecommendationStatus(
+//										new RecommendationStatus(StatusEnum.OEM_recommendation.getId().longValue()));
+//								trailData.setReferenceId(recommendation.getReferenceId());
+//								recommendationTrailRepository.save(trailData);
+//								recommendation.setCreatedBy(master.get().getUserId());
+//								recommendationList.add(recommendation);
+//							}
+//							Response<List<String>> response = new Response<>();
+//							if (recommendationList != null && recommendationList.size() > 0) {
+//								for (Recommendation recommendation : recommendationList) {
+//									if (recommendation.getDescriptions() == null
+//											|| recommendation.getDescriptions().equals("")) {
+//										response.setMessage("Descriptions  can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else if (recommendation.getRecommendationType() == null) {
+//										response.setMessage("Type can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else if (recommendation.getPriorityId() == null) {
+//										response.setMessage("Priority can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else if (recommendation.getRecommendDate() == null) {
+//										response.setMessage("Recommended end date can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else if (recommendation.getDepartment() == null) {
+//										response.setMessage("Department can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else if (recommendation.getComponent() == null) {
+//										response.setMessage("Component name can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else {
+//										response.setMessage("OK");
+//										response.setResponseCode(HttpStatus.OK.value());
+//									}
+//								}
+//							}
+//							if (response.getResponseCode() == HttpStatus.OK.value()) {
+//								recommendationRepository.saveAll(recommendationList);
+//								return new Response<>(HttpStatus.OK.value(), "Recommendation list added successfully.",
+//										null);
+//							} else {
+//								return response;
+//							}
+//						} else {
+//							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid file.", null);
+//						}
+//					} else {
+//						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Wrong File.", null);
+//					}
+//				} else {
+//					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
+//				}
+//			} else {
+//				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+//			}
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid file.", null);
+//		}
+//	}
+
 	@Override
 	public Response<?> addRecommendationThroughExcel(MultipartFile file) {
 		try {
@@ -1100,46 +1405,50 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 							}
 							List<Recommendation> recommendationList = new ArrayList<>();
+							Response<List<String>> response = null;
 							for (Object obj : objectList) {
-								Recommendation recommendation = new Recommendation();
+
+								response = new Response<>();
+								List<Department> recommendationDepartments = new ArrayList<>();
+								RecommendationAddRequestDto recommendationDto = new RecommendationAddRequestDto();
 								JSONObject object = new JSONObject(obj.toString());
 								if (object.has("Descriptions")) {
 									if (object.get("Descriptions") == null || object.get("Descriptions").equals(" ")
 											|| object.get("Descriptions").equals("")) {
-										recommendation.setDescriptions(null);
+										recommendationDto.setDescription(null);
 									} else {
-										recommendation.setDescriptions(object.getString("Descriptions").trim());
+										recommendationDto.setDescription(object.getString("Descriptions").trim());
 									}
 								}
 								if (object.has("Type")) {
 									if (object.get("Type") == null || object.get("Type").equals(" ")
 											|| object.get("Type").equals("")) {
-										recommendation.setDescriptions(null);
+										recommendationDto.setTypeId(null);
 									} else {
 										if (recommendationTypeMap
 												.containsKey(object.get("Type").toString().trim().toUpperCase())) {
-											recommendation.setRecommendationType(recommendationTypeMap
-													.get(object.get("Type").toString().trim().toUpperCase()));
+											recommendationDto.setTypeId(recommendationTypeMap
+													.get(object.get("Type").toString().trim().toUpperCase()).getId());
 										} else {
-											recommendation.setRecommendationType(null);
+											recommendationDto.setTypeId(null);
 										}
 									}
 								}
 								if (object.has("Priority")) {
 									if (object.get("Priority") == null || object.get("Priority").equals(" ")
 											|| object.get("Priority").equals("")) {
-										recommendation.setPriorityId(null);
+										recommendationDto.setPriorityId(null);
 									} else {
 										if (object.get("Priority").toString().trim().toUpperCase().equals("HIGH")) {
-											recommendation.setPriorityId(PriorityEnum.High.getId().longValue());
+											recommendationDto.setPriorityId(PriorityEnum.High.getId().longValue());
 										} else if (object.get("Priority").toString().trim().toUpperCase()
 												.equals("MEDIUM")) {
-											recommendation.setPriorityId(PriorityEnum.Medium.getId().longValue());
+											recommendationDto.setPriorityId(PriorityEnum.Medium.getId().longValue());
 										} else if (object.get("Priority").toString().trim().toUpperCase()
 												.equals("LOW")) {
-											recommendation.setPriorityId(PriorityEnum.Low.getId().longValue());
+											recommendationDto.setPriorityId(PriorityEnum.Low.getId().longValue());
 										} else {
-											recommendation.setPriorityId(null);
+											recommendationDto.setPriorityId(null);
 										}
 									}
 								}
@@ -1147,38 +1456,53 @@ public class RecommendationServiceImpl implements RecommendationService {
 									if (object.get("Recommend end date") == null
 											|| object.get("Recommend end date").equals(" ")
 											|| object.get("Recommend end date").equals("")) {
-										recommendation.setRecommendDate(null);
+										recommendationDto.setRecommendDate(null);
 									} else {
 										DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 										Date date = formatter.parse(object.get("Recommend end date").toString().trim());
-										recommendation.setRecommendDate(date);
+										recommendationDto.setRecommendDate(date);
 									}
 								}
+//								if (object.has("Department")) {
+//									if (object.get("Department") == null || object.get("Department").equals(" ")
+//											|| object.get("Department").equals("")) {
+//										recommendation.setDepartment(null);
+//									} else {
+//										if (departmentMap.containsKey(
+//												object.get("Department").toString().trim().toUpperCase())) {
+//											recommendation.setDepartment(departmentMap
+//													.get(object.get("Department").toString().trim().toUpperCase()));
+//										} else {
+//											recommendation.setDepartment(null);
+//										}
+//									}
+//								}
+
 								if (object.has("Department")) {
-									if (object.get("Department") == null || object.get("Department").equals(" ")
-											|| object.get("Department").equals("")) {
-										recommendation.setDepartment(null);
-									} else {
-										if (departmentMap.containsKey(
-												object.get("Department").toString().trim().toUpperCase())) {
-											recommendation.setDepartment(departmentMap
-													.get(object.get("Department").toString().trim().toUpperCase()));
-										} else {
-											recommendation.setDepartment(null);
+									List<String> departmentNames = Arrays
+											.asList(object.get("Department").toString().split(","));
+
+									for (String departmentName : departmentNames) {
+										String trimmedDepartmentName = departmentName.trim().toUpperCase();
+										if (departmentMap.containsKey(trimmedDepartmentName)) {
+											recommendationDepartments.add(departmentMap.get(trimmedDepartmentName));
 										}
 									}
+
 								}
+
 								if (object.has("Component name")) {
 									if (object.get("Component name") == null || object.get("Component name").equals(" ")
 											|| object.get("Component name").equals("")) {
-										recommendation.setComponent(null);
+										recommendationDto.setComponentId(null);
 									} else {
 										if (componentMap.containsKey(
 												object.get("Component name").toString().trim().toUpperCase())) {
-											recommendation.setComponent(componentMap
-													.get(object.get("Component name").toString().trim().toUpperCase()));
+											recommendationDto.setComponentId(componentMap
+													.get(object.get("Component name").toString().trim().toUpperCase())
+													.getId());
 										} else {
-											recommendation.setComponent(null);
+											recommendationDto.setComponentId(null);
 										}
 									}
 								}
@@ -1186,82 +1510,115 @@ public class RecommendationServiceImpl implements RecommendationService {
 									if (object.get("Expected Impact") == null
 											|| object.get("Expected Impact").equals(" ")
 											|| object.get("Expected Impact").equals("")) {
-										recommendation.setExpectedImpact(null);
+										recommendationDto.setExpectedImpact(null);
 									} else {
-										recommendation
+										recommendationDto
 												.setExpectedImpact(object.get("Expected Impact").toString().trim());
 									}
 								}
 								if (object.has("Document link")) {
 									if (object.get("Document link") == null || object.get("Document link").equals(" ")
 											|| object.get("Document link").equals("")) {
-										recommendation.setDocumentUrl(null);
+										recommendationDto.setUrlLink(null);
 									} else {
-										recommendation.setDocumentUrl(object.get("Document link").toString().trim());
+										recommendationDto.setUrlLink(object.get("Document link").toString().trim());
 									}
 								}
-								recommendation.setCreatedAt(new Date());
-								recommendation.setUpdatedAt(new Date());
-								List<Recommendation> recommendationListObj = recommendationRepository.findAll();
-								recommendation.setReferenceId(generateReferenceId(recommendationListObj.size()));
-								recommendation.setRecommendationStatus(
-										new RecommendationStatus(StatusEnum.OEM_recommendation.getId().longValue()));
-								RecommendationTrail trailData = new RecommendationTrail();
-								trailData.setCreatedAt(new Date());
-								trailData.setRecommendationStatus(
-										new RecommendationStatus(StatusEnum.OEM_recommendation.getId().longValue()));
-								trailData.setReferenceId(recommendation.getReferenceId());
-								recommendationTrailRepository.save(trailData);
-								recommendation.setCreatedBy(master.get().getUserId());
-								recommendationList.add(recommendation);
-							}
-							Response<List<String>> response = new Response<>();
-							if (recommendationList != null && recommendationList.size() > 0) {
-								for (Recommendation recommendation : recommendationList) {
-									if (recommendation.getDescriptions() == null
-											|| recommendation.getDescriptions().equals("")) {
-										response.setMessage("Descriptions  can't be blank.");
-										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
-										response.setData(null);
-										break;
-									} else if (recommendation.getRecommendationType() == null) {
-										response.setMessage("Type can't be blank.");
-										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
-										response.setData(null);
-										break;
-									} else if (recommendation.getPriorityId() == null) {
-										response.setMessage("Priority can't be blank.");
-										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
-										response.setData(null);
-										break;
-									} else if (recommendation.getRecommendDate() == null) {
-										response.setMessage("Recommended end date can't be blank.");
-										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
-										response.setData(null);
-										break;
-									} else if (recommendation.getDepartment() == null) {
-										response.setMessage("Department can't be blank.");
-										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
-										response.setData(null);
-										break;
-									} else if (recommendation.getComponent() == null) {
-										response.setMessage("Component name can't be blank.");
-										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
-										response.setData(null);
-										break;
-									} else {
-										response.setMessage("OK");
-										response.setResponseCode(HttpStatus.OK.value());
-									}
+
+								List<Long> departmentIds = new ArrayList<>();
+								for (Department department : recommendationDepartments) {
+									departmentIds.add(department.getId());
 								}
+								recommendationDto.setDepartmentIds(departmentIds);
+								if (recommendationDto.getDescription() == null
+										|| recommendationDto.getDescription().equals("")) {
+									response.setMessage("Descriptions  can't be blank.");
+									response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+									response.setData(null);
+									break;
+								} else if (recommendationDto.getTypeId() == null) {
+									response.setMessage("Type can't be blank.");
+									response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+									response.setData(null);
+									break;
+								} else if (recommendationDto.getPriorityId() == null) {
+									response.setMessage("Priority can't be blank.");
+									response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+									response.setData(null);
+									break;
+								} else if (recommendationDto.getRecommendDate() == null) {
+									response.setMessage("Recommended end date can't be blank.");
+									response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+									response.setData(null);
+									break;
+								} else if (recommendationDto.getDepartmentIds() == null
+										&& recommendationDto.getDepartmentIds().isEmpty()) {
+									response.setMessage("Department can't be blank.");
+									response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+									response.setData(null);
+									break;
+								} else if (recommendationDto.getComponentId() == null) {
+									response.setMessage("Component name can't be blank.");
+									response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+									response.setData(null);
+									break;
+								} else {
+									response.setMessage("OK");
+									response.setResponseCode(HttpStatus.OK.value());
+								}
+
+								addRecommendation(recommendationDto);
+
 							}
+
 							if (response.getResponseCode() == HttpStatus.OK.value()) {
-								recommendationRepository.saveAll(recommendationList);
+//								recommendationRepository.saveAll(recommendationList);
 								return new Response<>(HttpStatus.OK.value(), "Recommendation list added successfully.",
 										null);
 							} else {
 								return response;
 							}
+
+//							Response<List<String>> response = new Response<>();
+//							if (recommendationList != null && recommendationList.size() > 0) {
+//								for (Recommendation recommendation : recommendationList) {
+//									if (recommendation.getDescriptions() == null
+//											|| recommendation.getDescriptions().equals("")) {
+//										response.setMessage("Descriptions  can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else if (recommendation.getRecommendationType() == null) {
+//										response.setMessage("Type can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else if (recommendation.getPriorityId() == null) {
+//										response.setMessage("Priority can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else if (recommendation.getRecommendDate() == null) {
+//										response.setMessage("Recommended end date can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else if (recommendation.getDepartment() == null) {
+//										response.setMessage("Department can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else if (recommendation.getComponent() == null) {
+//										response.setMessage("Component name can't be blank.");
+//										response.setResponseCode(HttpStatus.BAD_REQUEST.value());
+//										response.setData(null);
+//										break;
+//									} else {
+//										response.setMessage("OK");
+//										response.setResponseCode(HttpStatus.OK.value());
+//									}
+//								}
+//							}
 						} else {
 							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid file.", null);
 						}
