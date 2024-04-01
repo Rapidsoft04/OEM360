@@ -64,6 +64,8 @@ public class Utility {
 						}
 						else if(userType.equalsIgnoreCase(UserType.DGM.name())) {
 							return true;
+						} else if(userType.equalsIgnoreCase(UserType.SUPER_ADMIN.name())) {
+							return true;
 						}
 					}
 				}

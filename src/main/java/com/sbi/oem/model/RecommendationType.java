@@ -1,5 +1,7 @@
 package com.sbi.oem.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,6 +22,12 @@ public class RecommendationType {
 
 	@Column(name = "company_id")
 	private Long companyId;
+
+	@Column(name = "created_at")
+	private Date createdAt;
+
+	@Column(name = "updated_at")
+	private Date updatedAt;
 
 	@Column(name = "is_active")
 	private Boolean isActive;
@@ -54,6 +62,22 @@ public class RecommendationType {
 
 	public void setIsActive(Boolean isActive) {
 		this.isActive = isActive;
+	}
+
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public Date getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Date updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 	public RecommendationType(Long id, String name, Long companyId, Boolean isActive) {

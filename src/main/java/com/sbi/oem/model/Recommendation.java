@@ -14,6 +14,7 @@ import javax.persistence.Table;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.sbi.oem.dto.RecommendationResponseDto;
+import com.sbi.oem.enums.UserType;
 
 @Entity
 @Table(name = "recommendation")
@@ -85,6 +86,12 @@ public class Recommendation {
 
 	@Column(name = "is_agm_rejected")
 	private Boolean isAgmRejected;
+
+	@Column(name = "user_type_id")
+	private UserType userType;
+
+	@Column(name = "recommended_by")
+	private String recommendedBy;
 
 	public Long getId() {
 		return id;
@@ -244,6 +251,22 @@ public class Recommendation {
 
 	public void setIsAgmRejected(Boolean isAgmRejected) {
 		this.isAgmRejected = isAgmRejected;
+	}
+
+	public UserType getUserType() {
+		return userType;
+	}
+
+	public void setUserType(UserType userType) {
+		this.userType = userType;
+	}
+
+	public String getRecommendedBy() {
+		return recommendedBy;
+	}
+
+	public void setRecommendedBy(String recommendedBy) {
+		this.recommendedBy = recommendedBy;
 	}
 
 	public Recommendation() {

@@ -136,8 +136,6 @@ public class RecommendationController {
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
-	
-
 	@PostMapping("/status/update")
 	public ResponseEntity<?> updateRecommendationStatus(
 			@RequestBody RecommendationDetailsRequestDto recommendationRequestDto) {

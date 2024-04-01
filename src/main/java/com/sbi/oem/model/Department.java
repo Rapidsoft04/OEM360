@@ -1,5 +1,7 @@
 package com.sbi.oem.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,12 +22,21 @@ public class Department {
 	@Column(name = "name")
 	private String name;
 
+	@Column(name = "code")
+	private String code;
+
 	@OneToOne
 	@JoinColumn(name = "company_id")
 	private Company company;
 
 	@Column(name = "is_active")
 	private Boolean isActive;
+
+	@Column(name = "created_at")
+	private Date createdAt;
+
+	@Column(name = "updated_at")
+	private Date updatedAt;
 
 	public Long getId() {
 		return id;
@@ -41,6 +52,14 @@ public class Department {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
 	}
 
 	public Company getCompany() {
@@ -59,10 +78,27 @@ public class Department {
 		this.isActive = isActive;
 	}
 
-	public Department(Long id, String name, Company company, Boolean isActive) {
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public Date getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Date updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public Department(Long id, String name, String code, Company company, Boolean isActive) {
 		super();
 		this.id = id;
 		this.name = name;
+		this.code = code;
 		this.company = company;
 		this.isActive = isActive;
 	}

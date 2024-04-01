@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -32,6 +33,13 @@ public class User {
 
 	@Column(name = "user_type_id")
 	private UserType userType;
+
+	@Column(name = "designation")
+	private String designation;
+
+	@ManyToOne
+	@JoinColumn(name = "department_id")
+	private Department department;
 
 	@Column(name = "is_active")
 	private Boolean isActive;
@@ -161,13 +169,34 @@ public class User {
 		this.userType = userType;
 	}
 
-	public User(Long id, String userName, String email, String phoneNumber, Boolean isActive) {
+	public String getDesignation() {
+		return designation;
+	}
+
+	public void setDesignation(String designation) {
+		this.designation = designation;
+	}
+
+	public Department getDepartment() {
+		return department;
+	}
+
+	public void setDepartment(Department department) {
+		this.department = department;
+	}
+
+	public User(Long id, String userName, String email, String phoneNumber, UserType userType, String designation, Department department, Company company,
+			Boolean isActive) {
 		super();
 		this.id = id;
 		this.userName = userName;
 		this.email = email;
 		this.phoneNo = phoneNumber;
+		this.designation = designation;
+		this.department = department;
 		this.isActive = isActive;
+		this.userType = userType;
+		this.company = company;
 	}
 
 }

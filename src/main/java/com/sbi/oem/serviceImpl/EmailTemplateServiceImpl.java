@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.dto.SignUpRequest;
 import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.enums.StatusEnum;
@@ -403,8 +404,7 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 				e.printStackTrace();
 			}
 
-			if(details.getDepartmentList() != null) {
-				
+			if (details.getDepartmentList() != null) {
 
 				List<Department> departmentList = details.getDepartmentList();
 
@@ -456,8 +456,10 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 							impactedDepartment != null ? impactedDepartment : "NA",
 							details.getDevelopmentStartDate() != null ? formatDate(details.getDevelopmentStartDate())
 									: "NA",
-							details.getDevelopementEndDate() != null ? formatDate(details.getDevelopementEndDate()) : "NA",
-							details.getTestCompletionDate() != null ? formatDate(details.getTestCompletionDate()) : "NA",
+							details.getDevelopementEndDate() != null ? formatDate(details.getDevelopementEndDate())
+									: "NA",
+							details.getTestCompletionDate() != null ? formatDate(details.getTestCompletionDate())
+									: "NA",
 							details.getDeploymentDate() != null ? formatDate(details.getDeploymentDate()) : "NA",
 
 							details.getGlobalSupportNumber() != null ? details.getGlobalSupportNumber() : "NA"
@@ -486,9 +488,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					System.out.println("mail send");
 
 				});
-				
+
 			}
-			
 
 		} catch (Exception e) {
 
@@ -556,12 +557,12 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 					// OEM mail
 					sendEmail = userRecommendation.get().getCreatedBy().getEmail();
 					userName = userRecommendation.get().getCreatedBy().getUserName();
-				} else if(status.equals(RecommendationStatusEnum.REJECTED_BY_DGM)){
-					
+				} else if (status.equals(RecommendationStatusEnum.REJECTED_BY_DGM)) {
+
 					mailSubject = "OEM Recommendation Rejected ";
 					mailHeading = "OEM Recommendation Rejected by DGM";
 					userName = userDepartment.get().getApplicationOwner().getUserName();
-					sendEmail = userDepartment.get().getApplicationOwner().getEmail();	
+					sendEmail = userDepartment.get().getApplicationOwner().getEmail();
 				}
 
 				String content = String.format(
@@ -923,6 +924,60 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 			e.printStackTrace();
 		}
 
+	}
+
+	@Override
+	public void sendMailForRegisterUser(SignUpRequest signUpRequest) {
+		try {
+			MimeMessage mimeMsg = javaMailService.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMsg, true);
+
+			try {
+
+				String sendEmail = signUpRequest.getEmail();
+				String password = signUpRequest.getPassword();
+				String mailSubject = "New Account Created for OEM Application";
+				String mailHeading = "Your OEM Account Details";
+				String userName = signUpRequest.getUserName();
+				String[] ccEmails = {};
+
+				String content = String.format(
+						"<div style='background-color: #f4f4f4; padding: 20px; max-width: 100vw;'>"
+								+ "<div style='max-width: 100vw; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow: auto;'>"
+								+ "<img style='max-height: 15vh; max-width: 15vw; background-repeat: no-repeat; float: right;' src='https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg'/>"
+								+ "<h1 class='header-title' style='font-size: 30px; margin: 0;'>%s</h1>"
+								+ "<div style='clear: both;'></div>" + "<div>"
+								+ String.format(
+										"<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear %s,</p>",
+										userName)
+								+ "<p style='font-size: 16px; color: #333;'>Welcome to OEM! Your account has been successfully created. Below are your account details:</p>"
+								+ "<p style='font-size: 16px; color: #555;  '><b> Email : </b>%s</p>"
+								+ "<p style='font-size: 16px; color: #555;  '><b> Password : </b>%s</p>" + "<br>"
+								+ "<p style='font-size: 16px; color: #333;'>If you have any further questions or concerns, please feel free to contact us.</p>"
+								+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
+								+ "<p style='font-size: 16px; color: #333;'>Admin</p>" + "</div>" + "</div>" + "</div>"
+								+ "<style>" + "@media screen and (max-width: 600px) {" + ".header-image img {"
+								+ "margin-left: 10px; " + "}" + "}" + "</style>",
+						mailHeading, sendEmail, password // Email
+						
+				);
+
+//			emailService.sendMail(sendEmail, ccEmails, mailSubject, content);
+				helper.setTo(sendEmail);
+				helper.setCc(ccEmails);
+				helper.setSubject(mailSubject);
+				helper.setText(content, true);
+				EmailThread sendMail = new EmailThread(javaMailService, mimeMsg);
+				Thread parallelThread = new Thread(sendMail);
+				parallelThread.setPriority(Thread.MAX_PRIORITY);
+				parallelThread.start();
+
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

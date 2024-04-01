@@ -6,6 +6,9 @@ import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sbi.oem.enums.UserType;
+import com.sbi.oem.model.RecommendationStatus;
+
 public class RecommendationAddRequestDto {
 
 	private String referenceId;
@@ -22,6 +25,11 @@ public class RecommendationAddRequestDto {
 	private Long createdBy;
 	private String expectedImpact;
 	private List<Long> departmentIds;
+	private RecommendationStatus status;
+	private Date recommendationReleasedDate;
+	private UserType userType;
+	private String recommendedBy;
+	private String impactedDepartments;
 
 	public String getReferenceId() {
 		return referenceId;
@@ -117,6 +125,46 @@ public class RecommendationAddRequestDto {
 
 	public void setDepartmentIds(List<Long> departmentIds) {
 		this.departmentIds = departmentIds;
+	}
+
+	public RecommendationStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(RecommendationStatus status) {
+		this.status = status;
+	}
+
+	public Date getRecommendationReleasedDate() {
+		return recommendationReleasedDate;
+	}
+
+	public void setRecommendationReleasedDate(Date recommendationReleasedDate) {
+		this.recommendationReleasedDate = recommendationReleasedDate;
+	}
+
+	public UserType getUserType() {
+		return userType;
+	}
+
+	public void setUserType(UserType userType) {
+		this.userType = userType;
+	}
+
+	public String getRecommendedBy() {
+		return recommendedBy;
+	}
+
+	public void setRecommendedBy(String recommendedBy) {
+		this.recommendedBy = recommendedBy;
+	}
+
+	public String getImpactedDepartments() {
+		return impactedDepartments;
+	}
+
+	public void setImpactedDepartments(String impactedDepartments) {
+		this.impactedDepartments = impactedDepartments;
 	}
 
 }

@@ -13,4 +13,6 @@ public interface UserService {
 
 	Response<?> forgetPassword(ForgetPasswordRequestDto forgetPassword);
 
+	Response<?> getAllUserTypes();
+
 }

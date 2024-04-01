@@ -6,6 +6,9 @@ public class SignUpRequest {
 	private String password;
 	private String userName;
 	private String phoneNo;
+	private String userType;
+	private String designation;
+	private Long departmentId;
 
 	public String getEmail() {
 		return email;
@@ -39,16 +42,44 @@ public class SignUpRequest {
 		this.phoneNo = phoneNo;
 	}
 
+	public String getUserType() {
+		return userType;
+	}
+
+	public void setUserType(String userType) {
+		this.userType = userType;
+	}
+
+	public String getDesignation() {
+		return designation;
+	}
+
+	public void setDesignation(String designation) {
+		this.designation = designation;
+	}
+
+	public Long getDepartmentId() {
+		return departmentId;
+	}
+
+	public void setDepartmentId(Long departmentId) {
+		this.departmentId = departmentId;
+	}
+
 	public SignUpRequest() {
 		super();
 	}
 
-	public SignUpRequest(String email, String password, String userName, String phoneNo) {
+	public SignUpRequest(String email, String password, String userName, String phoneNo, String userType,
+			String designation, Long departmentId) {
 		super();
 		this.email = email;
 		this.password = password;
 		this.userName = userName;
 		this.phoneNo = phoneNo;
+		this.userType = userType;
+		this.designation = designation;
+		this.departmentId = departmentId;
 	}
 
 }

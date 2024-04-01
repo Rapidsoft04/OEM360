@@ -1,5 +1,7 @@
 package com.sbi.oem.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -35,6 +37,12 @@ public class DepartmentApprover {
 
 	@Column(name = "is_active")
 	private Boolean isActive;
+
+	@Column(name = "created_at")
+	private Date createdAt;
+
+	@Column(name = "updated_at")
+	private Date updatedAt;
 
 	public Long getId() {
 		return id;
@@ -86,6 +94,22 @@ public class DepartmentApprover {
 
 	public DepartmentApprover() {
 		super();
+	}
+
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public Date getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Date updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 	public DepartmentApprover(Long id, User agm, User applicationOwner, Boolean isActive) {

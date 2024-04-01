@@ -26,5 +26,8 @@ public interface DepartmentApproverRepository extends JpaRepository<DepartmentAp
 	
 	@Query(value = "SELECT * FROM department_approver where app_owner_id=?1", nativeQuery = true)
 	Optional<DepartmentApprover> findByAppOwnerId(Long id);
+	
+	@Query(value = "SELECT * FROM department_approver where app_owner_id=?1 or agm_id=?1", nativeQuery = true)
+	Optional<DepartmentApprover> findAgmOrApplicationOwnerByUserId(Long userId);
 
 }

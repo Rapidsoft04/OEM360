@@ -47,4 +47,10 @@ public class UserController {
 		Response<?> response = userService.forgetPassword(forgetPassword);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@RequestMapping(value = "/v1/userTypes", method = RequestMethod.GET)
+	public ResponseEntity<?> getAllUserTypes() {
+		Response<?> response = userService.getAllUserTypes();
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
 }

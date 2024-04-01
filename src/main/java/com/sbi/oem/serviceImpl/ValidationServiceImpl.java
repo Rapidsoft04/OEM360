@@ -3,10 +3,15 @@ package com.sbi.oem.serviceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.sbi.oem.dto.AddComponentDto;
+import com.sbi.oem.dto.AddDepartmentApproverDto;
+import com.sbi.oem.dto.AddDepartmentDto;
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
 import com.sbi.oem.dto.RecommendationRejectionRequestDto;
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.dto.SignUpRequest;
+import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.service.ValidationService;
 
@@ -114,22 +119,42 @@ public class ValidationServiceImpl implements ValidationService {
 		try {
 			if (departmentApprover.getDepartment() == null || departmentApprover.getDepartment().getId() == null) {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the department id", null);
-			} else if (departmentApprover.getAgm() == null || departmentApprover.getAgm().getId() == null) {
-				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the agm id", null);
-			} else if (departmentApprover.getApplicationOwner() == null
-					|| departmentApprover.getApplicationOwner().getId() == null) {
-				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Pleae provide the app owner id", null);
-			} else if (departmentApprover.getDgm() == null || departmentApprover.getDgm().getId() == null) {
-				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the dgm id", null);
-			} else if (departmentApprover.getAgm().getId().longValue() == departmentApprover.getApplicationOwner()
-					.getId().longValue()) {
+			} else if (departmentApprover.getAgm() == null && departmentApprover.getApplicationOwner() == null
+					&& departmentApprover.getDgm() == null) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please assign at least one approver.", null);
+			} else if (departmentApprover.getAgm() != null && departmentApprover.getApplicationOwner() != null
+					&& departmentApprover.getAgm().getId() != null
+					&& departmentApprover.getApplicationOwner().getId() != null && departmentApprover.getAgm().getId()
+							.longValue() == departmentApprover.getApplicationOwner().getId().longValue()) {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "AGM and Appowner cannot be the same user", null);
-			} else if (departmentApprover.getAgm().getId().longValue() == departmentApprover.getDgm().getId()
-					.longValue()) {
+			} else if (departmentApprover.getAgm() != null && departmentApprover.getDgm() != null
+					&& departmentApprover.getAgm().getId() != null && departmentApprover.getDgm().getId() != null
+					&& departmentApprover.getAgm().getId().longValue() == departmentApprover.getDgm().getId()
+							.longValue()) {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "AGM and DGM cannot be the same user", null);
-			} else if (departmentApprover.getApplicationOwner().getId().longValue() == departmentApprover.getDgm()
-					.getId().longValue()) {
+			} else if (departmentApprover.getApplicationOwner() != null && departmentApprover.getDgm() != null
+					&& departmentApprover.getApplicationOwner().getId() != null
+					&& departmentApprover.getDgm().getId() != null && departmentApprover.getApplicationOwner().getId()
+							.longValue() == departmentApprover.getDgm().getId().longValue()) {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Appowner and DGM cannot be the same user", null);
+			} else {
+				return new Response<>(HttpStatus.OK.value(), "OK", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
+	@Override
+	public Response<?> checkForDepartmentApproverAddPayloadV2(AddDepartmentApproverDto departmentApprover) {
+		try {
+			if (departmentApprover.getDepartmentId() == null || departmentApprover.getDepartmentId() == null) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide the department", null);
+			} else if (departmentApprover.getUserType().trim().isEmpty()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide valid user type", null);
+			} else if (departmentApprover.getUserId() == null) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide user", null);
 			} else {
 				return new Response<>(HttpStatus.OK.value(), "OK", null);
 			}
@@ -148,6 +173,64 @@ public class ValidationServiceImpl implements ValidationService {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Plese provide the description details.", null);
 		} else {
 			return new Response<>(HttpStatus.OK.value(), "OK", null);
+		}
+	}
+
+	@Override
+	public Response<?> checkForComponentAddPayload(AddComponentDto componentDto) {
+		try {
+			if (componentDto.getName() == null || componentDto.getName().trim().isEmpty()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide valid component name", null);
+			} 
+//			else if (componentDto.getDepartmentIds() == null || componentDto.getDepartmentIds().isEmpty()) {
+//				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide valid department", null);
+//			} 
+			else {
+				return new Response<>(HttpStatus.OK.value(), "OK", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
+	@Override
+	public Response<?> checkForDepartmentAddPayload(AddDepartmentDto addDepartmentDto) {
+		try {
+			if (addDepartmentDto.getName() == null || addDepartmentDto.getName().trim().isEmpty()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid department name", null);
+			} else if (addDepartmentDto.getCode() == null || addDepartmentDto.getCode().trim().isEmpty()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid code", null);
+			} else {
+				return new Response<>(HttpStatus.OK.value(), "OK", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
+	@Override
+	public Response<?> checkForUserAddPayload(SignUpRequest signUpRequest) {
+		try {
+			if (signUpRequest.getEmail() == null || signUpRequest.getEmail().trim().isEmpty()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid email", null);
+			} else if (signUpRequest.getUserName() == null || signUpRequest.getUserName().trim().isEmpty()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid username", null);
+			} else if (signUpRequest.getPhoneNo() == null || signUpRequest.getPhoneNo().trim().isEmpty()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid phone number", null);
+			} else if (signUpRequest.getDesignation() == null || signUpRequest.getDesignation().trim().isEmpty()) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid designation", null);
+			} else if (signUpRequest.getDepartmentId() == null && signUpRequest.getUserType() != null
+					&& !signUpRequest.getUserType().equalsIgnoreCase(UserType.USER.name())) {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide department to set the user type",
+						null);
+			} else {
+				return new Response<>(HttpStatus.OK.value(), "OK", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 	}
 

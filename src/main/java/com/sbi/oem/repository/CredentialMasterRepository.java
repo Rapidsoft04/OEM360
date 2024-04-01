@@ -15,9 +15,12 @@ public interface CredentialMasterRepository extends JpaRepository<CredentialMast
 
 	Optional<CredentialMaster> findByEmail(String username);
 
-	@Query(value = "select * from credential_master where phone_no=?1 or email=?2",nativeQuery = true)
-	List<CredentialMaster> findAllByPhoneNoEmail(String phoneNo, String phoneNo2);
-	
+	@Query(value = "select * from credential_master where user_id=?1", nativeQuery = true)
+	Optional<CredentialMaster> findByUserId(Long userId);
+
+	@Query(value = "select * from credential_master where phone_no=?1 or email=?2", nativeQuery = true)
+	List<CredentialMaster> findAllByPhoneNoEmail(String phoneNo, String email);
+
 	List<CredentialMaster> findByUserTypeId(UserType userType);
 
 }

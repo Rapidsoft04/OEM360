@@ -8,26 +8,24 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "components")
-public class Component {
+@Table(name = "department_component")
+public class DepartmentComponentMapping {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "name")
-	private String name;
+	@ManyToOne
+	@JoinColumn(name = "department_id")
+	private Department department;
 
-	@OneToOne
-	@JoinColumn(name = "company_id")
-	private Company company;
-
-	@Column(name = "is_active")
-	private Boolean isActive;
+	@ManyToOne
+	@JoinColumn(name = "component_id")
+	private Component component;
 
 	@Column(name = "created_at")
 	private Date createdAt;
@@ -43,28 +41,20 @@ public class Component {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public Department getDepartment() {
+		return department;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setDepartment(Department department) {
+		this.department = department;
 	}
 
-	public Company getCompany() {
-		return company;
+	public Component getComponent() {
+		return component;
 	}
 
-	public void setCompany(Company company) {
-		this.company = company;
-	}
-
-	public Boolean getIsActive() {
-		return isActive;
-	}
-
-	public void setIsActive(Boolean isActive) {
-		this.isActive = isActive;
+	public void setComponent(Component component) {
+		this.component = component;
 	}
 
 	public Date getCreatedAt() {
@@ -83,21 +73,16 @@ public class Component {
 		this.updatedAt = updatedAt;
 	}
 
-	public Component() {
-		super();
-	}
-
-	public Component(Long id) {
+	public DepartmentComponentMapping(Long id, Department department, Component component) {
 		super();
 		this.id = id;
+		this.department = department;
+		this.component = component;
 	}
 
-	public Component(Long id, String name, Company company, Boolean isActive) {
+	public DepartmentComponentMapping() {
 		super();
-		this.id = id;
-		this.name = name;
-		this.company = company;
-		this.isActive = isActive;
+		// TODO Auto-generated constructor stub
 	}
 
 }
