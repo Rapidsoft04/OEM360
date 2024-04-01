@@ -564,7 +564,6 @@ public class NotificationServiceImpl implements NotificationService {
 						.findByRecommendRefId(notification.getReferenceId());
 				List<RecommendationMessages> recommendationMessages = recommendationMessagesRepository
 						.findAllByReferenceId(notification.getReferenceId());
-
 				RecommendationResponseDto dto = recommendationObj.get().convertToDto();
 				dto.setNotification(notification);
 				if (deploymentDetailsObj != null && deploymentDetailsObj.isPresent()) {

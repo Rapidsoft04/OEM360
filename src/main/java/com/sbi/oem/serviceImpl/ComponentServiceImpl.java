@@ -14,16 +14,13 @@ import com.sbi.oem.dto.AddComponentDto;
 import com.sbi.oem.dto.ComponentDepartmentDto;
 import com.sbi.oem.dto.ComponentDto;
 import com.sbi.oem.dto.Response;
-import com.sbi.oem.enums.FunctionalityEnum;
 import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentComponentMapping;
-import com.sbi.oem.model.Functionality;
 import com.sbi.oem.repository.ComponentRepository;
 import com.sbi.oem.repository.DepartmentComponentMappingRepository;
-import com.sbi.oem.repository.FunctionalityRepository;
 import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.ComponentService;
 import com.sbi.oem.service.ValidationService;
@@ -43,9 +40,6 @@ public class ComponentServiceImpl implements ComponentService {
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
 
-	@Autowired
-	private FunctionalityRepository functionalityRepository;
-
 	@Override
 	public Response<?> saveComponent(AddComponentDto componentDto) {
 		try {
@@ -59,8 +53,6 @@ public class ComponentServiceImpl implements ComponentService {
 
 					Optional<Component> componentExist = componentRepository
 							.findComponentByName(componentDto.getName());
-					Optional<Functionality> functionality = functionalityRepository
-							.findByTitleId(FunctionalityEnum.Component.getId());
 					if (!componentExist.isPresent()) {
 						Component component = new Component();
 						component.setName(componentDto.getName());
@@ -69,17 +61,6 @@ public class ComponentServiceImpl implements ComponentService {
 						component.setCreatedAt(new Date());
 						component.setUpdatedAt(new Date());
 						Component savedComponent = componentRepository.save(component);
-
-						// Updating the component count in functionality repository
-						if (savedComponent != null) {
-							if (functionality.isPresent()) {
-								Long currentCount = functionality.get().getCount() != null
-										? functionality.get().getCount()
-										: 0L;
-								functionality.get().setCount(currentCount + 1L);
-								functionalityRepository.save(functionality.get());
-							}
-						}
 
 						List<Long> departmentIds = componentDto.getDepartmentIds();
 						if (!departmentIds.isEmpty()) {

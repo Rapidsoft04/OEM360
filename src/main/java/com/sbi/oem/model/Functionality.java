@@ -18,9 +18,6 @@ public class Functionality {
 	@Column(name = "title_id")
 	private Long titleId;
 
-	@Column(name = "count")
-	private Long count;
-
 	@Column(name = "path")
 	private String path;
 
@@ -40,14 +37,6 @@ public class Functionality {
 		this.titleId = titleId;
 	}
 
-	public Long getCount() {
-		return count;
-	}
-
-	public void setCount(Long count) {
-		this.count = count;
-	}
-
 	public String getPath() {
 		return path;
 	}
@@ -56,11 +45,10 @@ public class Functionality {
 		this.path = path;
 	}
 
-	public Functionality(Long id, Long titleId, Long count, String path) {
+	public Functionality(Long id, Long titleId, String path) {
 		super();
 		this.id = id;
 		this.titleId = titleId;
-		this.count = count;
 		this.path = path;
 	}
 

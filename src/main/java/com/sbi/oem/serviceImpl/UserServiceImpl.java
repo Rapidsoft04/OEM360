@@ -72,50 +72,55 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Response<?> login(LoginRequest loginRequest) throws Exception {
-		LoginResponse loginResponse = new LoginResponse();
+		try {
+			LoginResponse loginResponse = new LoginResponse();
 
-		UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
+			UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
 
-		if (userDetails != null) {
+			if (userDetails != null) {
 
-			Optional<CredentialMaster> credentialMasterOptional = credentialMasterRepository
-					.findByEmail(loginRequest.getUsername());
+				Optional<CredentialMaster> credentialMasterOptional = credentialMasterRepository
+						.findByEmail(loginRequest.getUsername());
 
-			if (credentialMasterOptional.isPresent()) {
+				if (credentialMasterOptional.isPresent()) {
 
-				CredentialMaster credentialMaster = credentialMasterOptional.get();
+					CredentialMaster credentialMaster = credentialMasterOptional.get();
 
-				if (credentialMaster.passwordMatches(loginRequest.getPassword())) {
-					for (UserType userType : UserType.values()) {
-						if (credentialMaster.getUserTypeId().name().equalsIgnoreCase(userType.name())) {
-							loginResponse.setId(credentialMaster.getId());
-							loginResponse.setEmail(credentialMaster.getEmail());
-							loginResponse.setUserName(credentialMaster.getName());
-							loginResponse.setUserType(credentialMaster.getUserTypeId().name());
-							loginResponse.setToken(jwtTokenUtil.generateToken(userDetails));
-							loginResponse.setImageUrl(credentialMaster.getUserId().getUserLogoUrl());
-							loginResponse.setCompany(credentialMaster.getUserId().getCompany());
+					if (credentialMaster.passwordMatches(loginRequest.getPassword())) {
+						for (UserType userType : UserType.values()) {
+							if (credentialMaster.getUserTypeId().name().equalsIgnoreCase(userType.name())) {
+								loginResponse.setId(credentialMaster.getId());
+								loginResponse.setEmail(credentialMaster.getEmail());
+								loginResponse.setUserName(credentialMaster.getName());
+								loginResponse.setUserType(credentialMaster.getUserTypeId().name());
+								loginResponse.setToken(jwtTokenUtil.generateToken(userDetails));
+								loginResponse.setImageUrl(credentialMaster.getUserId().getUserLogoUrl());
+								loginResponse.setCompany(credentialMaster.getUserId().getCompany());
+							}
 						}
-					}
-					Optional<CompanyWisePastDateConfiguration> companyWiseUserPastDateConfiguratioObj = companyWisePastDateConfigurationRepository
-							.findByCompany(loginResponse.getCompany().getId());
-					if (companyWiseUserPastDateConfiguratioObj != null
-							&& companyWiseUserPastDateConfiguratioObj.isPresent()) {
-						loginResponse.setHasAccessToUpdateForPastDate(true);
+						Optional<CompanyWisePastDateConfiguration> companyWiseUserPastDateConfiguratioObj = companyWisePastDateConfigurationRepository
+								.findByCompany(loginResponse.getCompany().getId());
+						if (companyWiseUserPastDateConfiguratioObj != null
+								&& companyWiseUserPastDateConfiguratioObj.isPresent()) {
+							loginResponse.setHasAccessToUpdateForPastDate(true);
+						} else {
+							loginResponse.setHasAccessToUpdateForPastDate(false);
+						}
+						return new Response<>(HttpStatus.OK.value(), "Login success.", loginResponse);
 					} else {
-						loginResponse.setHasAccessToUpdateForPastDate(false);
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID CREDENTIALS", null);
 					}
-					return new Response<>(HttpStatus.OK.value(), "Login success.", loginResponse);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID CREDENTIALS", null);
 				}
+
 			} else {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID CREDENTIALS", null);
 			}
-
-		} else {
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID CREDENTIALS", null);
+		} catch (Exception e) {
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
+
 	}
 
 	@Override
@@ -136,8 +141,8 @@ public class UserServiceImpl implements UserService {
 								return new Response<>(HttpStatus.BAD_REQUEST.value(),
 										"Email and phone number cannot be duplicate !!!", null);
 						}
-//						signUpRequest.setPassword(generateRandomPassword());
-						signUpRequest.setPassword("Rst@2023");
+						signUpRequest.setPassword(generateRandomPassword());
+//						signUpRequest.setPassword("Rst@2023");
 						List<UserType> userTypeList = Arrays.asList(UserType.values());
 						UserType userType = null;
 						for (UserType user : userTypeList) {
@@ -148,19 +153,14 @@ public class UserServiceImpl implements UserService {
 							}
 						}
 
-						if (!signUpRequest.getUserType().toLowerCase().trim().isEmpty() && userType == null) {
-							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide valid user type",
-									null);
-						}
-
 						if (userType == null) {
 							userType = UserType.USER;
 						}
 
 						DepartmentApprover approver = new DepartmentApprover();
+						Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+								.findAllByDepartmentId(signUpRequest.getDepartmentId());
 						if (userType != null) {
-							Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-									.findAllByDepartmentId(signUpRequest.getDepartmentId());
 							if (departmentApprover != null && departmentApprover.isPresent()) {
 								if (userType.name().equals(UserType.APPLICATION_OWNER.name())
 										&& departmentApprover.get().getApplicationOwner() != null) {
@@ -175,9 +175,6 @@ public class UserServiceImpl implements UserService {
 								}
 							}
 						}
-
-						Optional<Functionality> functionality = functionalityRepository
-								.findByTitleId(FunctionalityEnum.User.getId());
 
 						Department department = signUpRequest.getDepartmentId() != null
 								? new Department(signUpRequest.getDepartmentId())
@@ -197,38 +194,41 @@ public class UserServiceImpl implements UserService {
 						userDataSave = userDataRepository.save(userDataSave);
 						credentialMasterSave.setUserId(userDataSave);
 						credentialMasterSave = credentialMasterRepository.save(credentialMasterSave);
-//						emailTemplateService.sendMailForRegisterUser(signUpRequest);
+						emailTemplateService.sendMailForRegisterUser(signUpRequest);
 
-						// Updating the User count in functionality repository
-						if (userDataSave != null) {
-							if (functionality.isPresent()) {
-								Long currentCount = functionality.get().getCount() != null
-										? functionality.get().getCount()
-										: 0L;
-								functionality.get().setCount(currentCount + 1L);
-								functionalityRepository.save(functionality.get());
-							}
-						}
-
-						if (userType != null && (userType.name().equals(UserType.AGM.name())
-								|| userType.name().equals(UserType.APPLICATION_OWNER.name())
-								|| userType.name().equals(UserType.DGM.name()))) {
-							approver.setDepartment(userDataSave.getDepartment());
-							approver.setIsActive(true);
+						if (departmentApprover != null) {
 							if (userType.name().equals(UserType.AGM.name())) {
-								approver.setAgm(userDataSave);
+								departmentApprover.get().setAgm(userDataSave);
 							} else if (userType.name().equals(UserType.APPLICATION_OWNER.name())) {
-								approver.setApplicationOwner(userDataSave);
+								departmentApprover.get().setApplicationOwner(userDataSave);
 							} else if (userType.name().equals(UserType.DGM.name())) {
-								approver.setDgm(userDataSave);
+								departmentApprover.get().setDgm(userDataSave);
 							}
-							departmentApproverRepository.save(approver);
+							departmentApprover.get().setCreatedAt(departmentApprover.get().getCreatedAt());
+							departmentApprover.get().setUpdatedAt(new Date());
+							departmentApprover.get().setIsActive(departmentApprover.get().getIsActive());
+						} else {
+							if (userType != null && (userType.name().equals(UserType.AGM.name())
+									|| userType.name().equals(UserType.APPLICATION_OWNER.name())
+									|| userType.name().equals(UserType.DGM.name()))) {
+								approver.setIsActive(true);
+								if (userType.name().equals(UserType.AGM.name())) {
+									approver.setAgm(userDataSave);
+								} else if (userType.name().equals(UserType.APPLICATION_OWNER.name())) {
+									approver.setApplicationOwner(userDataSave);
+								} else if (userType.name().equals(UserType.DGM.name())) {
+									approver.setDgm(userDataSave);
+								}
+								departmentApproverRepository.save(approver);
+							}
 						}
+
 						if (credentialMasterSave != null)
-							return new Response<>(HttpStatus.OK.value(), "User Registered Succefully  !!!",
+							return new Response<>(HttpStatus.OK.value(),
+									"User Added Succefully. Credentials will be sent through email!!!",
 									credentialMasterSave);
 						else
-							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Failed in User Registeration!!!",
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Failed in User Registration!!!",
 									null);
 					} else {
 						return validationSignUpRequest;
@@ -288,7 +288,7 @@ public class UserServiceImpl implements UserService {
 			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
-		
+
 	}
 
 	public static String generateRandomPassword() {

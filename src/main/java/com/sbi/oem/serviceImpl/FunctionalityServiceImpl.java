@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,12 +18,10 @@ import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.Department;
-import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Functionality;
 import com.sbi.oem.model.RecommendationType;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.ComponentRepository;
-import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.DepartmentRepository;
 import com.sbi.oem.repository.FunctionalityRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
@@ -50,9 +49,6 @@ public class FunctionalityServiceImpl implements FunctionalityService {
 
 	@Autowired
 	private RecommendationTypeRepository recommendationTypeRepository;
-
-	@Autowired
-	private DepartmentApproverRepository departmentApproverRepository;
 
 	@Override
 	public Response<?> getAll() {
@@ -92,25 +88,23 @@ public class FunctionalityServiceImpl implements FunctionalityService {
 					for (Functionality functionality : functionalityList) {
 						FunctionalityDto functionalityDto = new FunctionalityDto();
 						if (functionality.getId().equals(FunctionalityEnum.User.getId())) {
-//							List<User> userList = userRepository.findAll();
-//							List<DepartmentApprover> userList = departmentApproverRepository.findAll();
-
-							List<DepartmentApprover> departmentApprovers = departmentApproverRepository.findAll();
-							List<User> userList = new ArrayList<>();
-							if (!departmentApprovers.isEmpty()) {
-								for (DepartmentApprover approver : departmentApprovers) {
-									if (approver.getApplicationOwner() != null
-											&& !userList.contains(approver.getApplicationOwner())) {
-										userList.add(approver.getApplicationOwner());
-									}
-									if (approver.getAgm() != null && !userList.contains(approver.getAgm())) {
-										userList.add(approver.getAgm());
-									}
-									if (approver.getDgm() != null && !userList.contains(approver.getDgm())) {
-										userList.add(approver.getDgm());
-									}
-								}
-							}
+//							List<DepartmentApprover> departmentApprovers = departmentApproverRepository.findAll();
+//							List<User> userList = new ArrayList<>();
+//							if (!departmentApprovers.isEmpty()) {
+//								for (DepartmentApprover approver : departmentApprovers) {
+//									if (approver.getApplicationOwner() != null
+//											&& !userList.contains(approver.getApplicationOwner())) {
+//										userList.add(approver.getApplicationOwner());
+//									}
+//									if (approver.getAgm() != null && !userList.contains(approver.getAgm())) {
+//										userList.add(approver.getAgm());
+//									}
+//									if (approver.getDgm() != null && !userList.contains(approver.getDgm())) {
+//										userList.add(approver.getDgm());
+//									}
+//								}
+//							}
+							List<User> userList = userRepository.findAll();
 
 							functionalityDto.setId(functionality.getId());
 							functionalityDto.setName(FunctionalityEnum.User.getName());
@@ -133,10 +127,15 @@ public class FunctionalityServiceImpl implements FunctionalityService {
 							functionalityDtos.add(functionalityDto);
 						} else if (functionality.getTitleId().equals(FunctionalityEnum.RecommendationType.getId())) {
 							List<RecommendationType> recommendationTypeList = recommendationTypeRepository.findAll();
+							List<RecommendationType> filteredList = new ArrayList<>();
+							if (!recommendationTypeList.isEmpty()) {
+								filteredList = recommendationTypeList.stream()
+										.filter(rt -> rt.getIsActive() != null && rt.getIsActive())
+										.collect(Collectors.toList());
+							}
 							functionalityDto.setId(functionality.getId());
 							functionalityDto.setName(FunctionalityEnum.RecommendationType.getName());
-							functionalityDto.setCount(
-									recommendationTypeList.isEmpty() ? 0L : (long) recommendationTypeList.size());
+							functionalityDto.setCount(filteredList.isEmpty() ? 0L : (long) filteredList.size());
 							functionalityDto.setPath(functionality.getPath());
 							functionalityDtos.add(functionalityDto);
 						}

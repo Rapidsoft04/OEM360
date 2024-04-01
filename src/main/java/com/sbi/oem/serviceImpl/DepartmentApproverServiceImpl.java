@@ -1,9 +1,11 @@
 package com.sbi.oem.serviceImpl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -206,6 +208,8 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 									departmentApproverExist.get()
 											.setAgm(new User(departmentApproverRequest.getUserId()));
 									user.get().setUserType(UserType.AGM);
+									user.get()
+											.setDepartment(new Department(departmentApproverRequest.getDepartmentId()));
 									credentialMaster.get().setUserTypeId(UserType.AGM);
 								} else if (departmentApproverExist.get().getApplicationOwner() == null
 										&& departmentApproverRequest.getUserType()
@@ -213,16 +217,22 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 									departmentApproverExist.get()
 											.setApplicationOwner(new User(departmentApproverRequest.getUserId()));
 									user.get().setUserType(UserType.APPLICATION_OWNER);
+									user.get()
+											.setDepartment(new Department(departmentApproverRequest.getDepartmentId()));
 									credentialMaster.get().setUserTypeId(UserType.APPLICATION_OWNER);
 								} else if (departmentApproverExist.get().getDgm() == null && departmentApproverRequest
 										.getUserType().equalsIgnoreCase(UserType.DGM.name())) {
 									departmentApproverExist.get()
 											.setDgm(new User(departmentApproverRequest.getUserId()));
 									user.get().setUserType(UserType.DGM);
+									user.get()
+											.setDepartment(new Department(departmentApproverRequest.getDepartmentId()));
 									credentialMaster.get().setUserTypeId(UserType.DGM);
 								}
 								userRepository.save(user.get());
 								credentialMasterRepository.save(credentialMaster.get());
+								departmentApproverExist.get()
+										.setCreatedAt(departmentApproverExist.get().getCreatedAt());
 								departmentApproverExist.get().setUpdatedAt(new Date());
 								departmentApproverRepository.save(departmentApproverExist.get());
 								return new Response<>(HttpStatus.OK.value(), "success", null);
@@ -301,7 +311,7 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 							approverList.add(departmentApprover.get().getDgm());
 						}
 
-						userTypeList.add(UserType.GM_IT_INFRA);
+//						userTypeList.add(UserType.GM_IT_INFRA);
 						if (departmentApprover.get().getAgm() == null) {
 							userTypeList.add(UserType.AGM);
 						}
@@ -315,7 +325,7 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 						userTypeList.add(UserType.APPLICATION_OWNER);
 						userTypeList.add(UserType.AGM);
 						userTypeList.add(UserType.DGM);
-						userTypeList.add(UserType.GM_IT_INFRA);
+//						userTypeList.add(UserType.GM_IT_INFRA);
 					}
 
 					approverDataDto.setApproverList(approverList);
@@ -339,23 +349,40 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())) {
-					List<DepartmentApprover> departmentApprovers = departmentApproverRepository.findAll();
-					List<User> userList = new ArrayList<>();
-					if (!departmentApprovers.isEmpty()) {
-						for (DepartmentApprover approver : departmentApprovers) {
-							if (approver.getApplicationOwner() != null) {
-								userList.add(approver.getApplicationOwner());
-							}
-							if (approver.getAgm() != null) {
-								userList.add(approver.getAgm());
-							}
-							if (approver.getDgm() != null) {
-								userList.add(approver.getDgm());
-							}
-						}
+				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())
+						|| master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name())
+						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+//					List<DepartmentApprover> departmentApprovers = departmentApproverRepository.findAll();
+//					List<User> userList = new ArrayList<>();
+//					if (!departmentApprovers.isEmpty()) {
+//						List<DepartmentApprover> sortedDepartmentApprovers = departmentApprovers.stream()
+//								.filter(approver -> approver.getUpdatedAt() != null)
+//								.sorted(Comparator.comparing(DepartmentApprover::getUpdatedAt).reversed())
+//								.collect(Collectors.toList());
+//
+//						for (DepartmentApprover approver : sortedDepartmentApprovers) {
+//							if (approver.getApplicationOwner() != null) {
+//								userList.add(approver.getApplicationOwner());
+//							}
+//							if (approver.getAgm() != null) {
+//								userList.add(approver.getAgm());
+//							}
+//							if (approver.getDgm() != null) {
+//								userList.add(approver.getDgm());
+//							}
+//						}
+//					}
+//					return new Response<>(HttpStatus.OK.value(), "All Department Approvers list", userList);
+
+					List<User> userList = userRepository.findAll();
+					if (!userList.isEmpty()) {
+						List<User> sortedUserList = userList.stream()
+								.sorted(Comparator.comparing(User::getUpdatedAt).reversed())
+								.collect(Collectors.toList());
+						return new Response<>(HttpStatus.OK.value(), "User list", sortedUserList);
 					}
-					return new Response<>(HttpStatus.OK.value(), "All Department Approvers list", userList);
+					return new Response<>(HttpStatus.OK.value(), "No users", new ArrayList<>());
+
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
 				}

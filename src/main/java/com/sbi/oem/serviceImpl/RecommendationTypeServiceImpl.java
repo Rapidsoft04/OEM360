@@ -1,5 +1,6 @@
 package com.sbi.oem.serviceImpl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,12 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.sbi.oem.dto.Response;
-import com.sbi.oem.enums.FunctionalityEnum;
 import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.CredentialMaster;
-import com.sbi.oem.model.Functionality;
 import com.sbi.oem.model.RecommendationType;
-import com.sbi.oem.repository.FunctionalityRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
 import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.RecommendationTypeService;
@@ -27,9 +25,6 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
 
-	@Autowired
-	private FunctionalityRepository functionalityRepository;
-
 	@Override
 	public Response<?> save(RecommendationType recommendationType) {
 		try {
@@ -39,23 +34,11 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 					if (!recommendationType.getName().isEmpty() && !recommendationType.getName().equals("")) {
 						Optional<RecommendationType> recommendationTypeExist = recommendationTypeRepository
 								.findRecommendationTypeByName(recommendationType.getName());
-						Optional<Functionality> functionality = functionalityRepository
-								.findByTitleId(FunctionalityEnum.RecommendationType.getId());
 
 						if (!recommendationTypeExist.isPresent()) {
 							recommendationType.setCompanyId(master.get().getUserId().getCompany().getId());
 							recommendationType.setIsActive(true);
-							RecommendationType savedRecommendationType = recommendationTypeRepository
-									.save(recommendationType);
-							if (savedRecommendationType != null) {
-								if (functionality.isPresent()) {
-									Long currentCount = functionality.get().getCount() != null
-											? functionality.get().getCount()
-											: 0L;
-									functionality.get().setCount(currentCount + 1L);
-									functionalityRepository.save(functionality.get());
-								}
-							}
+							recommendationTypeRepository.save(recommendationType);
 							return new Response<>(HttpStatus.OK.value(), "success", null);
 						} else {
 							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation Type already exist",
@@ -117,6 +100,9 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 					if (recommendationTypeObject == null) {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation Type not found", null);
 					}
+					recommendationType.setCompanyId(recommendationTypeObject.get().getCompanyId());
+					recommendationType.setCreatedAt(recommendationTypeObject.get().getCreatedAt());
+					recommendationType.setUpdatedAt(new Date());
 					recommendationTypeRepository.save(recommendationType);
 					return new Response<>(HttpStatus.OK.value(), "Recommendation type updated successfully", null);
 				} else {

@@ -14,19 +14,16 @@ import com.sbi.oem.dto.AddDepartmentDto;
 import com.sbi.oem.dto.DepartmentComponentDto;
 import com.sbi.oem.dto.DepartmentDto;
 import com.sbi.oem.dto.Response;
-import com.sbi.oem.enums.FunctionalityEnum;
 import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.Component;
 import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.DepartmentComponentMapping;
-import com.sbi.oem.model.Functionality;
 import com.sbi.oem.model.User;
 import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.DepartmentComponentMappingRepository;
 import com.sbi.oem.repository.DepartmentRepository;
-import com.sbi.oem.repository.FunctionalityRepository;
 import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.DepartmentService;
 import com.sbi.oem.service.ValidationService;
@@ -49,9 +46,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 	@Autowired
 	private ValidationService validationService;
 
-	@Autowired
-	private FunctionalityRepository functionalityRepository;
-
 	@Override
 	public Response<?> saveDepartment(AddDepartmentDto addDepartmentDto) {
 		try {
@@ -65,8 +59,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 					Optional<Department> departmentExist = departmentRepository
 							.findDepartmentByName(addDepartmentDto.getName(), addDepartmentDto.getCode());
-					Optional<Functionality> functionality = functionalityRepository
-							.findByTitleId(FunctionalityEnum.Department.getId());
 					if (!departmentExist.isPresent()) {
 						Department department = new Department();
 						department.setName(addDepartmentDto.getName());
@@ -77,28 +69,18 @@ public class DepartmentServiceImpl implements DepartmentService {
 						department.setUpdatedAt(new Date());
 						Department savedDepartment = departmentRepository.save(department);
 
-						if (savedDepartment != null) {
-							if (functionality.isPresent()) {
-								Long currentCount = functionality.get().getCount() != null
-										? functionality.get().getCount()
-										: 0L;
-								functionality.get().setCount(currentCount + 1L);
-								functionalityRepository.save(functionality.get());
-							}
-						}
-
 						List<Long> componentIds = addDepartmentDto.getComponentIds();
 						for (Long componentId : componentIds) {
 							DepartmentComponentMapping departmentComponentMapping = new DepartmentComponentMapping();
 							departmentComponentMapping.setComponent(new Component(componentId));
 							departmentComponentMapping.setDepartment(new Department(savedDepartment.getId()));
-							departmentComponentMapping.setUpdatedAt(new Date());
+							departmentComponentMapping.setCreatedAt(new Date());
 							departmentComponentMapping.setUpdatedAt(new Date());
 							componentMappingRepository.save(departmentComponentMapping);
 						}
 						return new Response<>(HttpStatus.OK.value(), "success", null);
 					} else {
-						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Department already exists", null);
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Department already exists with same name or same code", null);
 					}
 
 				} else {
@@ -166,49 +148,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
 		}
 	}
-
-//	@Override
-//	public Response<?> getAllDepartmentApproverList() {
-//		try {
-//			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
-//			if (master.isPresent()) {
-//				if (master.get().getUserTypeId() == UserType.SUPER_ADMIN) {
-//					List<DepartmentApprover> departmentApprovers = departmentApproverRepository.findAll();
-//					Map<String, List<User>> departmentApproverMap = new HashMap<>();
-//					for (DepartmentApprover departmentApprover : departmentApprovers) {
-//						addToUserTypeList(departmentApproverMap, "Application_owner",
-//								departmentApprover.getApplicationOwner());
-//						addToUserTypeList(departmentApproverMap, "Agm", departmentApprover.getAgm());
-//						addToUserTypeList(departmentApproverMap, "Dgm", departmentApprover.getDgm());
-//					}
-//					return new Response<>(HttpStatus.OK.value(), "success", departmentApproverMap);
-//				} else if (master.get().getUserTypeId() == UserType.DGM) {
-//					List<DepartmentApprover> departmentApprovers = departmentApproverRepository.findAll();
-//					Map<String, List<User>> departmentApproverMap = new HashMap<>();
-//					for (DepartmentApprover departmentApprover : departmentApprovers) {
-//						addToUserTypeList(departmentApproverMap, "Application_owner",
-//								departmentApprover.getApplicationOwner());
-//						addToUserTypeList(departmentApproverMap, "Agm", departmentApprover.getAgm());
-//					}
-//					return new Response<>(HttpStatus.OK.value(), "success", departmentApproverMap);
-//				} else {
-//					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
-//				}
-//			}
-//			return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			return new Response<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
-//		}
-//	}
-
-//	private void addToUserTypeList(Map<String, List<User>> usersByUserType, String userType, User user) {
-//		if (user != null) {
-//			List<User> userList = usersByUserType.getOrDefault(userType, new ArrayList<>());
-//			userList.add(user);
-//			usersByUserType.put(userType, userList);
-//		}
-//	}
 
 	@Override
 	public Response<?> getAllDepartmentApproverList() {
