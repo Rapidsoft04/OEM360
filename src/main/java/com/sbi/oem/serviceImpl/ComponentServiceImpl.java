@@ -52,7 +52,7 @@ public class ComponentServiceImpl implements ComponentService {
 					}
 
 					Optional<Component> componentExist = componentRepository
-							.findComponentByName(componentDto.getName());
+							.findComponentByName(componentDto.getName().trim());
 					if (!componentExist.isPresent()) {
 						Component component = new Component();
 						component.setName(componentDto.getName());
@@ -99,8 +99,6 @@ public class ComponentServiceImpl implements ComponentService {
 						List<DepartmentComponentMapping> componentMappings = componentMappingRepository
 								.findAllByDepartmentId(departmentId);
 						List<Component> componentList = new ArrayList<>();
-//						List<Component> componentList = componentMappingRepository.findAllByDepartmentId(departmentId)
-//								.stream().map(DepartmentComponentMapping::getComponent).collect(Collectors.toList());
 						if (!componentMappings.isEmpty()) {
 							for (DepartmentComponentMapping componentMapping : componentMappings) {
 								if (componentMapping.getComponent() != null) {

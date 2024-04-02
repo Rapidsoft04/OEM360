@@ -58,7 +58,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 					}
 
 					Optional<Department> departmentExist = departmentRepository
-							.findDepartmentByName(addDepartmentDto.getName(), addDepartmentDto.getCode());
+							.findDepartmentByName(addDepartmentDto.getName().trim(), addDepartmentDto.getCode());
 					if (!departmentExist.isPresent()) {
 						Department department = new Department();
 						department.setName(addDepartmentDto.getName());

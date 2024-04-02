@@ -352,32 +352,14 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())
 						|| master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name())
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
-//					List<DepartmentApprover> departmentApprovers = departmentApproverRepository.findAll();
-//					List<User> userList = new ArrayList<>();
-//					if (!departmentApprovers.isEmpty()) {
-//						List<DepartmentApprover> sortedDepartmentApprovers = departmentApprovers.stream()
-//								.filter(approver -> approver.getUpdatedAt() != null)
-//								.sorted(Comparator.comparing(DepartmentApprover::getUpdatedAt).reversed())
-//								.collect(Collectors.toList());
-//
-//						for (DepartmentApprover approver : sortedDepartmentApprovers) {
-//							if (approver.getApplicationOwner() != null) {
-//								userList.add(approver.getApplicationOwner());
-//							}
-//							if (approver.getAgm() != null) {
-//								userList.add(approver.getAgm());
-//							}
-//							if (approver.getDgm() != null) {
-//								userList.add(approver.getDgm());
-//							}
-//						}
-//					}
-//					return new Response<>(HttpStatus.OK.value(), "All Department Approvers list", userList);
 
 					List<User> userList = userRepository.findAll();
 					if (!userList.isEmpty()) {
+//						List<User> sortedUserList = userList.stream()
+//								.sorted(Comparator.comparing(User::getUpdatedAt).reversed())
+//								.collect(Collectors.toList());
 						List<User> sortedUserList = userList.stream()
-								.sorted(Comparator.comparing(User::getUpdatedAt).reversed())
+								.sorted(Comparator.nullsLast(Comparator.comparing(User::getUpdatedAt).reversed()))
 								.collect(Collectors.toList());
 						return new Response<>(HttpStatus.OK.value(), "User list", sortedUserList);
 					}
