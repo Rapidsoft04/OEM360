@@ -132,7 +132,7 @@ public class UserServiceImpl implements UserService {
 					Response<?> validationSignUpRequest = validationService.checkForUserAddPayload(signUpRequest);
 					if (validationSignUpRequest.getResponseCode() == HttpStatus.OK.value()) {
 						List<CredentialMaster> credentialMasterDBList = credentialMasterRepository
-								.findAllByPhoneNoEmail(signUpRequest.getPhoneNo(), signUpRequest.getEmail());
+								.findAllByPhoneNoEmail(signUpRequest.getPhoneNo().trim(), signUpRequest.getEmail().trim());
 						for (CredentialMaster credentialMaster : credentialMasterDBList) {
 							if (credentialMaster.getEmail() != null && credentialMaster.getPhoneNo() != null
 									&& (credentialMaster.getEmail().toLowerCase()
@@ -141,8 +141,8 @@ public class UserServiceImpl implements UserService {
 								return new Response<>(HttpStatus.BAD_REQUEST.value(),
 										"Email and phone number cannot be duplicate !!!", null);
 						}
-						signUpRequest.setPassword(generateRandomPassword());
-//						signUpRequest.setPassword("Rst@2023");
+//						signUpRequest.setPassword(generateRandomPassword());
+						signUpRequest.setPassword("Rst@2023");
 						List<UserType> userTypeList = Arrays.asList(UserType.values());
 						UserType userType = null;
 						for (UserType user : userTypeList) {
@@ -194,9 +194,9 @@ public class UserServiceImpl implements UserService {
 						userDataSave = userDataRepository.save(userDataSave);
 						credentialMasterSave.setUserId(userDataSave);
 						credentialMasterSave = credentialMasterRepository.save(credentialMasterSave);
-						emailTemplateService.sendMailForRegisterUser(signUpRequest);
+//						emailTemplateService.sendMailForRegisterUser(signUpRequest);
 
-						if (departmentApprover != null) {
+						if (departmentApprover != null && !userType.name().equals(UserType.USER.name())) {
 							if (userType.name().equals(UserType.AGM.name())) {
 								departmentApprover.get().setAgm(userDataSave);
 							} else if (userType.name().equals(UserType.APPLICATION_OWNER.name())) {
