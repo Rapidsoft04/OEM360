@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -1280,7 +1281,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 //		}
 //	}
 
-
 	@Override
 	public Response<?> addRecommendationThroughExcel(MultipartFile file) {
 		try {
@@ -1318,9 +1318,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 							headerList.add(topCell.toString().trim());
 							noOfTopData += 1;
 						}
-						if (headerList.equals(stringList)) {
-							isValidFile = true;
+						for (int x = 0; i < headerList.size(); i++) {
+							if (headerList.get(x).equals(stringList.get(x))) {
+								isValidFile = true;
+							}
 						}
+//						if (headerList.equals(stringList)) {
+//							isValidFile = true;
+//						}
 						if (isValidFile) {
 							if (!(sheet.getPhysicalNumberOfRows() > 1)) {
 								isEmptySheet = true;
@@ -1440,22 +1445,46 @@ public class RecommendationServiceImpl implements RecommendationService {
 										recommendationDto.setDescription(object.getString("Description*").trim());
 									}
 								}
+//								if (object.has("Type*")) {
+//									if (object.get("Type*") == null
+//											|| object.get("Type*").toString().trim().isEmpty()) {
+////										recommendationDto.setTypeId(null);
+//										return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide type",
+//												null);
+//									} else {
+//										String type = StringEscapeUtils.unescapeJava(object.get("Type*").toString().trim().toUpperCase());
+//										if (recommendationTypeMap.containsKey(
+//												type.replace("*", ""))) {
+//											recommendationDto.setTypeId(recommendationTypeMap.get(object.get("Type*")
+//													.toString().trim().toUpperCase().replace("*", "")).getId());
+//										} else {
+//											recommendationDto.setTypeId(null);
+//										}
+//									}
+//								}
+
 								if (object.has("Type*")) {
 									if (object.get("Type*") == null
 											|| object.get("Type*").toString().trim().isEmpty()) {
-//										recommendationDto.setTypeId(null);
 										return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide type",
 												null);
 									} else {
-										if (recommendationTypeMap.containsKey(
-												object.get("Type*").toString().trim().toUpperCase().replace("*", ""))) {
-											recommendationDto.setTypeId(recommendationTypeMap.get(object.get("Type*")
-													.toString().trim().toUpperCase().replace("*", "")).getId());
+										// Use StringEscapeUtils to unescape Unicode escape sequences
+										String type = StringEscapeUtils
+												.unescapeJava(object.get("Type*").toString().trim().toUpperCase());
+
+										// Standardize the type key
+										String standardizedType = type.replace("–", "-").replace("*", "");
+
+										if (recommendationTypeMap.containsKey(standardizedType)) {
+											recommendationDto
+													.setTypeId(recommendationTypeMap.get(standardizedType).getId());
 										} else {
 											recommendationDto.setTypeId(null);
 										}
 									}
 								}
+
 								if (object.has("Priority*")) {
 									if (object.get("Priority*") == null
 											|| object.get("Priority*").toString().trim().isEmpty()) {
@@ -1645,12 +1674,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 									response.setData(null);
 									break;
 								} else if (recommendationDto.getTypeId() == null) {
-									response.setMessage("Type can't be blank.");
+									response.setMessage("Invalid Recommendation Type.");
 									response.setResponseCode(HttpStatus.BAD_REQUEST.value());
 									response.setData(null);
 									break;
 								} else if (recommendationDto.getPriorityId() == null) {
-									response.setMessage("Priority can't be blank.");
+									response.setMessage("Invalid Priority.");
 									response.setResponseCode(HttpStatus.BAD_REQUEST.value());
 									response.setData(null);
 									break;
@@ -1661,12 +1690,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 									break;
 								} else if (recommendationDto.getDepartmentIds() == null
 										&& recommendationDto.getDepartmentIds().isEmpty()) {
-									response.setMessage("Department can't be blank.");
+									response.setMessage("Invalid Department.");
 									response.setResponseCode(HttpStatus.BAD_REQUEST.value());
 									response.setData(null);
 									break;
 								} else if (recommendationDto.getComponentId() == null) {
-									response.setMessage("Component name can't be blank.");
+									response.setMessage("Invalid Component.");
 									response.setResponseCode(HttpStatus.BAD_REQUEST.value());
 									response.setData(null);
 									break;

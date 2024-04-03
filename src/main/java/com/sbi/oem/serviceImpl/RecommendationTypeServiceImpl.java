@@ -115,7 +115,7 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 					}
 					Optional<RecommendationType> recommendationTypeExistByName = recommendationTypeRepository
 							.findRecommendationTypeByName(recommendationType.getName().trim());
-					if (recommendationTypeExistByName != null
+					if (recommendationTypeExistByName.isPresent()
 							&& !recommendationTypeExistByName.get().getId().equals(recommendationType.getId())) {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation Type Already exists",
 								null);

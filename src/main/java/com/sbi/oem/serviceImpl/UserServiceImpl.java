@@ -87,6 +87,12 @@ public class UserServiceImpl implements UserService {
 					CredentialMaster credentialMaster = credentialMasterOptional.get();
 
 					if (credentialMaster.passwordMatches(loginRequest.getPassword())) {
+						
+						if (credentialMasterOptional.get().getUserTypeId().name().equals(UserType.USER.name())
+								|| credentialMasterOptional.get().getUserTypeId().name()
+										.equals(UserType.VENDOR.name())) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID CREDENTIALS", null);
+						}
 						for (UserType userType : UserType.values()) {
 							if (credentialMaster.getUserTypeId().name().equalsIgnoreCase(userType.name())) {
 								loginResponse.setId(credentialMaster.getId());
@@ -132,7 +138,8 @@ public class UserServiceImpl implements UserService {
 					Response<?> validationSignUpRequest = validationService.checkForUserAddPayload(signUpRequest);
 					if (validationSignUpRequest.getResponseCode() == HttpStatus.OK.value()) {
 						List<CredentialMaster> credentialMasterDBList = credentialMasterRepository
-								.findAllByPhoneNoEmail(signUpRequest.getPhoneNo().trim(), signUpRequest.getEmail().trim());
+								.findAllByPhoneNoEmail(signUpRequest.getPhoneNo().trim(),
+										signUpRequest.getEmail().trim());
 						for (CredentialMaster credentialMaster : credentialMasterDBList) {
 							if (credentialMaster.getEmail() != null && credentialMaster.getPhoneNo() != null
 									&& (credentialMaster.getEmail().toLowerCase()
@@ -142,6 +149,7 @@ public class UserServiceImpl implements UserService {
 										"Email and phone number cannot be duplicate !!!", null);
 						}
 						signUpRequest.setPassword(generateRandomPassword());
+						System.out.println(signUpRequest.getPassword() + " Password");
 //						signUpRequest.setPassword("Rst@2023");
 						List<UserType> userTypeList = Arrays.asList(UserType.values());
 						UserType userType = null;

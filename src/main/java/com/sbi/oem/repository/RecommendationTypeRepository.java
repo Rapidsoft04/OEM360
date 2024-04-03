@@ -15,7 +15,7 @@ public interface RecommendationTypeRepository extends JpaRepository<Recommendati
 	@Query(value = "SELECT * FROM recommendation_type WHERE company_id = ?1 AND is_active = 1 ORDER BY updated_at DESC", nativeQuery = true)
 	List<RecommendationType> findAllByCompanyId(Long companyId);
 
-	@Query(value = "SELECT * FROM recommendation_type where name=?1", nativeQuery = true)
+	@Query(value = "SELECT * FROM recommendation_type WHERE name = ?1 AND is_active = true", nativeQuery = true)
 	Optional<RecommendationType> findRecommendationTypeByName(String name);
 
 }
