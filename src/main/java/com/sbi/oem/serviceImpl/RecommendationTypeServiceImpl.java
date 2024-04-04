@@ -43,7 +43,7 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 							recommendationType.setCompanyId(master.get().getUserId().getCompany().getId());
 							recommendationType.setIsActive(true);
 							recommendationTypeRepository.save(recommendationType);
-							return new Response<>(HttpStatus.OK.value(), "success", null);
+							return new Response<>(HttpStatus.OK.value(), "Recommendation type added successfully", null);
 						} else {
 							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation Type already exist",
 									null);
@@ -124,7 +124,11 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 					recommendationType.setCreatedAt(recommendationTypeObject.get().getCreatedAt());
 					recommendationType.setUpdatedAt(new Date());
 					recommendationTypeRepository.save(recommendationType);
-					return new Response<>(HttpStatus.OK.value(), "Recommendation type updated successfully", null);
+					if(recommendationType.getIsActive()) {						
+						return new Response<>(HttpStatus.OK.value(), "Recommendation type updated successfully", null);
+					} else {
+						return new Response<>(HttpStatus.OK.value(), "Recommendation type deleted successfully", null);
+					}
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access.", null);
 				}

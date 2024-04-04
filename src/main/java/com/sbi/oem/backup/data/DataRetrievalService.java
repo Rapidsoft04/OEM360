@@ -21,8 +21,10 @@ public class DataRetrievalService {
 	public Map<String, Department> getAllDepartmentsMap() {
 		if (departmentMap.isEmpty()) {
 			List<Department> departmentList = departmentRepository.findAll();
-			for (Department department : departmentList) {
-				departmentMap.put(department.getName(), department);
+			if (!departmentList.isEmpty()) {
+				for (Department department : departmentList) {
+					departmentMap.put(department.getName().toUpperCase(), department);
+				}
 			}
 		}
 		return departmentMap;

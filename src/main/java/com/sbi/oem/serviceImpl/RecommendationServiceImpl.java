@@ -206,7 +206,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())
-						|| master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+						|| (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name()))) {
+					if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())
+							&& master.get().getUserId().getDepartment() != null && !recommendationAddRequestDto
+									.getDepartmentIds().contains(master.get().getUserId().getDepartment().getId())) {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(),
+								"Your department must be included in the list of departments while adding recommendations.",
+								null);
+					}
 					if (checkIfRecommendationAlreadyExist(recommendationAddRequestDto).equals(Boolean.valueOf(true))) {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation already reported", null);
 					}
@@ -277,6 +284,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendation.setRecommendationStatus(
 									new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
 							recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
+							recommendation.setUserType(master.get().getUserTypeId());
 							List<Recommendation> recommendList = recommendationRepository.findAll();
 
 							Integer size = 0;
@@ -1287,7 +1295,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Workbook workbook = WorkbookFactory.create(file.getInputStream());
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())
+						|| master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+
 					int numberOfSheets = workbook.getNumberOfSheets();
 					List<String> headerList = new ArrayList<>();
 					List<String> cellValueString = new ArrayList<>();
@@ -1558,13 +1568,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 											.asList(object.get("Department*").toString().split(","));
 
 									for (String departmentName : departmentNames) {
-										String trimmedDepartmentName = departmentName.trim().toUpperCase();
+										departmentName = departmentName.trim().toUpperCase();
+
+										// Standardize the department name
+										String standardizedDepartment = departmentName.replace("–", "-").replace("*",
+												"");
+
 										if (dataRetrievalService.getAllDepartmentsMap()
-												.containsKey(trimmedDepartmentName)) {
+												.containsKey(standardizedDepartment)) {
 											recommendationDepartments.add(dataRetrievalService.getAllDepartmentsMap()
-													.get(trimmedDepartmentName));
+													.get(standardizedDepartment));
 										}
 									}
+
 								}
 
 								if (object.has("Recommended By")) {
@@ -1584,11 +1600,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 										return new Response<>(HttpStatus.BAD_REQUEST.value(),
 												"Please provide Component Name", null);
 									} else {
-										if (componentMap.containsKey(object.get("Component Name*").toString().trim()
-												.toUpperCase().replace("*", ""))) {
-											recommendationDto.setComponentId(componentMap
-													.get(object.get("Component Name*").toString().trim().toUpperCase())
-													.getId());
+										String componentName = object.get("Component Name*").toString().trim()
+												.toUpperCase();
+
+										String standardizedComponent = componentName.replace("–", "-").replace("*", "");
+
+										if (componentMap.containsKey(standardizedComponent)) {
+											recommendationDto
+													.setComponentId(componentMap.get(standardizedComponent).getId());
 										} else {
 											recommendationDto.setComponentId(null);
 										}
@@ -1604,16 +1623,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 												.setExpectedImpact(object.get("Expected Impact").toString().trim());
 									}
 								}
-
-//								if (object.has("Impacted Departments")) {
-//									if (object.get("Impacted Departments") == null
-//											|| object.get("Impacted Departments").toString().trim().isEmpty()) {
-//										recommendationDto.setExpectedImpact(null);
-//									} else {
-//										recommendationDto.setExpectedImpact(
-//												object.get("Impacted Departments").toString().trim());
-//									}
-//								}
 
 								if (object.has("Impacted Departments")) {
 									if (object.get("Impacted Departments") != null
@@ -1655,12 +1664,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 									return new Response<>(HttpStatus.BAD_REQUEST.value(),
 											"Patch / Recommendation release date should be today or earlier", null);
 								}
-
-//								// Check if Recommended End Date is after today
-//								if (recommendationDto.getRecommendDate().after(currentDate)) {
-//									return new Response<>(HttpStatus.BAD_REQUEST.value(),
-//											"Recommended End Date should be today or earlier", null);
-//								}
 
 								List<Long> departmentIds = new ArrayList<>();
 								for (Department department : recommendationDepartments) {
@@ -1704,10 +1707,20 @@ public class RecommendationServiceImpl implements RecommendationService {
 									response.setResponseCode(HttpStatus.OK.value());
 								}
 
+								if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())
+										&& master.get().getUserId().getDepartment() != null
+										&& !recommendationDto.getDepartmentIds()
+												.contains(master.get().getUserId().getDepartment().getId())) {
+									return new Response<>(HttpStatus.BAD_REQUEST.value(),
+											"Your department must be included in the list of departments while adding recommendations.",
+											null);
+								}
+
 								if (checkIfRecommendationAlreadyExist(recommendationDto)) {
 									return new Response<>(HttpStatus.BAD_REQUEST.value(),
 											"Duplicate recommendations found", null);
 								}
+
 								requestDtosList.add(recommendationDto);
 							}
 
@@ -2049,17 +2062,31 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 	}
 
+//	public void saveTrialData(Recommendation recommendation, RecommendationAddRequestDto addRequestDto) {
+//		List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+//		if (recommendation.getRecommendationStatus().getId() == StatusEnum.Released.getId()) {
+//			statusList.remove(3);
+//			for (RecommendationStatus status : statusList) {
+//				RecommendationTrail trailData = new RecommendationTrail();
+//				if (status.getStatusName().equalsIgnoreCase(StatusEnum.Released.getName())) {
+//					trailData.setCreatedAt(addRequestDto.getRecommendationReleasedDate());
+//				} else {
+//					trailData.setCreatedAt(new Date());
+//				}
+//				trailData.setRecommendationStatus(new RecommendationStatus(status.getId()));
+//				trailData.setReferenceId(recommendation.getReferenceId());
+//				recommendationTrailRepository.save(trailData);
+//			}
+//		}
+//	}
+
 	public void saveTrialData(Recommendation recommendation, RecommendationAddRequestDto addRequestDto) {
 		List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
 		if (recommendation.getRecommendationStatus().getId() == StatusEnum.Released.getId()) {
 			statusList.remove(3);
 			for (RecommendationStatus status : statusList) {
 				RecommendationTrail trailData = new RecommendationTrail();
-				if (status.getStatusName().equalsIgnoreCase(StatusEnum.Released.getName())) {
-					trailData.setCreatedAt(addRequestDto.getRecommendationReleasedDate());
-				} else {
-					trailData.setCreatedAt(new Date());
-				}
+				trailData.setCreatedAt(addRequestDto.getRecommendationReleasedDate());
 				trailData.setRecommendationStatus(new RecommendationStatus(status.getId()));
 				trailData.setReferenceId(recommendation.getReferenceId());
 				recommendationTrailRepository.save(trailData);

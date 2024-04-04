@@ -25,6 +25,7 @@ import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.UserRepository;
 import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.DepartmentApproverService;
+import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.ValidationService;
 
 @Service
@@ -44,6 +45,9 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 
 	@Autowired
 	private ValidationService validationService;
+
+	@Autowired
+	private EmailTemplateService emailTemplateService;
 
 	@Override
 	public Response<?> save(DepartmentApprover departmentApprover) {
@@ -229,7 +233,10 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 											.setDepartment(new Department(departmentApproverRequest.getDepartmentId()));
 									credentialMaster.get().setUserTypeId(UserType.DGM);
 								}
-								userRepository.save(user.get());
+								User updatedUser = userRepository.save(user.get());
+								if (updatedUser != null) {
+									emailTemplateService.sendMailForAssignRole(updatedUser);
+								}
 								credentialMasterRepository.save(credentialMaster.get());
 								departmentApproverExist.get()
 										.setCreatedAt(departmentApproverExist.get().getCreatedAt());
@@ -247,20 +254,29 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 								if (departmentApproverRequest.getUserType().equalsIgnoreCase(UserType.AGM.name())) {
 									newDepartmentApprover.setAgm(new User(departmentApproverRequest.getUserId()));
 									user.get().setUserType(UserType.AGM);
+									user.get()
+											.setDepartment(new Department(departmentApproverRequest.getDepartmentId()));
 									credentialMaster.get().setUserTypeId(UserType.AGM);
 								} else if (departmentApproverRequest.getUserType()
 										.equalsIgnoreCase(UserType.DGM.name())) {
 									newDepartmentApprover.setDgm(new User(departmentApproverRequest.getUserId()));
 									user.get().setUserType(UserType.DGM);
+									user.get()
+											.setDepartment(new Department(departmentApproverRequest.getDepartmentId()));
 									credentialMaster.get().setUserTypeId(UserType.DGM);
 								} else if (departmentApproverRequest.getUserType()
 										.equalsIgnoreCase(UserType.APPLICATION_OWNER.name())) {
 									newDepartmentApprover
 											.setApplicationOwner(new User(departmentApproverRequest.getUserId()));
 									user.get().setUserType(UserType.APPLICATION_OWNER);
+									user.get()
+											.setDepartment(new Department(departmentApproverRequest.getDepartmentId()));
 									credentialMaster.get().setUserTypeId(UserType.APPLICATION_OWNER);
 								}
-								userRepository.save(user.get());
+								User updatedUser = userRepository.save(user.get());
+								if (updatedUser != null) {
+									emailTemplateService.sendMailForAssignRole(updatedUser);
+								}
 								credentialMasterRepository.save(credentialMaster.get());
 								departmentApproverRepository.save(newDepartmentApprover);
 								return new Response<>(HttpStatus.OK.value(), "success", null);

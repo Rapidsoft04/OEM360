@@ -10,6 +10,7 @@ import com.sbi.oem.dto.SignUpRequest;
 import com.sbi.oem.enums.RecommendationStatusEnum;
 import com.sbi.oem.model.Recommendation;
 import com.sbi.oem.model.RecommendationMessages;
+import com.sbi.oem.model.User;
 
 @Service
 public interface EmailTemplateService {
@@ -27,5 +28,7 @@ public interface EmailTemplateService {
 	void sendAllMailForRecommendation(List<Recommendation> recommendationList, RecommendationStatusEnum created);
 	
 	void sendMailForRegisterUser(SignUpRequest signUpRequest);
+	
+	void sendMailForAssignRole(User user);
 
 }

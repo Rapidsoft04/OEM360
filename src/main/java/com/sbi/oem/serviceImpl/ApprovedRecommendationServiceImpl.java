@@ -1370,8 +1370,16 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 							}
 							Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 									.findAllByDepartmentId(rcmnd.getDepartment().getId());
-							responseDto.setApprover(departmentApprover.get().getAgm());
-							responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+							if(departmentApprover.isPresent()) {
+								if(departmentApprover.get().getAgm() != null) {
+									responseDto.setApprover(departmentApprover.get().getAgm());
+								}
+								if(departmentApprover.get().getApplicationOwner() != null) {
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+								}
+							}
+//							responseDto.setApprover(departmentApprover.get().getAgm());
+//							responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
 							Date rcmdDate = com.sbi.oem.util.DateUtil
 									.convertDateToNigh12AM(responseDto.getRecommendDate());
 							if (rcmdDate.before(new Date())

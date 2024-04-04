@@ -20,7 +20,6 @@ import com.sbi.oem.dto.LoginRequest;
 import com.sbi.oem.dto.LoginResponse;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.dto.SignUpRequest;
-import com.sbi.oem.enums.FunctionalityEnum;
 import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.CompanyWisePastDateConfiguration;
 import com.sbi.oem.model.CredentialMaster;
@@ -67,9 +66,6 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private DepartmentApproverRepository departmentApproverRepository;
 
-	@Autowired
-	private FunctionalityRepository functionalityRepository;
-
 	@Override
 	public Response<?> login(LoginRequest loginRequest) throws Exception {
 		try {
@@ -91,7 +87,7 @@ public class UserServiceImpl implements UserService {
 						if (credentialMasterOptional.get().getUserTypeId().name().equals(UserType.USER.name())
 								|| credentialMasterOptional.get().getUserTypeId().name()
 										.equals(UserType.VENDOR.name())) {
-							return new Response<>(HttpStatus.BAD_REQUEST.value(), "INVALID CREDENTIALS", null);
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Access Denied. Approver role not yet assigned.", null);
 						}
 						for (UserType userType : UserType.values()) {
 							if (credentialMaster.getUserTypeId().name().equalsIgnoreCase(userType.name())) {
@@ -149,7 +145,6 @@ public class UserServiceImpl implements UserService {
 										"Email and phone number cannot be duplicate !!!", null);
 						}
 						signUpRequest.setPassword(generateRandomPassword());
-						System.out.println(signUpRequest.getPassword() + " Password");
 //						signUpRequest.setPassword("Rst@2023");
 						List<UserType> userTypeList = Arrays.asList(UserType.values());
 						UserType userType = null;

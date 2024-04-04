@@ -233,10 +233,12 @@ public class DashboardServiceImpl implements DashboardService {
 								Optional<RecommendationTrail> trailObj = recommendationTrailRepository
 										.findAllByReferenceIdAndStatusId(recommendation.getReferenceId(),
 												StatusEnum.Released.getId());
-								if (trailObj.get().getCreatedAt().before(rcmdDate)) {
-									onTimeDoneRecommendationCount = onTimeDoneRecommendationCount + 1L;
-								} else {
-									delayRecommendationCount = delayRecommendationCount + 1L;
+								if (trailObj.isPresent()) {
+									if (trailObj.get().getCreatedAt().before(rcmdDate)) {
+										onTimeDoneRecommendationCount = onTimeDoneRecommendationCount + 1L;
+									} else {
+										delayRecommendationCount = delayRecommendationCount + 1L;
+									}
 								}
 							}
 							if (recommendation.getIsAgmApproved() != null

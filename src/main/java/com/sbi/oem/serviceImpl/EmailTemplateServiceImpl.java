@@ -941,8 +941,8 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 				String userName = signUpRequest.getUserName();
 				String[] ccEmails = {};
 
-				String content = String.format(
-						"<div style='background-color: #f4f4f4; padding: 20px; max-width: 100vw;'>"
+				String content = String
+						.format("<div style='background-color: #f4f4f4; padding: 20px; max-width: 100vw;'>"
 								+ "<div style='max-width: 100vw; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow: auto;'>"
 								+ "<img style='max-height: 15vh; max-width: 15vw; background-repeat: no-repeat; float: right;' src='https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg'/>"
 								+ "<h1 class='header-title' style='font-size: 30px; margin: 0;'>%s</h1>"
@@ -957,10 +957,9 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 								+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
 								+ "<p style='font-size: 16px; color: #333;'>Admin</p>" + "</div>" + "</div>" + "</div>"
 								+ "<style>" + "@media screen and (max-width: 600px) {" + ".header-image img {"
-								+ "margin-left: 10px; " + "}" + "}" + "</style>",
-						mailHeading, sendEmail, password // Email
-						
-				);
+								+ "margin-left: 10px; " + "}" + "}" + "</style>", mailHeading, sendEmail, password // Email
+
+						);
 
 //			emailService.sendMail(sendEmail, ccEmails, mailSubject, content);
 				helper.setTo(sendEmail);
@@ -980,4 +979,55 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
 		}
 	}
 
+	@Override
+	public void sendMailForAssignRole(User user) {
+		try {
+			MimeMessage mimeMsg = javaMailService.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMsg, true);
+
+			try {
+
+				String sendEmail = user.getEmail();
+				String mailSubject = "You've Been Assigned a New Role - OEM360";
+				String mailHeading = "Congratulations on Your New Role - OEM360";
+				String userName = user.getUserName();
+				String role = user.getUserType().name();
+				String[] ccEmails = {};
+
+				String content = String
+						.format("<div style='background-color: #f4f4f4; padding: 20px; max-width: 100vw;'>"
+								+ "<div style='max-width: 100vw; background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow: auto;'>"
+								+ "<img style='max-height: 15vh; max-width: 15vw; background-repeat: no-repeat; float: right;' src='https://1000logos.net/wp-content/uploads/2018/03/SBI-Logo.jpg'/>"
+								+ "<h1 class='header-title' style='font-size: 30px; margin: 0;'>%s</h1>"
+								+ "<div style='clear: both;'></div>" + "<div>"
+								+ String.format(
+										"<p style='font-size: 20px; color: #333; font-weight: bold;'>Dear %s,</p>",
+										userName)
+								+ "<p style='font-size: 16px; color: #333;'>Congratulations! Your role has been successfully updated in OEM360.</p>"
+								+ "<p style='font-size: 16px; color: #333;'>Your new role is: <b>%s</b></p>"
+								+ "<p style='font-size: 16px; color: #333;'>If you have any questions or need further assistance, please feel free to contact us.</p>"
+								+ "<p style='font-size: 16px; color: #333;'>Best regards,</p>"
+								+ "<p style='font-size: 16px; color: #333;'>Admin</p>" + "</div>" + "</div>" + "</div>"
+								+ "<style>" + "@media screen and (max-width: 600px) {" + ".header-image img {"
+								+ "margin-left: 10px; " + "}" + "}" + "</style>", mailHeading, role // Role
+
+						);
+
+//			emailService.sendMail(sendEmail, ccEmails, mailSubject, content);
+				helper.setTo(sendEmail);
+				helper.setCc(ccEmails);
+				helper.setSubject(mailSubject);
+				helper.setText(content, true);
+				EmailThread sendMail = new EmailThread(javaMailService, mimeMsg);
+				Thread parallelThread = new Thread(sendMail);
+				parallelThread.setPriority(Thread.MAX_PRIORITY);
+				parallelThread.start();
+
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+	}
 }
