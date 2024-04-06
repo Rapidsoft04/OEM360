@@ -1784,6 +1784,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 								requestDtosList.add(recommendationDto);
 							}
 
+							if (response.getResponseCode() != HttpStatus.OK.value()) {
+								return response;
+							}
+
+							System.out.println(requestDtosList.size() + " dto list size");
 							Response<?> validExcelData = validateExcelRecommendationData(requestDtosList, master.get());
 							if (validExcelData.getResponseCode() != HttpStatus.OK.value()) {
 								return validExcelData;
@@ -2107,7 +2112,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 						recommendation.setReferenceId(refId);
 						recommendation.setUpdatedAt(new Date());
 						savedRecommendation = recommendationRepository.save(recommendation);
-						saveTrialData(savedRecommendation, addRequestDto);
+						setTrailDataList(savedRecommendation, addRequestDto);
 
 					}
 				}
@@ -2119,18 +2124,39 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 	}
 
-	public void saveTrialData(Recommendation recommendation, RecommendationAddRequestDto addRequestDto) {
+//	public void saveTrialData(Recommendation recommendation, RecommendationAddRequestDto addRequestDto) {
+//		List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+//		if (recommendation.getRecommendationStatus().getId() == StatusEnum.Released.getId()) {
+//			statusList.remove(3);
+//			for (RecommendationStatus status : statusList) {
+//				RecommendationTrail trailData = new RecommendationTrail();
+//				trailData.setCreatedAt(addRequestDto.getRecommendationReleasedDate());
+//				trailData.setRecommendationStatus(new RecommendationStatus(status.getId()));
+//				trailData.setReferenceId(recommendation.getReferenceId());
+//				recommendationTrailRepository.save(trailData);
+//			}
+//		}
+//		System.out.println("Trail list size, " + setTrailDataList(recommendation, addRequestDto).size());
+//	}
+
+	public void setTrailDataList(Recommendation recommendation, RecommendationAddRequestDto addRequestDto) {
 		List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
+		List<RecommendationTrail> trailList = new ArrayList<>();
 		if (recommendation.getRecommendationStatus().getId() == StatusEnum.Released.getId()) {
 			statusList.remove(3);
 			for (RecommendationStatus status : statusList) {
 				RecommendationTrail trailData = new RecommendationTrail();
 				trailData.setCreatedAt(addRequestDto.getRecommendationReleasedDate());
+				trailData.setUpdatedAt(new Date());
 				trailData.setRecommendationStatus(new RecommendationStatus(status.getId()));
 				trailData.setReferenceId(recommendation.getReferenceId());
-				recommendationTrailRepository.save(trailData);
+				trailList.add(trailData);
 			}
 		}
+		if (!trailList.isEmpty()) {
+			recommendationTrailRepository.saveAll(trailList);
+		}
+//		return trailList;
 	}
 
 	public Response<?> validateExcelRecommendationData(List<RecommendationAddRequestDto> addRequestDtos,

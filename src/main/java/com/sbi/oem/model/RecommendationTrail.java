@@ -31,6 +31,9 @@ public class RecommendationTrail {
 	@Column(name = "created_at")
 	private Date createdAt;
 
+	@Column(name = "updated_at")
+	private Date updatedAt;
+
 	public Long getId() {
 		return id;
 	}
@@ -61,6 +64,14 @@ public class RecommendationTrail {
 
 	public void setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
+	}
+
+	public Date getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Date updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 	public RecommendationTrail() {
