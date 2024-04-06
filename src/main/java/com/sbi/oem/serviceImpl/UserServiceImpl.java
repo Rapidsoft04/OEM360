@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.sbi.oem.dto.ChangePasswordDto;
 import com.sbi.oem.dto.ForgetPasswordRequestDto;
 import com.sbi.oem.dto.LoginRequest;
 import com.sbi.oem.dto.LoginResponse;
@@ -83,11 +84,12 @@ public class UserServiceImpl implements UserService {
 					CredentialMaster credentialMaster = credentialMasterOptional.get();
 
 					if (credentialMaster.passwordMatches(loginRequest.getPassword())) {
-						
+
 						if (credentialMasterOptional.get().getUserTypeId().name().equals(UserType.USER.name())
 								|| credentialMasterOptional.get().getUserTypeId().name()
 										.equals(UserType.VENDOR.name())) {
-							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Access Denied. Approver role not yet assigned.", null);
+							return new Response<>(HttpStatus.BAD_REQUEST.value(),
+									"Access Denied. Approver role not yet assigned.", null);
 						}
 						for (UserType userType : UserType.values()) {
 							if (credentialMaster.getUserTypeId().name().equalsIgnoreCase(userType.name())) {
@@ -144,8 +146,8 @@ public class UserServiceImpl implements UserService {
 								return new Response<>(HttpStatus.BAD_REQUEST.value(),
 										"Email and phone number cannot be duplicate !!!", null);
 						}
-						signUpRequest.setPassword(generateRandomPassword());
-//						signUpRequest.setPassword("Rst@2023");
+//						signUpRequest.setPassword(generateRandomPassword());
+						signUpRequest.setPassword("Rst@2023");
 						List<UserType> userTypeList = Arrays.asList(UserType.values());
 						UserType userType = null;
 						for (UserType user : userTypeList) {
@@ -199,7 +201,7 @@ public class UserServiceImpl implements UserService {
 						credentialMasterSave = credentialMasterRepository.save(credentialMasterSave);
 						emailTemplateService.sendMailForRegisterUser(signUpRequest);
 
-						if (departmentApprover != null && !userType.name().equals(UserType.USER.name())) {
+						if (departmentApprover.isPresent() && !userType.name().equals(UserType.USER.name())) {
 							if (userType.name().equals(UserType.AGM.name())) {
 								departmentApprover.get().setAgm(userDataSave);
 							} else if (userType.name().equals(UserType.APPLICATION_OWNER.name())) {
@@ -215,6 +217,7 @@ public class UserServiceImpl implements UserService {
 									|| userType.name().equals(UserType.APPLICATION_OWNER.name())
 									|| userType.name().equals(UserType.DGM.name()))) {
 								approver.setIsActive(true);
+								approver.setDepartment(department);
 								if (userType.name().equals(UserType.AGM.name())) {
 									approver.setAgm(userDataSave);
 								} else if (userType.name().equals(UserType.APPLICATION_OWNER.name())) {
@@ -330,5 +333,74 @@ public class UserServiceImpl implements UserService {
 		}
 
 		return new String(passwordArray);
+	}
+
+	@Override
+	public Response<?> updatePassword(ChangePasswordDto changePasswordDto) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master != null && master.isPresent()) {
+				CredentialMaster credentialMaster = master.get();
+
+				if (credentialMaster.passwordMatches(changePasswordDto.getCurrentPassword())) {
+					credentialMaster.setEmail(credentialMaster.getEmail());
+					credentialMaster.setName(credentialMaster.getName());
+					credentialMaster.setPhoneNo(credentialMaster.getPhoneNo());
+					credentialMaster.setUserId(credentialMaster.getUserId());
+					credentialMaster.setUserTypeId(credentialMaster.getUserTypeId());
+					credentialMaster.setPassword(credentialMaster.passwordEncoder(changePasswordDto.getNewPassword()));
+					credentialMasterRepository.save(credentialMaster);
+					return new Response<>(HttpStatus.OK.value(), "Password updated sucessfully", null);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Current password does not match.", null);
+				}
+
+			} else {
+				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
+	@Override
+	public Response<?> getUserTypeByDepartmentId(Long departmentId) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master.isPresent()) {
+				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())) {
+					if (departmentId != null) {
+						Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+								.findAllByDepartmentId(departmentId);
+
+						List<UserType> userTypeList = new ArrayList<>();
+						if (departmentApprover.isPresent()) {
+							if (departmentApprover.get().getApplicationOwner() == null) {
+								userTypeList.add(UserType.APPLICATION_OWNER);
+							}
+							if (departmentApprover.get().getAgm() == null) {
+								userTypeList.add(UserType.AGM);
+							}
+							if (departmentApprover.get().getDgm() == null) {
+								userTypeList.add(UserType.DGM);
+							}
+						}
+						userTypeList.add(UserType.USER);
+
+						return new Response<>(HttpStatus.OK.value(), "User types list", userTypeList);
+					} else {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide department id", null);
+					}
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+		}
 	}
 }

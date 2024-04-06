@@ -34,7 +34,7 @@ public class DepartmentApproverController {
 //					HttpStatus.BAD_REQUEST);
 //		}
 //	}
-	
+
 	@PostMapping("/save")
 	public ResponseEntity<?> saveDepartmentApprover2(@RequestBody AddDepartmentApproverDto departmentApprover) {
 		try {
@@ -75,6 +75,18 @@ public class DepartmentApproverController {
 	public ResponseEntity<?> getDepartmentApproverByDepartmentId(@RequestParam("departmentId") Long departmentId) {
 		try {
 			Response<?> response = departmentApproverService.getDepartmentApproverByDepartmentId(departmentId);
+			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping("/department/id")
+	public ResponseEntity<?> getUserTypeByDepartmentId(@RequestParam("departmentId") Long departmentId) {
+		try {
+			Response<?> response = departmentApproverService.getUserTypeByDepartmentId(departmentId);
 			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 		} catch (Exception e) {
 			e.printStackTrace();

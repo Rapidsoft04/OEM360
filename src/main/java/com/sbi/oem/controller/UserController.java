@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sbi.oem.dto.ChangePasswordDto;
 import com.sbi.oem.dto.ForgetPasswordRequestDto;
 import com.sbi.oem.dto.LoginRequest;
 import com.sbi.oem.dto.Response;
@@ -52,5 +54,23 @@ public class UserController {
 	public ResponseEntity<?> getAllUserTypes() {
 		Response<?> response = userService.getAllUserTypes();
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
+	@RequestMapping(value = "/update/password", method = RequestMethod.POST)
+	public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
+		Response<?> response = userService.updatePassword(changePasswordDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
+	@RequestMapping(value = "/types/by/department/id", method = RequestMethod.GET)
+	public ResponseEntity<?> getUserTypeByDepartmentId(@RequestParam("departmentId") Long departmentId) {
+		try {
+			Response<?> response = userService.getUserTypeByDepartmentId(departmentId);
+			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null),
+					HttpStatus.BAD_REQUEST);
+		}
 	}
 }

@@ -11,10 +11,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -38,6 +41,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.google.gson.JsonObject;
 import com.sbi.oem.backup.data.DataRetrievalService;
+import com.sbi.oem.dto.DepartmentListDto;
 import com.sbi.oem.dto.PriorityResponseDto;
 import com.sbi.oem.dto.RecommendationAddRequestDto;
 import com.sbi.oem.dto.RecommendationDetailsRequestDto;
@@ -71,6 +75,7 @@ import com.sbi.oem.repository.RecommendationStatusRepository;
 import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.repository.RecommendationTypeRepository;
 import com.sbi.oem.security.JwtUserDetailsService;
+import com.sbi.oem.service.DepartmentService;
 import com.sbi.oem.service.EmailTemplateService;
 import com.sbi.oem.service.NotificationService;
 import com.sbi.oem.service.RecommendationService;
@@ -121,6 +126,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private DataRetrievalService dataRetrievalService;
+
+	@Autowired
+	private DepartmentService departmentService;
 
 	@Value("${application.name}")
 	private String applicationName;
@@ -207,6 +215,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())
 						|| (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name()))) {
+
 					if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())
 							&& master.get().getUserId().getDepartment() != null && !recommendationAddRequestDto
 									.getDepartmentIds().contains(master.get().getUserId().getDepartment().getId())) {
@@ -214,6 +223,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								"Your department must be included in the list of departments while adding recommendations.",
 								null);
 					}
+
 					if (checkIfRecommendationAlreadyExist(recommendationAddRequestDto).equals(Boolean.valueOf(true))) {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation already reported", null);
 					}
@@ -1306,7 +1316,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 					String[] expectedColumnNames = { "OEM/Vendor*", "Description*", "Type*", "Priority*",
 							"Patch / Recommendation release date*", "Recommended End Date*", "Department*",
 							"Recommended By", "Component Name*", "Expected Impact", "Impacted Departments", "Status*",
-							"Document link" };
+							"Document Link" };
 					List<RecommendationType> recommendationTypeList = recommendationTypeRepository.findAll();
 					List<Component> componentList = componentRepository.findAll();
 					Map<String, RecommendationType> recommendationTypeMap = new HashMap<>();
@@ -1432,7 +1442,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 									} else {
 										String oemVendor = object.get("OEM/Vendor*").toString().trim();
 										// Remove whitespace from the value before comparison
-										if (oemVendor.equals("OEM")) {
+										if (oemVendor.equalsIgnoreCase("OEM")) {
 											oemVendor = oemVendor.concat("_SI");
 										}
 										if (oemVendor.equalsIgnoreCase(UserType.OEM_SI.name())) {
@@ -1455,23 +1465,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 										recommendationDto.setDescription(object.getString("Description*").trim());
 									}
 								}
-//								if (object.has("Type*")) {
-//									if (object.get("Type*") == null
-//											|| object.get("Type*").toString().trim().isEmpty()) {
-////										recommendationDto.setTypeId(null);
-//										return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide type",
-//												null);
-//									} else {
-//										String type = StringEscapeUtils.unescapeJava(object.get("Type*").toString().trim().toUpperCase());
-//										if (recommendationTypeMap.containsKey(
-//												type.replace("*", ""))) {
-//											recommendationDto.setTypeId(recommendationTypeMap.get(object.get("Type*")
-//													.toString().trim().toUpperCase().replace("*", "")).getId());
-//										} else {
-//											recommendationDto.setTypeId(null);
-//										}
-//									}
-//								}
 
 								if (object.has("Type*")) {
 									if (object.get("Type*") == null
@@ -1559,6 +1552,30 @@ public class RecommendationServiceImpl implements RecommendationService {
 									}
 								}
 
+//								if (object.has("Department*")) {
+//									if (object.get("Department*").toString().trim().isEmpty()) {
+//										return new Response<>(HttpStatus.BAD_REQUEST.value(),
+//												"Please provide department", null);
+//									}
+//									List<String> departmentNames = Arrays
+//											.asList(object.get("Department*").toString().split(","));
+//
+//									for (String departmentName : departmentNames) {
+//										departmentName = departmentName.trim().toUpperCase();
+//
+//										// Standardize the department name
+//										String standardizedDepartment = departmentName.replace("–", "-").replace("*",
+//												"");
+//
+//										if (dataRetrievalService.getAllDepartmentsMap()
+//												.containsKey(standardizedDepartment)) {
+//											recommendationDepartments.add(dataRetrievalService.getAllDepartmentsMap()
+//													.get(standardizedDepartment));
+//										}
+//									}
+//
+//								}
+
 								if (object.has("Department*")) {
 									if (object.get("Department*").toString().trim().isEmpty()) {
 										return new Response<>(HttpStatus.BAD_REQUEST.value(),
@@ -1567,9 +1584,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 									List<String> departmentNames = Arrays
 											.asList(object.get("Department*").toString().split(","));
 
+									// Convert the list to a set to remove duplicates, ignoring case
+									Set<String> uniqueDepartmentNames = new HashSet<>();
 									for (String departmentName : departmentNames) {
-										departmentName = departmentName.trim().toUpperCase();
+										uniqueDepartmentNames.add(departmentName.trim().toUpperCase());
+									}
 
+									// Check if the size of the set is different from the size of the list
+									if (uniqueDepartmentNames.size() != departmentNames.size()) {
+										return new Response<>(HttpStatus.BAD_REQUEST.value(),
+												"Duplicate department found", null);
+									}
+
+									for (String departmentName : uniqueDepartmentNames) {
 										// Standardize the department name
 										String standardizedDepartment = departmentName.replace("–", "-").replace("*",
 												"");
@@ -1580,7 +1607,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 													.get(standardizedDepartment));
 										}
 									}
-
 								}
 
 								if (object.has("Recommended By")) {
@@ -1624,11 +1650,46 @@ public class RecommendationServiceImpl implements RecommendationService {
 									}
 								}
 
+//								if (object.has("Impacted Departments")) {
+//									if (object.get("Impacted Departments") != null
+//											&& !object.get("Impacted Departments").toString().trim().isEmpty()) {
+//										recommendationDto.setImpactedDepartments(
+//												object.get("Impacted Departments").toString().trim());
+//									}
+//								}
+
 								if (object.has("Impacted Departments")) {
 									if (object.get("Impacted Departments") != null
 											&& !object.get("Impacted Departments").toString().trim().isEmpty()) {
-										recommendationDto.setImpactedDepartments(
-												object.get("Impacted Departments").toString().trim());
+										String impactedDepartmentsString = object.get("Impacted Departments").toString()
+												.trim();
+										List<String> impactedDepartmentsList = Arrays
+												.asList(impactedDepartmentsString.split(","));
+
+										List<String> invalidDepartments = new ArrayList<>();
+
+										for (String departmentName : impactedDepartmentsList) {
+											departmentName = departmentName.trim().toUpperCase();
+											// Standardize the department name
+											String standardizedDepartment = departmentName.replace("–", "-")
+													.replace("*", "");
+
+											if (!dataRetrievalService.getAllDepartmentsMap()
+													.containsKey(standardizedDepartment)) {
+												invalidDepartments.add(departmentName);
+											}
+										}
+
+										if (!invalidDepartments.isEmpty()) {
+											StringBuilder errorMessage = new StringBuilder(
+													"Invalid impacted department: ");
+											errorMessage.append(String.join(", ", invalidDepartments));
+											return new Response<>(HttpStatus.BAD_REQUEST.value(),
+													errorMessage.toString(), null);
+										}
+
+										// All departments are valid, set the impactedDepartments field
+										recommendationDto.setImpactedDepartments(impactedDepartmentsString);
 									}
 								}
 
@@ -1648,12 +1709,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 									}
 								}
 
-								if (object.has("Document link")) {
-									if (object.get("Document link") == null
-											|| object.get("Document link").toString().trim().isEmpty()) {
+								if (object.has("Document Link")) {
+									if (object.get("Document Link") == null
+											|| object.get("Document Link").toString().trim().isEmpty()) {
 										recommendationDto.setUrlLink(null);
 									} else {
-										recommendationDto.setUrlLink(object.get("Document link").toString().trim());
+										recommendationDto.setUrlLink(object.get("Document Link").toString().trim());
 									}
 								}
 
@@ -1711,17 +1772,21 @@ public class RecommendationServiceImpl implements RecommendationService {
 										&& master.get().getUserId().getDepartment() != null
 										&& !recommendationDto.getDepartmentIds()
 												.contains(master.get().getUserId().getDepartment().getId())) {
-									return new Response<>(HttpStatus.BAD_REQUEST.value(),
-											"Your department must be included in the list of departments while adding recommendations.",
+									return new Response<>(HttpStatus.BAD_REQUEST.value(), "Provide valid department.",
 											null);
 								}
 
-								if (checkIfRecommendationAlreadyExist(recommendationDto)) {
-									return new Response<>(HttpStatus.BAD_REQUEST.value(),
-											"Duplicate recommendations found", null);
-								}
+//								if (checkIfRecommendationAlreadyExist(recommendationDto)) {
+//									return new Response<>(HttpStatus.BAD_REQUEST.value(),
+//											"Duplicate recommendations found", null);
+//								}
 
 								requestDtosList.add(recommendationDto);
+							}
+
+							Response<?> validExcelData = validateExcelRecommendationData(requestDtosList, master.get());
+							if (validExcelData.getResponseCode() != HttpStatus.OK.value()) {
+								return validExcelData;
 							}
 
 							Response<?> addRecommendation = saveAllRecommendationsThroughExcel(requestDtosList,
@@ -1754,7 +1819,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide a valid file.", null);
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 	}
 
@@ -2038,18 +2103,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 						String refId = generateReferenceId(size);
 						recommendation.setIsAppOwnerApproved(true);
 						recommendation.setIsAppOwnerRejected(false);
-						recommendation.setIsAgmApproved(false);
+						recommendation.setIsAgmApproved(true);
 						recommendation.setReferenceId(refId);
 						recommendation.setUpdatedAt(new Date());
-//						recommendationList.add(recommendation);
-//						RecommendationTrail trailData = new RecommendationTrail();
-//						trailData.setCreatedAt(new Date());
-//						trailData.setRecommendationStatus(
-//								new RecommendationStatus(StatusEnum.Released.getId()));
-//						trailData.setReferenceId(refId);
-//						recommendatioTrailList.add(trailData);
 						savedRecommendation = recommendationRepository.save(recommendation);
-//						recommendationTrailRepository.save(trailData);
 						saveTrialData(savedRecommendation, addRequestDto);
 
 					}
@@ -2062,24 +2119,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 	}
 
-//	public void saveTrialData(Recommendation recommendation, RecommendationAddRequestDto addRequestDto) {
-//		List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
-//		if (recommendation.getRecommendationStatus().getId() == StatusEnum.Released.getId()) {
-//			statusList.remove(3);
-//			for (RecommendationStatus status : statusList) {
-//				RecommendationTrail trailData = new RecommendationTrail();
-//				if (status.getStatusName().equalsIgnoreCase(StatusEnum.Released.getName())) {
-//					trailData.setCreatedAt(addRequestDto.getRecommendationReleasedDate());
-//				} else {
-//					trailData.setCreatedAt(new Date());
-//				}
-//				trailData.setRecommendationStatus(new RecommendationStatus(status.getId()));
-//				trailData.setReferenceId(recommendation.getReferenceId());
-//				recommendationTrailRepository.save(trailData);
-//			}
-//		}
-//	}
-
 	public void saveTrialData(Recommendation recommendation, RecommendationAddRequestDto addRequestDto) {
 		List<RecommendationStatus> statusList = recommendationStatusRepository.findAll();
 		if (recommendation.getRecommendationStatus().getId() == StatusEnum.Released.getId()) {
@@ -2091,6 +2130,73 @@ public class RecommendationServiceImpl implements RecommendationService {
 				trailData.setReferenceId(recommendation.getReferenceId());
 				recommendationTrailRepository.save(trailData);
 			}
+		}
+	}
+
+	public Response<?> validateExcelRecommendationData(List<RecommendationAddRequestDto> addRequestDtos,
+			CredentialMaster master) {
+		try {
+
+			Set<String> uniqueEntries = new HashSet<>();
+			for (RecommendationAddRequestDto dto : addRequestDtos) {
+
+				if (master.getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+					List<Long> departmentIds = dto.getDepartmentIds();
+
+					if (departmentIds.size() > 1
+							|| !Objects.equals(master.getUserId().getDepartment().getId(), departmentIds.get(0))) {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(),
+								"You can only add recommendations for your department.", null);
+					}
+				}
+
+				String description = dto.getDescription() != null ? dto.getDescription().toLowerCase().trim() : null;
+				Long typeId = dto.getTypeId();
+				Long priorityId = dto.getPriorityId();
+				Date recommendDate = dto.getRecommendDate();
+				Long componentId = dto.getComponentId();
+				String departmentIds = dto.getDepartmentIds().toString();
+				String entryString = description + "_" + typeId + "_" + priorityId + "_" + recommendDate + "_"
+						+ componentId + "_" + departmentIds;
+
+				// Same Recommendation with in the excel
+				if (!uniqueEntries.add(entryString)) {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Duplicate Recommendation found", null);
+				}
+
+				// If recommendation already exists in db
+				if (checkIfRecommendationAlreadyExist(dto)) {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Duplicate recommendations found", null);
+				}
+
+				Response<?> commonComponentsResponse = departmentService
+						.getCommonComponents(new DepartmentListDto(dto.getDepartmentIds()));
+				if (commonComponentsResponse.getResponseCode() == HttpStatus.OK.value()) {
+					List<Component> components = (List<Component>) commonComponentsResponse.getData();
+					if (!components.isEmpty()) {
+						List<Long> componentIds = components.stream().map(Component::getId)
+								.collect(Collectors.toList());
+						if (!componentIds.contains(dto.getComponentId())) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(),
+									"Component not mapped with department you provided for recommendation with description, "
+											+ dto.getDescription(),
+									null);
+						}
+					} else {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(),
+								"Provide common component for the departments you provided for recommendation with description, "
+										+ dto.getDescription(),
+								null);
+					}
+
+				}
+
+			}
+
+			return new Response<>(HttpStatus.OK.value(), "success", null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
 		}
 	}
 

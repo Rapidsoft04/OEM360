@@ -1,8 +1,10 @@
 package com.sbi.oem.serviceImpl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -422,6 +424,46 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
 			}
 
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+		}
+	}
+
+	@Override
+	public Response<?> getUserTypeByDepartmentId(Long departmentId) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master.isPresent()) {
+				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())) {
+					if (departmentId != null) {
+						Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+								.findAllByDepartmentId(departmentId);
+
+						List<UserType> userTypeList = new ArrayList<>();
+						if (departmentApprover.isPresent()) {
+							if (departmentApprover.get().getApplicationOwner() == null) {
+								userTypeList.add(UserType.APPLICATION_OWNER);
+							}
+							if (departmentApprover.get().getAgm() == null) {
+								userTypeList.add(UserType.AGM);
+							}
+							if (departmentApprover.get().getDgm() == null) {
+								userTypeList.add(UserType.DGM);
+							}
+						}
+						userTypeList.add(UserType.USER);
+
+						return new Response<>(HttpStatus.OK.value(), "User types list", userTypeList);
+					} else {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide department id", null);
+					}
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);

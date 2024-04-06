@@ -43,7 +43,8 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 							recommendationType.setCompanyId(master.get().getUserId().getCompany().getId());
 							recommendationType.setIsActive(true);
 							recommendationTypeRepository.save(recommendationType);
-							return new Response<>(HttpStatus.OK.value(), "Recommendation type added successfully", null);
+							return new Response<>(HttpStatus.OK.value(), "Recommendation type added successfully",
+									null);
 						} else {
 							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation Type already exist",
 									null);
@@ -70,7 +71,9 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())
+						|| master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())
+						|| master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 					List<RecommendationType> list = recommendationTypeRepository
 							.findAllByCompanyId(master.get().getUserId().getCompany().getId());
 					if (!list.isEmpty()) {
@@ -110,7 +113,8 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 					Optional<RecommendationType> recommendationTypeObject = recommendationTypeRepository
 							.findById(recommendationType.getId());
 
-					if (recommendationTypeObject == null) {
+					if (recommendationTypeObject == null || (recommendationTypeObject.isPresent()
+							&& !recommendationTypeObject.get().getIsActive())) {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation Type not found", null);
 					}
 					Optional<RecommendationType> recommendationTypeExistByName = recommendationTypeRepository
@@ -124,7 +128,7 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 					recommendationType.setCreatedAt(recommendationTypeObject.get().getCreatedAt());
 					recommendationType.setUpdatedAt(new Date());
 					recommendationTypeRepository.save(recommendationType);
-					if(recommendationType.getIsActive()) {						
+					if (recommendationType.getIsActive()) {
 						return new Response<>(HttpStatus.OK.value(), "Recommendation type updated successfully", null);
 					} else {
 						return new Response<>(HttpStatus.OK.value(), "Recommendation type deleted successfully", null);

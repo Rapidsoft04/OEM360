@@ -94,7 +94,9 @@ public class ComponentServiceImpl implements ComponentService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())
+						|| master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())
+						|| master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 					if (departmentId != null) {
 						List<DepartmentComponentMapping> componentMappings = componentMappingRepository
 								.findAllByDepartmentId(departmentId);
@@ -127,7 +129,9 @@ public class ComponentServiceImpl implements ComponentService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())
+						|| master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())
+						|| master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 					List<Component> componentList = componentRepository.findAll();
 					List<DepartmentComponentMapping> departmentComponentMappings = componentMappingRepository.findAll();
 					List<ComponentDto> componentDtos = new ArrayList<>();
@@ -162,7 +166,9 @@ public class ComponentServiceImpl implements ComponentService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
-				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())) {
+				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())
+						|| master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())
+						|| master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 					List<Component> componentList = componentRepository
 							.findAllByCompanyId(master.get().getUserId().getCompany().getId());
 					List<ComponentDepartmentDto> list = new ArrayList<>();

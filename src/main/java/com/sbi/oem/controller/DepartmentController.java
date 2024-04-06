@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbi.oem.dto.AddDepartmentDto;
+import com.sbi.oem.dto.DepartmentDto;
+import com.sbi.oem.dto.DepartmentListDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.service.DepartmentService;
 
@@ -32,49 +34,17 @@ public class DepartmentController {
 		Response<?> response = departmentService.getAllDepartmentByCompanyId(companyId);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
-	
+
 	@GetMapping("/get/all/with/component")
 	public ResponseEntity<?> getDepartmentListWithComponent(@RequestParam("companyId") Long companyId) {
 		Response<?> response = departmentService.getAllDepartmentWithComponent(companyId);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
-//	@PostMapping("/approver/save")
-//	public ResponseEntity<?> saveDepartmentApprover(@RequestBody DepartmentApprover departmentApprover) {
-//		Response<?> checkValidationResponse = validationService
-//				.checkForDepartmentApproverAddPayload(departmentApprover);
-//		if (checkValidationResponse.getResponseCode() == HttpStatus.OK.value()) {
-//			Response<?> response = departmentService.saveDepartmentApprover(departmentApprover);
-//			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
-//		} else {
-//			return new ResponseEntity<>(checkValidationResponse,
-//					HttpStatus.valueOf(checkValidationResponse.getResponseCode()));
-//		}
-//	}
-	
-//	@PostMapping("/approver/save")
-//	public ResponseEntity<?> saveDepartmentApproverV2(@RequestBody DepartmentApprover departmentApprover) {
-//		Response<?> checkValidationResponse = validationService
-//				.checkForDepartmentApproverAddPayload(departmentApprover);
-//		if (checkValidationResponse.getResponseCode() == HttpStatus.OK.value()) {
-//			Response<?> response = departmentService.saveDepartmentApprover(departmentApprover);
-//			return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
-//		} else {
-//			return new ResponseEntity<>(checkValidationResponse,
-//					HttpStatus.valueOf(checkValidationResponse.getResponseCode()));
-//		}
-//	}
-//
-//	@GetMapping("/approver/get/all")
-//	public ResponseEntity<?> getAllDepartmentApproverList() {
-//		Response<?> response = departmentService.getAllDepartmentApproverList();
-//		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
-//	}
-
-//	@GetMapping("/approver/id")
-//	public ResponseEntity<?> getDepartmentApproverByDepartmentId(@RequestParam("departmentId") Long departmentId) {
-//		Response<?> response = departmentService.getDepartmentApproverByDepartmentId(departmentId);
-//		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
-//	}
+	@PostMapping("/get/common/compoents")
+	public ResponseEntity<?> getCommonComponentsOfDepartments(@RequestBody DepartmentListDto departmentListDto) {
+		Response<?> response = departmentService.getCommonComponents(departmentListDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
 
 }

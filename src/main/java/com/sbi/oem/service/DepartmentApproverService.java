@@ -16,4 +16,5 @@ public interface DepartmentApproverService {
 
 	Response<?> getDepartmentApproverByDepartmentId(Long departmentId);
 
+	Response<?> getUserTypeByDepartmentId(Long departmentId);
 }

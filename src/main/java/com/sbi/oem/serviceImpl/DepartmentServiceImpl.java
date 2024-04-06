@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.sbi.oem.dto.AddDepartmentDto;
 import com.sbi.oem.dto.DepartmentComponentDto;
 import com.sbi.oem.dto.DepartmentDto;
+import com.sbi.oem.dto.DepartmentListDto;
 import com.sbi.oem.dto.Response;
 import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.Component;
@@ -80,7 +81,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 						}
 						return new Response<>(HttpStatus.OK.value(), "success", null);
 					} else {
-						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Department already exists with same name or same code", null);
+						return new Response<>(HttpStatus.BAD_REQUEST.value(),
+								"Department already exists with same name or same code", null);
 					}
 
 				} else {
@@ -209,8 +211,9 @@ public class DepartmentServiceImpl implements DepartmentService {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master.isPresent()) {
-				if (master.get().getUserTypeId() == UserType.SUPER_ADMIN
-						|| master.get().getUserTypeId() == UserType.APPLICATION_OWNER) {
+				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())
+						|| master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())
+						|| master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 					List<Department> departmentList = departmentRepository.findAllByCompanyId(companyId);
 					List<DepartmentComponentDto> list = new ArrayList<>();
 					if (!departmentList.isEmpty()) {
@@ -240,6 +243,45 @@ public class DepartmentServiceImpl implements DepartmentService {
 				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Unauthorize", null);
 			}
 
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
+	@Override
+	public Response<?> getCommonComponents(DepartmentListDto departmentListDto) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master.isPresent()) {
+				if (!departmentListDto.getDepartmentIds().isEmpty()) {
+					List<Component> componentList = new ArrayList<>();
+					if (departmentListDto.getDepartmentIds().size() == 1) {
+						List<DepartmentComponentMapping> departmentComponentMappings = componentMappingRepository
+								.findAllByDepartmentId(departmentListDto.getDepartmentIds().get(0));
+						if (!departmentComponentMappings.isEmpty()) {
+							componentList = departmentComponentMappings.stream()
+									.map(DepartmentComponentMapping::getComponent).collect(Collectors.toList());
+						}
+					} else {
+
+//						List<DepartmentComponentMapping> departmentComponentMappings = componentMappingRepository
+//								.findCommonComponents(departmentListDto.getDepartmentIds(),
+//										departmentListDto.getDepartmentIds().size());
+//						if (!departmentComponentMappings.isEmpty()) {
+//							componentList = departmentComponentMappings.stream()
+//									.map(DepartmentComponentMapping::getComponent).collect(Collectors.toList());
+//						}
+						componentList = componentMappingRepository.findCommonComponents(
+								departmentListDto.getDepartmentIds(), (long)departmentListDto.getDepartmentIds().size());
+					}
+					return new Response<>(HttpStatus.OK.value(), "Component list", componentList);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide valid department.", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Unauthorize", null);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);

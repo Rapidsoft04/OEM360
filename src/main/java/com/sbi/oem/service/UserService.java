@@ -1,5 +1,6 @@
 package com.sbi.oem.service;
 
+import com.sbi.oem.dto.ChangePasswordDto;
 import com.sbi.oem.dto.ForgetPasswordRequestDto;
 import com.sbi.oem.dto.LoginRequest;
 import com.sbi.oem.dto.Response;
@@ -14,5 +15,9 @@ public interface UserService {
 	Response<?> forgetPassword(ForgetPasswordRequestDto forgetPassword);
 
 	Response<?> getAllUserTypes();
+	
+	Response<?> updatePassword(ChangePasswordDto changePasswordDto);
+	
+	Response<?> getUserTypeByDepartmentId(Long departmentId);
 
 }
