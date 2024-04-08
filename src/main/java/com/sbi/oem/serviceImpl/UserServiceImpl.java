@@ -100,6 +100,9 @@ public class UserServiceImpl implements UserService {
 								loginResponse.setToken(jwtTokenUtil.generateToken(userDetails));
 								loginResponse.setImageUrl(credentialMaster.getUserId().getUserLogoUrl());
 								loginResponse.setCompany(credentialMaster.getUserId().getCompany());
+								loginResponse.setDepartment(credentialMaster.getUserId().getDepartment() != null
+										? credentialMaster.getUserId().getDepartment()
+										: null);
 							}
 						}
 						Optional<CompanyWisePastDateConfiguration> companyWiseUserPastDateConfiguratioObj = companyWisePastDateConfigurationRepository

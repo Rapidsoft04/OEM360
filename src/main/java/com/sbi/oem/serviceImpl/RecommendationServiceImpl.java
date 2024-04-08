@@ -1788,7 +1788,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 								return response;
 							}
 
-							System.out.println(requestDtosList.size() + " dto list size");
 							Response<?> validExcelData = validateExcelRecommendationData(requestDtosList, master.get());
 							if (validExcelData.getResponseCode() != HttpStatus.OK.value()) {
 								return validExcelData;

@@ -41,7 +41,7 @@ public class DepartmentController {
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 
-	@PostMapping("/get/common/compoents")
+	@PostMapping("/get/common/components")
 	public ResponseEntity<?> getCommonComponentsOfDepartments(@RequestBody DepartmentListDto departmentListDto) {
 		Response<?> response = departmentService.getCommonComponents(departmentListDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
