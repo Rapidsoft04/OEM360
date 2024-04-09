@@ -869,7 +869,9 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 								RecommendationResponseDto responseDto = recommendationCommonService
 										.getNoActionOemRecommendation(rcmnd, statusList, priorityMap);
-								recommendations.add(responseDto);
+								if (responseDto != null) {
+									recommendations.add(responseDto);
+								}
 
 							}
 						} else if (searchDto.getStatusId() != null
@@ -880,20 +882,26 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 									.equals(StatusEnum.Approved.getName())) {
 								RecommendationResponseDto responseDto = recommendationCommonService
 										.getApprovedWithDelayOemRecommendation(rcmnd, statusList, priorityMap);
-								recommendations.add(responseDto);
+								if (responseDto != null) {
+									recommendations.add(responseDto);
+								}
 
 							}
 						} else if (searchDto.getStatusId() != null
 								&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
 							RecommendationResponseDto responseDto = recommendationCommonService
 									.getReleasedWithDelayOemRecommendation(rcmnd, statusList, priorityMap);
-							recommendations.add(responseDto);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 
 						} else if (searchDto.getStatusId() != null
 								&& (searchDto.getStatusId().longValue() == StatusEnum.Released.getId().longValue())) {
 							RecommendationResponseDto responseDto = recommendationCommonService
 									.getReleasedOemRecommendation(rcmnd, statusList, priorityMap);
-							recommendations.add(responseDto);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 
 						} else {
 
@@ -4126,22 +4134,30 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 					RecommendationResponseDto responseDto = recommendationCommonService
 							.getNoActionOrReleaseOrReleaseWithDelayOemRecommendation(rcmnd, statusList, priorityMap,
 									master, departmentApproverMap);
-					recommendations.add(responseDto);
+					if (responseDto != null) {
+						recommendations.add(responseDto);
+					}
 				} else if (searchDto.getStatusId() != null && (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
 					RecommendationResponseDto responseDto = recommendationCommonService
 							.getApprovedButDelayOemRecommendation(rcmnd, statusList, priorityMap, master,
 									departmentApproverMap);
-					recommendations.add(responseDto);
+					if (responseDto != null) {
+						recommendations.add(responseDto);
+					}
 				} else if (searchDto.getStatusId() != null
 						&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
 					RecommendationResponseDto responseDto = recommendationCommonService
 							.getReleasedWithDelayOemRecommendation(rcmnd, statusList, priorityMap);
-					recommendations.add(responseDto);
+					if (responseDto != null) {
+						recommendations.add(responseDto);
+					}
 				} else {
 
 					RecommendationResponseDto responseDto = recommendationCommonService.getElseDataOemRecommendation(
 							rcmnd, statusList, priorityMap, departmentApproverMap, master);
-					recommendations.add(responseDto);
+					if (responseDto != null) {
+						recommendations.add(responseDto);
+					}
 
 				}
 
@@ -4156,7 +4172,9 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 						RecommendationResponseDto responseDto = recommendationCommonService
 								.getNoActionOrReleaseOrReleaseWithDelayOemRecommendation(rcmnd, statusList, priorityMap,
 										master, departmentApproverMap);
-						recommendations.add(responseDto);
+						if (responseDto != null) {
+							recommendations.add(responseDto);
+						}
 					} else if (searchDto.getStatusId() != null
 							&& (searchDto.getStatusId() == StatusEnum.No_Action.getId())) {
 						Date recommendDate = com.sbi.oem.util.DateUtil.convertDateToNigh12AM(rcmnd.getRecommendDate());
@@ -4165,14 +4183,18 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 							RecommendationResponseDto responseDto = recommendationCommonService
 									.getNoActionOemRecommendation(rcmnd, statusList, priorityMap);
-							recommendations.add(responseDto);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 						}
 					} else {
 
 						RecommendationResponseDto responseDto = recommendationCommonService
 								.getElseDataOemRecommendation(rcmnd, statusList, priorityMap, departmentApproverMap,
 										master);
-						recommendations.add(responseDto);
+						if (responseDto != null) {
+							recommendations.add(responseDto);
+						}
 
 					}
 				}
@@ -4194,7 +4216,9 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 						RecommendationResponseDto responseDto = recommendationCommonService
 								.getNoActionOrReleaseOrReleaseWithDelayOemRecommendation(rcmnd, statusList, priorityMap,
 										master, departmentApproverMap);
-						recommendations.add(responseDto);
+						if (responseDto != null) {
+							recommendations.add(responseDto);
+						}
 					} else if (searchDto.getStatusId() != null
 							&& (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
 						Date recommendDate = com.sbi.oem.util.DateUtil.convertDateToNigh12AM(rcmnd.getRecommendDate());
@@ -4203,7 +4227,9 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 							RecommendationResponseDto responseDto = recommendationCommonService
 									.getApprovedButDelayOemRecommendation(rcmnd, statusList, priorityMap, master,
 											departmentApproverMap);
-							recommendations.add(responseDto);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 						}
 					}
 
@@ -4216,7 +4242,9 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 							RecommendationResponseDto responseDto = recommendationCommonService
 									.getApprovedOemRecommendation(rcmnd, statusList, priorityMap, master,
 											departmentApproverMap);
-							recommendations.add(responseDto);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 						}
 					} else {
 						if (rcmnd.getIsAgmApproved() != null && rcmnd.getIsAgmApproved().booleanValue() == true
@@ -4228,7 +4256,9 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 							RecommendationResponseDto responseDto = recommendationCommonService
 									.getApprovedNotReleasedOemRecommendation(rcmnd, statusList, priorityMap, searchDto,
 											departmentApproverMap, master);
-							recommendations.add(responseDto);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 						}
 					}
 				}
@@ -4245,12 +4275,16 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 					RecommendationResponseDto responseDto = recommendationCommonService
 							.getNoActionOrReleaseOrReleaseWithDelayOemRecommendation(rcmnd, statusList, priorityMap,
 									master, departmentApproverMap);
-					recommendations.add(responseDto);
+					if (responseDto != null) {
+						recommendations.add(responseDto);
+					}
 				} else {
 
 					RecommendationResponseDto responseDto = recommendationCommonService.getElseDataOemRecommendation(
 							rcmnd, statusList, priorityMap, departmentApproverMap, master);
-					recommendations.add(responseDto);
+					if (responseDto != null) {
+						recommendations.add(responseDto);
+					}
 				}
 
 			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
@@ -4267,25 +4301,31 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 								&& (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay.getId()
 										.longValue()))) {
 					RecommendationResponseDto responseDto = recommendationCommonService
-							.getNoActionOrReleaseOrReleaseWithDelayOemRecommendation(
-									rcmnd, statusList, priorityMap, master, departmentApproverMap);
-					recommendations.add(responseDto);
+							.getNoActionOrReleaseOrReleaseWithDelayOemRecommendation(rcmnd, statusList, priorityMap,
+									master, departmentApproverMap);
+					if (responseDto != null) {
+						recommendations.add(responseDto);
+					}
 				} else if (searchDto.getStatusId() != null && (searchDto.getStatusId() == StatusEnum.Delayed.getId())) {
 					Date recommendDate = com.sbi.oem.util.DateUtil.convertDateToNigh12AM(rcmnd.getRecommendDate());
 					if (recommendDate.before(new Date())
 							&& rcmnd.getRecommendationStatus().getStatusName().equals(StatusEnum.Approved.getName())) {
 
 						RecommendationResponseDto responseDto = recommendationCommonService
-								.getApprovedOemRecommendation(
-										rcmnd, statusList, priorityMap, master, departmentApproverMap);
-						recommendations.add(responseDto);
+								.getApprovedOemRecommendation(rcmnd, statusList, priorityMap, master,
+										departmentApproverMap);
+						if (responseDto != null) {
+							recommendations.add(responseDto);
+						}
 
 					}
 				} else {
 
 					RecommendationResponseDto responseDto = recommendationCommonService.getElseDataOemRecommendation(
 							rcmnd, statusList, priorityMap, departmentApproverMap, master);
-					recommendations.add(responseDto);
+					if (responseDto != null) {
+						recommendations.add(responseDto);
+					}
 				}
 
 			} else if (searchDto.getChartSearchKey() != null && (!searchDto.getChartSearchKey().isEmpty())
@@ -4301,15 +4341,19 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 									&& (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay.getId()
 											.longValue()))) {
 						RecommendationResponseDto responseDto = recommendationCommonService
-								.getNoActionOrReleaseOrReleaseWithDelayOemRecommendation(
-										rcmnd, statusList, priorityMap, master, departmentApproverMap);
-						recommendations.add(responseDto);
+								.getNoActionOrReleaseOrReleaseWithDelayOemRecommendation(rcmnd, statusList, priorityMap,
+										master, departmentApproverMap);
+						if (responseDto != null) {
+							recommendations.add(responseDto);
+						}
 					} else {
 
 						RecommendationResponseDto responseDto = recommendationCommonService
-								.getElseDataOemRecommendation(
-										rcmnd, statusList, priorityMap, departmentApproverMap, master);
-						recommendations.add(responseDto);
+								.getElseDataOemRecommendation(rcmnd, statusList, priorityMap, departmentApproverMap,
+										master);
+						if (responseDto != null) {
+							recommendations.add(responseDto);
+						}
 					}
 				}
 
@@ -4329,9 +4373,11 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 										&& (searchDto.getStatusId().longValue() == StatusEnum.Released_With_Delay
 												.getId().longValue()))) {
 							RecommendationResponseDto responseDto = recommendationCommonService
-									.getNoActionOrReleaseOrReleaseWithDelayOemRecommendation(
-											rcmnd, statusList, priorityMap, master, departmentApproverMap);
-							recommendations.add(responseDto);
+									.getNoActionOrReleaseOrReleaseWithDelayOemRecommendation(rcmnd, statusList,
+											priorityMap, master, departmentApproverMap);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 						} else if (searchDto.getStatusId() != null
 								&& (searchDto.getStatusId() == StatusEnum.Released_With_Delay.getId())) {
 							Date recommendDate = com.sbi.oem.util.DateUtil
@@ -4341,14 +4387,18 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 								RecommendationResponseDto responseDto = recommendationCommonService
 										.getReleasedWithDelayOemRecommendation(rcmnd, statusList, priorityMap);
-								recommendations.add(responseDto);
+								if (responseDto != null) {
+									recommendations.add(responseDto);
+								}
 
 							}
 						} else {
 							RecommendationResponseDto responseDto = recommendationCommonService
-									.getElseDataOemRecommendation(
-											rcmnd, statusList, priorityMap, departmentApproverMap, master);
-							recommendations.add(responseDto);
+									.getElseDataOemRecommendation(rcmnd, statusList, priorityMap, departmentApproverMap,
+											master);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 						}
 
 					}
@@ -4364,7 +4414,9 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 							RecommendationResponseDto responseDto = recommendationCommonService
 									.getNoActionOemRecommendation(rcmnd, statusList, priorityMap);
-							recommendations.add(responseDto);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 
 						}
 					} else if (searchDto.getStatusId() != null
@@ -4374,9 +4426,11 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 								.equals(StatusEnum.Approved.getName())) {
 
 							RecommendationResponseDto responseDto = recommendationCommonService
-									.getApprovedOemRecommendation(
-											rcmnd, statusList, priorityMap, master, departmentApproverMap);
-							recommendations.add(responseDto);
+									.getApprovedOemRecommendation(rcmnd, statusList, priorityMap, master,
+											departmentApproverMap);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 
 						}
 					} else if (searchDto.getStatusId() != null
@@ -4385,14 +4439,18 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 
 							RecommendationResponseDto responseDto = recommendationCommonService
 									.getReleasedOemRecommendation(rcmnd, statusList, priorityMap);
-							recommendations.add(responseDto);
+							if (responseDto != null) {
+								recommendations.add(responseDto);
+							}
 						}
 					} else {
 
 						RecommendationResponseDto responseDto = recommendationCommonService
-								.getElseDataOemRecommendation(
-										rcmnd, statusList, priorityMap, departmentApproverMap, master);
-						recommendations.add(responseDto);
+								.getElseDataOemRecommendation(rcmnd, statusList, priorityMap, departmentApproverMap,
+										master);
+						if (responseDto != null) {
+							recommendations.add(responseDto);
+						}
 
 					}
 				}
