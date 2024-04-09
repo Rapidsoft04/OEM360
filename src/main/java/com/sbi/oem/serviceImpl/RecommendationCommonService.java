@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.sbi.oem.backup.data.DataRetrievalService;
 import com.sbi.oem.dto.RecommendationResponseDto;
@@ -31,6 +32,7 @@ import com.sbi.oem.repository.RecommendationDeplyomentDetailsRepository;
 import com.sbi.oem.repository.RecommendationMessagesRepository;
 import com.sbi.oem.repository.RecommendationTrailRepository;
 
+@Service
 public class RecommendationCommonService {
 
 	@Autowired

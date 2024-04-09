@@ -4,6 +4,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 import com.sbi.oem.model.Company;
+import com.sbi.oem.model.Department;
 
 public class LoginResponse {
 
@@ -24,6 +25,8 @@ public class LoginResponse {
 	private String imageUrl;
 
 	private Boolean hasAccessToUpdateForPastDate;
+
+	private Department department;
 
 	public String getEmail() {
 		return email;
@@ -87,6 +90,14 @@ public class LoginResponse {
 
 	public void setHasAccessToUpdateForPastDate(Boolean hasAccessToUpdateForPastDate) {
 		this.hasAccessToUpdateForPastDate = hasAccessToUpdateForPastDate;
+	}
+
+	public Department getDepartment() {
+		return department;
+	}
+
+	public void setDepartment(Department department) {
+		this.department = department;
 	}
 
 }

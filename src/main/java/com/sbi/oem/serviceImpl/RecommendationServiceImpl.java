@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -1509,23 +1510,66 @@ public class RecommendationServiceImpl implements RecommendationService {
 									}
 								}
 
+//								if (object.has("Patch / Recommendation release date*")) {
+//									if (object.get("Patch / Recommendation release date*") == null || object
+//											.get("Patch / Recommendation release date*").toString().trim().isEmpty()) {
+//										// recommendationDto.setRecommendDate(null);
+//										return new Response<>(HttpStatus.BAD_REQUEST.value(),
+//												"Please provide Patch / Recommendation release", null);
+//									} else {
+//										try {
+//											DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+//											Date date = formatter.parse(object
+//													.get("Patch / Recommendation release date*").toString().trim());
+//											recommendationDto.setRecommendationReleasedDate(date);
+//										} catch (ParseException e) {
+//											// Handle parsing exception
+//											e.printStackTrace();
+//											return new Response<>(HttpStatus.BAD_REQUEST.value(),
+//													"Please provide the Patch / Recommendation release date in the format dd/MM/yyyy",
+//													null);
+//										}
+//									}
+//								}
+
 								if (object.has("Patch / Recommendation release date*")) {
 									if (object.get("Patch / Recommendation release date*") == null || object
 											.get("Patch / Recommendation release date*").toString().trim().isEmpty()) {
-										// recommendationDto.setRecommendDate(null);
 										return new Response<>(HttpStatus.BAD_REQUEST.value(),
-												"Please provide Patch / Recommendation release", null);
+												"Please provide Patch / Recommendation release date", null);
 									} else {
 										try {
-											DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-											Date date = formatter.parse(object
-													.get("Patch / Recommendation release date*").toString().trim());
+											String dateString = object.get("Patch / Recommendation release date*")
+													.toString().trim();
+
+											// Split the date string into day, month, and year
+											String[] dateParts = dateString.split("/");
+											if (dateParts.length != 3) {
+												throw new ParseException("Invalid date format", 0);
+											}
+
+											int day = Integer.parseInt(dateParts[0]);
+											int month = Integer.parseInt(dateParts[1]);
+											int year = Integer.parseInt(dateParts[2]);
+
+											// Validate day, month, and year
+											if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900
+													|| year > 2100) {
+												// Invalid date, return error response
+												return new Response<>(HttpStatus.BAD_REQUEST.value(),
+														"Invalid date in Patch / Recommendation release date", null);
+											}
+
+											// Parse the date
+											DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+											Date date = formatter.parse(dateString);
+
 											recommendationDto.setRecommendationReleasedDate(date);
-										} catch (ParseException e) {
+										} catch (NumberFormatException | ParseException e) {
 											// Handle parsing exception
 											e.printStackTrace();
 											return new Response<>(HttpStatus.BAD_REQUEST.value(),
-													"Please provide the Patch / Recommendation release date in the format dd/MM/yyyy",
+													"Please provide a valid date in the format dd/MM/yyyy for Patch / Recommendation release date",
 													null);
 										}
 									}
@@ -1539,42 +1583,38 @@ public class RecommendationServiceImpl implements RecommendationService {
 												"Please provide Recommended End Date", null);
 									} else {
 										try {
-											DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-											Date date = formatter
-													.parse(object.get("Recommended End Date*").toString().trim());
+											String dateString = object.get("Recommended End Date*").toString().trim();
+
+											// Split the date string into day, month, and year
+											String[] dateParts = dateString.split("/");
+											if (dateParts.length != 3) {
+												throw new ParseException("Invalid date format", 0);
+											}
+
+											int day = Integer.parseInt(dateParts[0]);
+											int month = Integer.parseInt(dateParts[1]);
+											int year = Integer.parseInt(dateParts[2]);
+
+											// Validate day, month, and year
+											if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900
+													|| year > 2100) {
+												// Invalid date, return error response
+												return new Response<>(HttpStatus.BAD_REQUEST.value(),
+														"Invalid date in Recommended End Date", null);
+											}
+
+											// Parse the date
+											DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+											Date date = formatter.parse(dateString);
+
 											recommendationDto.setRecommendDate(date);
-										} catch (ParseException e) {
+										} catch (NumberFormatException | ParseException e) {
 											// Handle parsing exception
 											return new Response<>(HttpStatus.BAD_REQUEST.value(),
-													"Please provide the Recommended End Date in the format dd/MM/yyyy",
-													null);
+													"Please provide a valid date in the format dd/MM/yyyy", null);
 										}
 									}
 								}
-
-//								if (object.has("Department*")) {
-//									if (object.get("Department*").toString().trim().isEmpty()) {
-//										return new Response<>(HttpStatus.BAD_REQUEST.value(),
-//												"Please provide department", null);
-//									}
-//									List<String> departmentNames = Arrays
-//											.asList(object.get("Department*").toString().split(","));
-//
-//									for (String departmentName : departmentNames) {
-//										departmentName = departmentName.trim().toUpperCase();
-//
-//										// Standardize the department name
-//										String standardizedDepartment = departmentName.replace("–", "-").replace("*",
-//												"");
-//
-//										if (dataRetrievalService.getAllDepartmentsMap()
-//												.containsKey(standardizedDepartment)) {
-//											recommendationDepartments.add(dataRetrievalService.getAllDepartmentsMap()
-//													.get(standardizedDepartment));
-//										}
-//									}
-//
-//								}
 
 								if (object.has("Department*")) {
 									if (object.get("Department*").toString().trim().isEmpty()) {
@@ -1788,7 +1828,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 								return response;
 							}
 
-							System.out.println(requestDtosList.size() + " dto list size");
 							Response<?> validExcelData = validateExcelRecommendationData(requestDtosList, master.get());
 							if (validExcelData.getResponseCode() != HttpStatus.OK.value()) {
 								return validExcelData;
