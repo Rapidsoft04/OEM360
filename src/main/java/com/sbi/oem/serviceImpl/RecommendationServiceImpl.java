@@ -272,7 +272,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 //						}
 
 					}
-					String responseText = "Recommendation created successfully. An email will be sent to the application owner ";
+					String responseText = "Recommendation created successfully.";
 					Recommendation savedRecommendation = new Recommendation();
 					List<Recommendation> recommendationList = new ArrayList<>();
 					List<RecommendationTrail> recommendatioTrailList = new ArrayList<>();
@@ -319,13 +319,27 @@ public class RecommendationServiceImpl implements RecommendationService {
 							recommendationTrailRepository.save(trailData);
 							Optional<DepartmentApprover> approver = departmentApproverRepository
 									.findAllByDepartmentId(id);
-							if (approver != null && approver.isPresent()) {
-								if (approver.get().getApplicationOwner() != null
-										&& !approver.get().getApplicationOwner().getEmail().isEmpty()) {
-									responseText = responseText + approver.get().getApplicationOwner().getUserName()
+							if (savedRecommendation != null && savedRecommendation.getCreatedBy() != null
+									&& savedRecommendation.getCreatedBy().getUserType().name()
+											.equals(UserType.APPLICATION_OWNER.name())) {
+								responseText = responseText + "An email will be sent to the AGM";
+								if (approver.get().getAgm() != null
+										&& !approver.get().getAgm().getEmail().isEmpty()) {
+									responseText = responseText + approver.get().getAgm().getUserName()
 											+ "(" + approver.get().getDepartment().getName() + ")";
-									responseText += "(" + approver.get().getApplicationOwner().getEmail() + ") ";
+									responseText += "(" + approver.get().getAgm().getEmail() + ") ";
 
+								}
+							} else {
+								responseText = responseText + "An email will be sent to the application owner ";
+								if (approver != null && approver.isPresent()) {
+									if (approver.get().getApplicationOwner() != null
+											&& !approver.get().getApplicationOwner().getEmail().isEmpty()) {
+										responseText = responseText + approver.get().getApplicationOwner().getUserName()
+												+ "(" + approver.get().getDepartment().getName() + ")";
+										responseText += "(" + approver.get().getApplicationOwner().getEmail() + ") ";
+
+									}
 								}
 							}
 						}
@@ -891,6 +905,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 						Department rcmdDepartment = updateRecommendation.getDepartment();
 						Optional<DepartmentApprover> approver = departmentApproverRepository
 								.findAllByDepartmentId(rcmdDepartment.getId());
+						if (recommendObj.get().getCreatedBy() != null && recommendObj.get().getCreatedBy().getUserType()
+								.name().equals(UserType.APPLICATION_OWNER.name())) {
+							responseText += "Email will be sent to GM, ";
+							for (User user : seniorManagementUsers) {
+								responseText += "(" + user.getEmail() + ") ";
+							}
+						}
 						if (approver != null && approver.isPresent()) {
 							if (approver.get().getApplicationOwner() != null
 									&& !approver.get().getApplicationOwner().getEmail().isEmpty()) {
@@ -1345,7 +1366,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 						}
 //						if (headerList.equals(stringList)) {
 //							isValidFile = true;
+//						} else {
+//							isValidFile = false;
 //						}
+
 						if (isValidFile) {
 							if (!(sheet.getPhysicalNumberOfRows() > 1)) {
 								isEmptySheet = true;
@@ -1509,49 +1533,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 									}
 								}
 
-//								if (object.has("Patch / Recommendation release date*")) {
-//									if (object.get("Patch / Recommendation release date*") == null || object
-//											.get("Patch / Recommendation release date*").toString().trim().isEmpty()) {
-//										// recommendationDto.setRecommendDate(null);
-//										return new Response<>(HttpStatus.BAD_REQUEST.value(),
-//												"Please provide Patch / Recommendation release", null);
-//									} else {
-//										try {
-//											DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-//											Date date = formatter.parse(object
-//													.get("Patch / Recommendation release date*").toString().trim());
-//											recommendationDto.setRecommendationReleasedDate(date);
-//										} catch (ParseException e) {
-//											// Handle parsing exception
-//											e.printStackTrace();
-//											return new Response<>(HttpStatus.BAD_REQUEST.value(),
-//													"Please provide the Patch / Recommendation release date in the format dd/MM/yyyy",
-//													null);
-//										}
-//									}
-//								}
-//
-//								if (object.has("Recommended End Date*")) {
-//									if (object.get("Recommended End Date*") == null
-//											|| object.get("Recommended End Date*").toString().trim().isEmpty()) {
-//										// recommendationDto.setRecommendDate(null);
-//										return new Response<>(HttpStatus.BAD_REQUEST.value(),
-//												"Please provide Recommended End Date", null);
-//									} else {
-//										try {
-//											DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-//											Date date = formatter
-//													.parse(object.get("Recommended End Date*").toString().trim());
-//											recommendationDto.setRecommendDate(date);
-//										} catch (ParseException e) {
-//											// Handle parsing exception
-//											return new Response<>(HttpStatus.BAD_REQUEST.value(),
-//													"Please provide the Recommended End Date in the format dd/MM/yyyy",
-//													null);
-//										}
-//									}
-//								}
-								
 								if (object.has("Patch / Recommendation release date*")) {
 									if (object.get("Patch / Recommendation release date*") == null || object
 											.get("Patch / Recommendation release date*").toString().trim().isEmpty()) {
@@ -1565,7 +1546,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 											// Split the date string into day, month, and year
 											String[] dateParts = dateString.split("-");
 											if (dateParts.length != 3) {
-												throw new ParseException("Invalid date format in Patch / Recommendation release date", 0);
+												throw new ParseException(
+														"Invalid date format in Patch / Recommendation release date",
+														0);
 											}
 
 											int day = Integer.parseInt(dateParts[2]);
@@ -1608,13 +1591,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 											// Split the date string into day, month, and year
 											String[] dateParts = dateString.split("-");
 											if (dateParts.length != 3) {
-												throw new ParseException("Invalid date format in Recommended End Date", 0);
+												throw new ParseException("Invalid date format in Recommended End Date",
+														0);
 											}
 
 											int day = Integer.parseInt(dateParts[2]);
 											int month = Integer.parseInt(dateParts[1]);
 											int year = Integer.parseInt(dateParts[0]);
-
 
 											// Validate day, month, and year
 											if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900
@@ -1631,7 +1614,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 										} catch (NumberFormatException | ParseException e) {
 											// Handle parsing exception
 											return new Response<>(HttpStatus.BAD_REQUEST.value(),
-													"Please provide a valid date in the format dd/MM/yyyy for Recommended End Date", null);
+													"Please provide a valid date in the format dd/MM/yyyy for Recommended End Date",
+													null);
 										}
 									}
 								}
@@ -1665,8 +1649,29 @@ public class RecommendationServiceImpl implements RecommendationService {
 												.containsKey(standardizedDepartment)) {
 											recommendationDepartments.add(dataRetrievalService.getAllDepartmentsMap()
 													.get(standardizedDepartment));
+										} else {
+											return new Response<>(HttpStatus.BAD_REQUEST.value(),
+													"Invalid department provided in recommendation with description, "
+															+ recommendationDto.getDescription(),
+													null);
 										}
 									}
+
+//									List<Department> departments = departmentRepository.findAll();
+//									if (!departments.isEmpty()) {
+//										List<Long> validDepartmentIds = departments.stream().map(Department::getId)
+//												.collect(Collectors.toList());
+//										List<Long> departmentIdsFromRequest = recommendationDepartments.stream()
+//												.map(Department::getId).collect(Collectors.toList());
+//										for (Long departmentId : departmentIdsFromRequest) {
+//											if (!validDepartmentIds.contains(departmentId)) {
+//												return new Response<>(HttpStatus.BAD_REQUEST.value(),
+//														"Invalid department provided in recommendation with description, "
+//																+ recommendationDto.getDescription(),
+//														null);
+//											}
+//										}
+//									}
 								}
 
 								if (object.has("Recommended By")) {
@@ -1709,14 +1714,6 @@ public class RecommendationServiceImpl implements RecommendationService {
 												.setExpectedImpact(object.get("Expected Impact").toString().trim());
 									}
 								}
-
-//								if (object.has("Impacted Departments")) {
-//									if (object.get("Impacted Departments") != null
-//											&& !object.get("Impacted Departments").toString().trim().isEmpty()) {
-//										recommendationDto.setImpactedDepartments(
-//												object.get("Impacted Departments").toString().trim());
-//									}
-//								}
 
 								if (object.has("Impacted Departments")) {
 									if (object.get("Impacted Departments") != null
@@ -2255,7 +2252,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				}
 
 				Response<?> commonComponentsResponse = departmentService
-						.getCommonComponents(new DepartmentListDto(dto.getDepartmentIds()));
+						.getCommonComponentsV2(new DepartmentListDto(dto.getDepartmentIds()));
 				if (commonComponentsResponse.getResponseCode() == HttpStatus.OK.value()) {
 					List<Component> components = (List<Component>) commonComponentsResponse.getData();
 					if (!components.isEmpty()) {

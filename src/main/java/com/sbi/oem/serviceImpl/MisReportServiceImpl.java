@@ -84,14 +84,37 @@ public class MisReportServiceImpl implements MisReportService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			List<Recommendation> recommendationList = new ArrayList<>();
 			if (master != null && master.isPresent()) {
-				if ((master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name()))
-						|| (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name()))) {
+				if ((master.get().getUserTypeId().name().equals(UserType.GM_IT_INFRA.name()))) {
 					recommendationList = recommendationRepository.findAllRecommendationsForGmBySearchDto(searchDto);
+				} else if (master.get().getUserTypeId().name().equals(UserType.AGM.name())) {
+					searchDto.setDepartmentId(master.get().getUserId().getDepartment() != null
+							? master.get().getUserId().getDepartment().getId()
+							: null);
+					searchDto.setCreatedBy(null);
+					recommendationList = recommendationRepository.findAllRecommendationsOemAndAgmBySearchDto(null,
+							searchDto);
+				} else if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+					searchDto.setDepartmentId(master.get().getUserId().getDepartment() != null
+							? master.get().getUserId().getDepartment().getId()
+							: null);
+					searchDto.setCreatedBy(null);
+					recommendationList = recommendationRepository.findAllRecommendationsOemAndAgmBySearchDto(null,
+							searchDto);
+				} else if (master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+					searchDto.setDepartmentId(master.get().getUserId().getDepartment() != null
+							? master.get().getUserId().getDepartment().getId()
+							: null);
+					searchDto.setCreatedBy(null);
+					recommendationList = recommendationRepository.findAllRecommendationsOemAndAgmBySearchDto(null,
+							searchDto);
 				}
+				System.out.println("Size, " + recommendationList.size());
+				return new Response<>(HttpStatus.OK.value(), "Mis Report Data.", recommendationList);
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Invalid Credentials", null);
 			}
-			return new Response<>(HttpStatus.OK.value(), "Mis Report Data.", recommendationList);
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 	}

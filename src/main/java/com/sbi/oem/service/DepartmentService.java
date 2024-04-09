@@ -19,6 +19,8 @@ public interface DepartmentService {
 	
 	Response<?> getDepartmentApproverByDepartmentId(Long departmentId);
 	
-	Response<?> getCommonComponents(DepartmentListDto departmentListDto);
+	Response<?> getCommonComponents(String departmentList);
+
+	Response<?> getCommonComponentsV2(DepartmentListDto departmentListDto);
 
 }

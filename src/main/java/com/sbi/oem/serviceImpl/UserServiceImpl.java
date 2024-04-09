@@ -149,8 +149,8 @@ public class UserServiceImpl implements UserService {
 								return new Response<>(HttpStatus.BAD_REQUEST.value(),
 										"Email and phone number cannot be duplicate !!!", null);
 						}
-//						signUpRequest.setPassword(generateRandomPassword());
-						signUpRequest.setPassword("Rst@2023");
+						signUpRequest.setPassword(generateRandomPassword());
+//						signUpRequest.setPassword("Rst@2023");
 						List<UserType> userTypeList = Arrays.asList(UserType.values());
 						UserType userType = null;
 						for (UserType user : userTypeList) {

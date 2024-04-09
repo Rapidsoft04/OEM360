@@ -212,7 +212,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())
-						|| master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())
 						|| master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
 					List<Department> departmentList = departmentRepository.findAllByCompanyId(companyId);
 					List<DepartmentComponentDto> list = new ArrayList<>();
@@ -236,6 +235,29 @@ public class DepartmentServiceImpl implements DepartmentService {
 						}
 					}
 					return new Response<>(HttpStatus.OK.value(), "Department List", list);
+				} else if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+					List<DepartmentComponentDto> list = new ArrayList<>();
+					Department department = master.get().getUserId().getDepartment() != null
+							? master.get().getUserId().getDepartment()
+							: null;
+					if (department != null) {
+						DepartmentComponentDto departmentComponentDto = new DepartmentComponentDto();
+						List<DepartmentComponentMapping> componentMappings = componentMappingRepository
+								.findAllByDepartmentId(department.getId());
+						List<Component> components = new ArrayList<>();
+						if (!componentMappings.isEmpty()) {
+							components = componentMappings.stream().map(DepartmentComponentMapping::getComponent)
+									.collect(Collectors.toList());
+						}
+						departmentComponentDto.setId(department.getId());
+						departmentComponentDto.setName(department.getName());
+						departmentComponentDto.setCompany(department.getCompany());
+						departmentComponentDto.setCode(department.getCode());
+						departmentComponentDto.setComponentList(components);
+						departmentComponentDto.setIsActive(department.getIsActive());
+						list.add(departmentComponentDto);
+					}
+					return new Response<>(HttpStatus.OK.value(), "Department List", list);
 				} else {
 					return new Response<>(HttpStatus.BAD_REQUEST.value(), "You have no access", null);
 				}
@@ -249,8 +271,95 @@ public class DepartmentServiceImpl implements DepartmentService {
 		}
 	}
 
+//	@Override
+//	public Response<?> getCommonComponents(DepartmentListDto departmentListDto) {
+//		try {
+//			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+//			if (master.isPresent()) {
+//				if (!departmentListDto.getDepartmentIds().isEmpty()) {
+//					List<Component> componentList = new ArrayList<>();
+//					if (departmentListDto.getDepartmentIds().size() == 1) {
+//						List<DepartmentComponentMapping> departmentComponentMappings = componentMappingRepository
+//								.findAllByDepartmentId(departmentListDto.getDepartmentIds().get(0));
+//						if (!departmentComponentMappings.isEmpty()) {
+//							componentList = departmentComponentMappings.stream()
+//									.map(DepartmentComponentMapping::getComponent).collect(Collectors.toList());
+//						}
+//					} else {
+//
+////						List<DepartmentComponentMapping> departmentComponentMappings = componentMappingRepository
+////								.findCommonComponents(departmentListDto.getDepartmentIds(),
+////										departmentListDto.getDepartmentIds().size());
+////						if (!departmentComponentMappings.isEmpty()) {
+////							componentList = departmentComponentMappings.stream()
+////									.map(DepartmentComponentMapping::getComponent).collect(Collectors.toList());
+////						}
+//						componentList = componentMappingRepository.findCommonComponents(
+//								departmentListDto.getDepartmentIds(), (long)departmentListDto.getDepartmentIds().size());
+//					}
+//					return new Response<>(HttpStatus.OK.value(), "Component list", componentList);
+//				} else {
+//					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide valid department.", null);
+//				}
+//			} else {
+//				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Unauthorize", null);
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+//		}
+//	}
+
 	@Override
-	public Response<?> getCommonComponents(DepartmentListDto departmentListDto) {
+	public Response<?> getCommonComponents(String departmentList) {
+		try {
+			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
+			if (master.isPresent()) {
+				// Split the input string into a list of department IDs
+				if (departmentList == null || departmentList.isEmpty() || departmentList.trim().isEmpty()) {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide valid department", null);
+				}
+				String[] departmentIdsArray = departmentList.split("\\s*,\\s*");
+				List<Long> departmentIds = new ArrayList<>();
+				for (String departmentIdStr : departmentIdsArray) {
+					if (!departmentIdStr.trim().isEmpty()) {
+						try {
+							long departmentId = Long.parseLong(departmentIdStr.trim());
+							departmentIds.add(departmentId);
+						} catch (NumberFormatException ex) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Invalid department ID format", null);
+						}
+					}
+				}
+
+				if (!departmentIds.isEmpty()) {
+					List<Component> componentList = new ArrayList<>();
+					if (departmentIds.size() == 1) {
+						List<DepartmentComponentMapping> departmentComponentMappings = componentMappingRepository
+								.findAllByDepartmentId(departmentIds.get(0));
+						if (!departmentComponentMappings.isEmpty()) {
+							componentList = departmentComponentMappings.stream()
+									.map(DepartmentComponentMapping::getComponent).collect(Collectors.toList());
+						}
+					} else {
+						componentList = componentMappingRepository.findCommonComponents(departmentIds,
+								(long) departmentIds.size());
+					}
+					return new Response<>(HttpStatus.OK.value(), "Component list", componentList);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Please provide valid department.", null);
+				}
+			} else {
+				return new Response<>(HttpStatus.BAD_REQUEST.value(), "Unauthorized", null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
+		}
+	}
+
+	@Override
+	public Response<?> getCommonComponentsV2(DepartmentListDto departmentListDto) {
 		try {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master.isPresent()) {
@@ -273,7 +382,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 //									.map(DepartmentComponentMapping::getComponent).collect(Collectors.toList());
 //						}
 						componentList = componentMappingRepository.findCommonComponents(
-								departmentListDto.getDepartmentIds(), (long)departmentListDto.getDepartmentIds().size());
+								departmentListDto.getDepartmentIds(),
+								(long) departmentListDto.getDepartmentIds().size());
 					}
 					return new Response<>(HttpStatus.OK.value(), "Component list", componentList);
 				} else {
@@ -287,4 +397,5 @@ public class DepartmentServiceImpl implements DepartmentService {
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong", null);
 		}
 	}
+
 }
