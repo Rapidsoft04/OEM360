@@ -20,4 +20,5 @@ public class Constant {
 	public static final String Planned = "Planned";
 	public static final String On_Time = "On time";
 	public static final String Delayed = "Delayed";
+	public static final String QUARTERLY="Quarterly";
 }
