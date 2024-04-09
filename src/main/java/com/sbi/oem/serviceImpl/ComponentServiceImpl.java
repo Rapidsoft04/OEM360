@@ -73,7 +73,7 @@ public class ComponentServiceImpl implements ComponentService {
 								componentMappingRepository.save(departmentComponentMapping);
 							}
 						}
-						return new Response<>(HttpStatus.OK.value(), "success", null);
+						return new Response<>(HttpStatus.OK.value(), "Component Added Successfully", null);
 					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Component already exist.", null);
 					}

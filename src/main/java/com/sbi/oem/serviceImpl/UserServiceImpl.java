@@ -91,6 +91,13 @@ public class UserServiceImpl implements UserService {
 							return new Response<>(HttpStatus.BAD_REQUEST.value(),
 									"Access Denied. Approver role not yet assigned.", null);
 						}
+						if ((credentialMaster.getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())
+								|| credentialMaster.getUserTypeId().name().equals(UserType.AGM.name())
+								|| credentialMaster.getUserTypeId().name().equals(UserType.DGM.name()))
+								&& credentialMasterOptional.get().getUserId().getDepartment() == null) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(),
+									"Access Denied. Department not yet assigned.", null);
+						}
 						for (UserType userType : UserType.values()) {
 							if (credentialMaster.getUserTypeId().name().equalsIgnoreCase(userType.name())) {
 								loginResponse.setId(credentialMaster.getId());
@@ -234,7 +241,7 @@ public class UserServiceImpl implements UserService {
 
 						if (credentialMasterSave != null)
 							return new Response<>(HttpStatus.OK.value(),
-									"User Added Succefully. Credentials will be sent through email!!!",
+									"User Added Successfully. Credentials will be sent through email!!!",
 									credentialMasterSave);
 						else
 							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Failed in User Registration!!!",

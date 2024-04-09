@@ -2,8 +2,10 @@ package com.sbi.oem.serviceImpl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import com.sbi.oem.model.Department;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.DepartmentComponentMapping;
 import com.sbi.oem.model.User;
+import com.sbi.oem.repository.ComponentRepository;
 import com.sbi.oem.repository.DepartmentApproverRepository;
 import com.sbi.oem.repository.DepartmentComponentMappingRepository;
 import com.sbi.oem.repository.DepartmentRepository;
@@ -45,6 +48,9 @@ public class DepartmentServiceImpl implements DepartmentService {
 	private DepartmentComponentMappingRepository componentMappingRepository;
 
 	@Autowired
+	private ComponentRepository componentRepository;
+
+	@Autowired
 	private ValidationService validationService;
 
 	@Override
@@ -60,6 +66,21 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 					Optional<Department> departmentExist = departmentRepository
 							.findDepartmentByName(addDepartmentDto.getName().trim(), addDepartmentDto.getCode());
+
+					List<Component> components = componentRepository.findAll();
+					List<Long> componentIds = addDepartmentDto.getComponentIds();
+
+					Set<Long> componentIdSet = new HashSet<>();
+					for (Component component : components) {
+						componentIdSet.add(component.getId());
+					}
+
+					for (Long componentId : componentIds) {
+						if (!componentIdSet.contains(componentId)) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Invalid Component Selected", null);
+						}
+					}
+
 					if (!departmentExist.isPresent()) {
 						Department department = new Department();
 						department.setName(addDepartmentDto.getName());
@@ -70,7 +91,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 						department.setUpdatedAt(new Date());
 						Department savedDepartment = departmentRepository.save(department);
 
-						List<Long> componentIds = addDepartmentDto.getComponentIds();
 						for (Long componentId : componentIds) {
 							DepartmentComponentMapping departmentComponentMapping = new DepartmentComponentMapping();
 							departmentComponentMapping.setComponent(new Component(componentId));
@@ -79,7 +99,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 							departmentComponentMapping.setUpdatedAt(new Date());
 							componentMappingRepository.save(departmentComponentMapping);
 						}
-						return new Response<>(HttpStatus.OK.value(), "success", null);
+						return new Response<>(HttpStatus.OK.value(), "Department Added Successfully", null);
 					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(),
 								"Department already exists with same name or same code", null);

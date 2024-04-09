@@ -1370,11 +1370,11 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 							}
 							Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 									.findAllByDepartmentId(rcmnd.getDepartment().getId());
-							if(departmentApprover.isPresent()) {
-								if(departmentApprover.get().getAgm() != null) {
+							if (departmentApprover.isPresent()) {
+								if (departmentApprover.get().getAgm() != null) {
 									responseDto.setApprover(departmentApprover.get().getAgm());
 								}
-								if(departmentApprover.get().getApplicationOwner() != null) {
+								if (departmentApprover.get().getApplicationOwner() != null) {
 									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
 								}
 							}
@@ -7150,15 +7150,16 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 								Optional<RecommendationTrail> trailObj = recommendationTrailRepository
 										.findAllByReferenceIdAndStatusId(rcmnd.getReferenceId(),
 												StatusEnum.Released.getId());
-								if (rcmdDate.before(trailObj.get().getCreatedAt())) {
-									RecommendationStatus status = new RecommendationStatus();
-									status.setId(StatusEnum.Released_With_Delay.getId());
-									status.setStatusName(StatusEnum.Released_With_Delay.getName());
-									responseDto.setStatus(status);
-									recommendations.add(responseDto);
+								if (trailObj != null && trailObj.isPresent()) {
+									if (rcmdDate.before(trailObj.get().getCreatedAt())) {
+										RecommendationStatus status = new RecommendationStatus();
+										status.setId(StatusEnum.Released_With_Delay.getId());
+										status.setStatusName(StatusEnum.Released_With_Delay.getName());
+										responseDto.setStatus(status);
+										recommendations.add(responseDto);
+									}
 								}
 							}
-
 						}
 					} else {
 
