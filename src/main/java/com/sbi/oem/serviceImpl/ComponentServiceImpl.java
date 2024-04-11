@@ -55,7 +55,7 @@ public class ComponentServiceImpl implements ComponentService {
 							.findComponentByName(componentDto.getName().trim());
 					if (!componentExist.isPresent()) {
 						Component component = new Component();
-						component.setName(componentDto.getName());
+						component.setName(componentDto.getName().trim());
 						component.setCompany(master.get().getUserId().getCompany());
 						component.setIsActive(true);
 						component.setCreatedAt(new Date());

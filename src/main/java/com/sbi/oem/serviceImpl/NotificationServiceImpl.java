@@ -269,8 +269,13 @@ public class NotificationServiceImpl implements NotificationService {
 								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
 						List<User> userList = new ArrayList<>();
-						userList.add(recommendation.getCreatedBy());
-						userList.add(departmentApprover.get().getApplicationOwner());
+						if (recommendation.getCreatedBy().getUserType().name()
+								.equals(UserType.APPLICATION_OWNER.name())) {
+							userList.add(departmentApprover.get().getApplicationOwner());
+						} else {
+							userList.add(recommendation.getCreatedBy());
+							userList.add(departmentApprover.get().getApplicationOwner());
+						}
 						for (User user : seniorManagementUsers) {
 							userList.add(user);
 						}
@@ -679,8 +684,17 @@ public class NotificationServiceImpl implements NotificationService {
 
 				if (departmentApprover != null && departmentApprover.isPresent()) {
 					if (status.equals(RecommendationStatusEnum.CREATED)) {
-
 						User appOwner = departmentApprover.get().getApplicationOwner();
+						User agm = departmentApprover.get().getAgm();
+						List<User> userList = new ArrayList<>();
+
+						if (recommendation.getCreatedBy().getUserType().name()
+								.equals(UserType.APPLICATION_OWNER.name())) {
+							userList.add(agm);
+						} else {
+							userList.add(appOwner);
+							userList.add(agm);
+						}
 
 						String text = "New recommendation request has been created.";
 
@@ -706,7 +720,10 @@ public class NotificationServiceImpl implements NotificationService {
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
-						createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
+//						createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
+//								recommendationStatus);
+
+						createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
 								recommendationStatus);
 
 					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {

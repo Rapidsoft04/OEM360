@@ -93,6 +93,9 @@ public class Recommendation {
 	@Column(name = "recommended_by")
 	private String recommendedBy;
 
+	@Column(name = "file_name")
+	private String fileName;
+
 	public Long getId() {
 		return id;
 	}
@@ -269,6 +272,14 @@ public class Recommendation {
 		this.recommendedBy = recommendedBy;
 	}
 
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
 	public Recommendation() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -325,7 +336,8 @@ public class Recommendation {
 				this.recommendationStatus != null ? this.recommendationStatus : null,
 				this.isAppOwnerApproved != null ? this.isAppOwnerApproved : null,
 				this.isAgmApproved != null ? this.isAgmApproved : null,
-				this.isAppOwnerRejected != null ? this.isAppOwnerRejected : null);
+				this.isAppOwnerRejected != null ? this.isAppOwnerRejected : null,
+				this.fileName != null ? this.fileName : null);
 	}
 
 }

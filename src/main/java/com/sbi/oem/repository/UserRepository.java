@@ -22,5 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query(value = "SELECT * FROM user " + "WHERE (department_id = :departmentId AND user_type_id = '6') "
 			+ "OR (user_type_id = '6' AND department_id IS NULL)", nativeQuery = true)
 	List<User> findAllUnAssignedUsers(@Param("departmentId") Long departmentId);
+	
+	@Query(value = "SELECT * FROM user where user_type_id=?1", nativeQuery = true)
+	List<User> findAllDgm(@Param("userTypeId") Long userrTypeId);
 
 }

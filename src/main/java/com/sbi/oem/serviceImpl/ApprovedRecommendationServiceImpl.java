@@ -1093,6 +1093,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 									.longValue()) {
 								List<RecommendationTrail> trailList = recommendationTrailRepository
 										.findAllByReferenceId(rcmnd.getReferenceId());
+								System.out.println("RefId, " + rcmnd.getReferenceId());
 								RecommendationTrail trailObj = trailList.stream()
 										.filter(e -> e.getRecommendationStatus() != null && e.getRecommendationStatus()
 												.getStatusName().equals(StatusEnum.Released.getName()))

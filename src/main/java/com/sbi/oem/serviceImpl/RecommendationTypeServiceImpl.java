@@ -38,6 +38,7 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 								.findRecommendationTypeByName(recommendationType.getName().trim());
 
 						if (!recommendationTypeExist.isPresent()) {
+							recommendationType.setName(recommendationType.getName().trim());
 							recommendationType.setCreatedAt(new Date());
 							recommendationType.setUpdatedAt(new Date());
 							recommendationType.setCompanyId(master.get().getUserId().getCompany().getId());
@@ -124,6 +125,7 @@ public class RecommendationTypeServiceImpl implements RecommendationTypeService 
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation Type Already exists",
 								null);
 					}
+					recommendationType.setName(recommendationType.getName().trim());
 					recommendationType.setCompanyId(recommendationTypeObject.get().getCompanyId());
 					recommendationType.setCreatedAt(recommendationTypeObject.get().getCreatedAt());
 					recommendationType.setUpdatedAt(new Date());

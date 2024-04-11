@@ -230,6 +230,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 					String fileUrl = null;
 					if (recommendationAddRequestDto.getFile() != null) {
+
+//						if (recommendationAddRequestDto.getFile() != null
+//								&& recommendationAddRequestDto.getFile().getSize() > 1048576) {
+//							return new Response<>(HttpStatus.BAD_REQUEST.value(), "File size can't be above 1MB.",
+//									null);
+//						}
+
+						if (recommendationAddRequestDto.getFile() != null
+								&& recommendationAddRequestDto.getFile().getSize() > 1048576) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "File size can't be above 1MB.",
+									null);
+						}
+
 						fileUrl = fileSystemStorageService.storeFile(recommendationAddRequestDto.getFile(),
 								new Date().getTime());
 						fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/")
@@ -295,6 +308,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 									new RecommendationStatus(StatusEnum.OEM_recommendation.getId()));
 							recommendation.setExpectedImpact(recommendationAddRequestDto.getExpectedImpact());
 							recommendation.setUserType(master.get().getUserTypeId());
+							if (recommendationAddRequestDto.getFile() != null) {
+								recommendation.setFileName(recommendationAddRequestDto.getFile().getOriginalFilename());
+							}
 							List<Recommendation> recommendList = recommendationRepository.findAll();
 
 							Integer size = 0;
@@ -322,11 +338,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 							if (savedRecommendation != null && savedRecommendation.getCreatedBy() != null
 									&& savedRecommendation.getCreatedBy().getUserType().name()
 											.equals(UserType.APPLICATION_OWNER.name())) {
-								responseText = responseText + "An email will be sent to the AGM";
-								if (approver.get().getAgm() != null
-										&& !approver.get().getAgm().getEmail().isEmpty()) {
-									responseText = responseText + approver.get().getAgm().getUserName()
-											+ "(" + approver.get().getDepartment().getName() + ")";
+								responseText = responseText + "An email will be sent to the AGM ";
+								if (approver.get().getAgm() != null && !approver.get().getAgm().getEmail().isEmpty()) {
+									responseText = responseText + approver.get().getAgm().getUserName() + "("
+											+ approver.get().getDepartment().getName() + ")";
 									responseText += "(" + approver.get().getAgm().getEmail() + ") ";
 
 								}
@@ -544,11 +559,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 								if (approver != null && approver.isPresent()) {
 									if (approver.get().getAgm() != null
 											&& !approver.get().getAgm().getEmail().isEmpty()) {
-										responseText += "(" + approver.get().getAgm().getEmail() + ") and GM ";
-
-										for (User user : seniorManagementUsers) {
-											responseText += "(" + user.getEmail() + ") ";
-										}
+										responseText += "(" + approver.get().getAgm().getEmail() + ")";
 
 										return new Response<>(HttpStatus.OK.value(), responseText, null);
 									}
@@ -907,21 +918,23 @@ public class RecommendationServiceImpl implements RecommendationService {
 								.findAllByDepartmentId(rcmdDepartment.getId());
 						if (recommendObj.get().getCreatedBy() != null && recommendObj.get().getCreatedBy().getUserType()
 								.name().equals(UserType.APPLICATION_OWNER.name())) {
-							responseText += "Email will be sent to GM, ";
+							responseText += "Email will be sent to Appowner("
+									+ approver.get().getApplicationOwner().getEmail() + ") and GM ";
 							for (User user : seniorManagementUsers) {
 								responseText += "(" + user.getEmail() + ") ";
 							}
-						}
-						if (approver != null && approver.isPresent()) {
-							if (approver.get().getApplicationOwner() != null
-									&& !approver.get().getApplicationOwner().getEmail().isEmpty()) {
-								responseText += "Email will be sent to Appowner("
-										+ approver.get().getApplicationOwner().getEmail() + "), OEM("
-										+ recommendObj.get().getCreatedBy().getEmail() + ") and GM ";
-								for (User user : seniorManagementUsers) {
-									responseText += "(" + user.getEmail() + ") ";
+						} else {
+							if (approver != null && approver.isPresent()) {
+								if (approver.get().getApplicationOwner() != null
+										&& !approver.get().getApplicationOwner().getEmail().isEmpty()) {
+									responseText += "Email will be sent to Appowner("
+											+ approver.get().getApplicationOwner().getEmail() + "), OEM("
+											+ recommendObj.get().getCreatedBy().getEmail() + ") and GM ";
+									for (User user : seniorManagementUsers) {
+										responseText += "(" + user.getEmail() + ") ";
+									}
+									return new Response<>(HttpStatus.OK.value(), responseText, null);
 								}
-								return new Response<>(HttpStatus.OK.value(), responseText, null);
 							}
 						}
 
@@ -1359,16 +1372,12 @@ public class RecommendationServiceImpl implements RecommendationService {
 							headerList.add(topCell.toString().trim());
 							noOfTopData += 1;
 						}
-						for (int x = 0; i < headerList.size(); i++) {
-							if (headerList.get(x).equals(stringList.get(x))) {
-								isValidFile = true;
-							}
+
+						if (headerList.equals(stringList)) {
+							isValidFile = true;
+						} else {
+							isValidFile = false;
 						}
-//						if (headerList.equals(stringList)) {
-//							isValidFile = true;
-//						} else {
-//							isValidFile = false;
-//						}
 
 						if (isValidFile) {
 							if (!(sheet.getPhysicalNumberOfRows() > 1)) {
@@ -1502,6 +1511,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 										// Standardize the type key
 										String standardizedType = type.replace("–", "-").replace("*", "");
+
+										if (standardizedType.contains(".")) {
+											// Split the type by "."
+											String[] typeParts = standardizedType.split("\\.");
+
+											// Set the standardized type to the first element
+											standardizedType = typeParts[0];
+										}
 
 										if (recommendationTypeMap.containsKey(standardizedType)) {
 											recommendationDto
@@ -1649,29 +1666,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 												.containsKey(standardizedDepartment)) {
 											recommendationDepartments.add(dataRetrievalService.getAllDepartmentsMap()
 													.get(standardizedDepartment));
+										} else if (dataRetrievalService
+												.findDepartmentByName(standardizedDepartment) != null) {
+											recommendationDepartments.add(
+													dataRetrievalService.findDepartmentByName(standardizedDepartment));
 										} else {
 											return new Response<>(HttpStatus.BAD_REQUEST.value(),
 													"Invalid department provided in recommendation with description, "
 															+ recommendationDto.getDescription(),
 													null);
 										}
+
 									}
 
-//									List<Department> departments = departmentRepository.findAll();
-//									if (!departments.isEmpty()) {
-//										List<Long> validDepartmentIds = departments.stream().map(Department::getId)
-//												.collect(Collectors.toList());
-//										List<Long> departmentIdsFromRequest = recommendationDepartments.stream()
-//												.map(Department::getId).collect(Collectors.toList());
-//										for (Long departmentId : departmentIdsFromRequest) {
-//											if (!validDepartmentIds.contains(departmentId)) {
-//												return new Response<>(HttpStatus.BAD_REQUEST.value(),
-//														"Invalid department provided in recommendation with description, "
-//																+ recommendationDto.getDescription(),
-//														null);
-//											}
-//										}
-//									}
 								}
 
 								if (object.has("Recommended By")) {
@@ -1829,16 +1836,16 @@ public class RecommendationServiceImpl implements RecommendationService {
 										&& master.get().getUserId().getDepartment() != null
 										&& !recommendationDto.getDepartmentIds()
 												.contains(master.get().getUserId().getDepartment().getId())) {
-									return new Response<>(HttpStatus.BAD_REQUEST.value(), "Provide valid department.",
-											null);
+									return new Response<>(HttpStatus.BAD_REQUEST.value(),
+											"You can only add recommendations for your department.", null);
 								}
 
-//								if (checkIfRecommendationAlreadyExist(recommendationDto)) {
-//									return new Response<>(HttpStatus.BAD_REQUEST.value(),
-//											"Duplicate recommendations found", null);
-//								}
-
 								requestDtosList.add(recommendationDto);
+							}
+
+							if (response == null) {
+								return new Response<>(HttpStatus.BAD_REQUEST.value(),
+										"Something wrong with the excel file", null);
 							}
 
 							if (response.getResponseCode() != HttpStatus.OK.value()) {
@@ -1891,6 +1898,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 			}
 		}
 		return true;
+	}
+
+	private boolean isRowEmptyV2(Row row) {
+		if (row == null) {
+			return true;
+		}
+		for (int i = row.getFirstCellNum(); i < row.getLastCellNum(); i++) {
+			Cell cell = row.getCell(i, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+			if (cell != null && cell.getCellType() != CellType.BLANK) {
+				return false; // Found a non-empty cell
+			}
+		}
+		return true; // All cells in the row are empty
 	}
 
 	@Override
@@ -1951,14 +1971,23 @@ public class RecommendationServiceImpl implements RecommendationService {
 									.findAllByDepartmentId(rcmdDepartment.getId());
 							if (updatedRecommendation.getRecommendationStatus().getId() == StatusEnum.Released
 									.getId()) {
-								if (approver != null && approver.isPresent()) {
-									if (approver.get().getAgm() != null
-											&& !approver.get().getAgm().getEmail().isEmpty()) {
-										responseText += "Email will be sent to AGM("
-												+ approver.get().getAgm().getEmail() + "), OEM("
-												+ updatedRecommendation.getCreatedBy().getEmail() + ") and GM";
-										for (User user : seniorManagementUsers) {
-											responseText += "(" + user.getEmail() + ") ";
+								if (updatedRecommendation.getCreatedBy().getUserType().name()
+										.equals(UserType.APPLICATION_OWNER.name())) {
+									responseText += "Email will be sent to AGM(" + approver.get().getAgm().getEmail()
+											+ ") and GM";
+									for (User user : seniorManagementUsers) {
+										responseText += "(" + user.getEmail() + ") ";
+									}
+								} else {
+									if (approver != null && approver.isPresent()) {
+										if (approver.get().getAgm() != null
+												&& !approver.get().getAgm().getEmail().isEmpty()) {
+											responseText += "Email will be sent to AGM("
+													+ approver.get().getAgm().getEmail() + "), OEM("
+													+ updatedRecommendation.getCreatedBy().getEmail() + ") and GM";
+											for (User user : seniorManagementUsers) {
+												responseText += "(" + user.getEmail() + ") ";
+											}
 										}
 									}
 								}
@@ -1968,17 +1997,29 @@ public class RecommendationServiceImpl implements RecommendationService {
 								emailTemplateService.sendMailRecommendation(updatedRecommendation,
 										RecommendationStatusEnum.RECOMMENDATION_RELEASED);
 							} else {
-								if (approver != null && approver.isPresent()) {
-									if (approver.get().getAgm() != null
-											&& !approver.get().getAgm().getEmail().isEmpty()) {
-										responseText += ". Email will be sent to AGM("
-												+ approver.get().getAgm().getEmail() + ")" + " " + ", OEM("
-												+ recommendationObj.get().getCreatedBy().getEmail() + ") and GM";
-										for (User user : seniorManagementUsers) {
-											responseText += "(" + user.getEmail() + ") ";
+
+								if (recommendationObj.get().getCreatedBy().getUserType().name()
+										.equals(UserType.APPLICATION_OWNER.name())) {
+									responseText += ". Email will be sent to AGM(" + approver.get().getAgm().getEmail()
+											+ ") and GM";
+									for (User user : seniorManagementUsers) {
+										responseText += "(" + user.getEmail() + ") ";
+									}
+								} else {
+
+									if (approver != null && approver.isPresent()) {
+										if (approver.get().getAgm() != null
+												&& !approver.get().getAgm().getEmail().isEmpty()) {
+											responseText += ". Email will be sent to AGM("
+													+ approver.get().getAgm().getEmail() + ")" + " " + ", OEM("
+													+ recommendationObj.get().getCreatedBy().getEmail() + ") and GM";
+											for (User user : seniorManagementUsers) {
+												responseText += "(" + user.getEmail() + ") ";
+											}
 										}
 									}
 								}
+
 								notificationService.save(updatedRecommendation,
 										RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED, null, null);
 
@@ -2020,15 +2061,18 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
-					if (checkIfRecommendationAlreadyExist(recommendationAddRequestDto).equals(Boolean.valueOf(true))) {
-						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation already reported", null);
-					}
+
 					if (recommendationAddRequestDto.getReferenceId() != null
 							&& !recommendationAddRequestDto.getReferenceId().toString().isEmpty()
 							&& !recommendationAddRequestDto.getReferenceId().toString().isEmpty()) {
 
 						Optional<Recommendation> rcmd = recommendationRepository
 								.findByReferenceId(recommendationAddRequestDto.getReferenceId());
+
+						if (checkIfRecommendationAlreadyExist(recommendationAddRequestDto).equals(Boolean.valueOf(true))) {
+							return new Response<>(HttpStatus.BAD_REQUEST.value(), "Recommendation already reported",
+									null);
+						}
 
 						if (rcmd.get() != null && rcmd.isPresent()) {
 							if (rcmd.get().getRecommendationStatus().getId()
@@ -2055,6 +2099,13 @@ public class RecommendationServiceImpl implements RecommendationService {
 									recommendation.setRecommendationType(
 											new RecommendationType(recommendationAddRequestDto.getTypeId()));
 									recommendation.setUpdatedAt(new Date());
+									if (recommendationAddRequestDto.getFile() != null) {
+										recommendation.setFileName(
+												recommendationAddRequestDto.getFile().getOriginalFilename());
+									} else {
+										recommendation.setFileUrl(null);
+										recommendation.setFileName(null);
+									}
 									recommendationRepository.save(recommendation);
 									return new Response<>(HttpStatus.OK.value(), "Recommendation updated successfully.",
 											null);
@@ -2077,6 +2128,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				return new Response<>(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", null);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new Response<>(HttpStatus.BAD_REQUEST.value(), "Something went wrong.", null);
 		}
 	}
@@ -2139,7 +2191,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				if (addRequestDto.getDepartmentIds() != null && addRequestDto.getDepartmentIds().size() > 0) {
 					for (Long departmentId : addRequestDto.getDepartmentIds()) {
 						Recommendation recommendation = new Recommendation();
-						recommendation.setFileUrl(addRequestDto.getUrlLink());
+						recommendation.setFileUrl(null);
 						recommendation.setDocumentUrl(addRequestDto.getUrlLink());
 						recommendation.setDescriptions(addRequestDto.getDescription());
 						recommendation.setCreatedAt(new Date());
@@ -2232,18 +2284,36 @@ public class RecommendationServiceImpl implements RecommendationService {
 					}
 				}
 
+//				String description = dto.getDescription() != null ? dto.getDescription().toLowerCase().trim() : null;
+//				Long typeId = dto.getTypeId();
+//				Long priorityId = dto.getPriorityId();
+//				Date recommendDate = dto.getRecommendDate();
+//				Long componentId = dto.getComponentId();
+//				String departmentIds = dto.getDepartmentIds().toString();
+//				String entryString = description + "_" + typeId + "_" + priorityId + "_" + recommendDate + "_"
+//						+ componentId + "_" + departmentIds;
+//
+//				// Same Recommendation with in the excel
+//				if (!uniqueEntries.add(entryString)) {
+//					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Duplicate Recommendation found", null);
+//				}
+
 				String description = dto.getDescription() != null ? dto.getDescription().toLowerCase().trim() : null;
 				Long typeId = dto.getTypeId();
 				Long priorityId = dto.getPriorityId();
 				Date recommendDate = dto.getRecommendDate();
 				Long componentId = dto.getComponentId();
-				String departmentIds = dto.getDepartmentIds().toString();
-				String entryString = description + "_" + typeId + "_" + priorityId + "_" + recommendDate + "_"
-						+ componentId + "_" + departmentIds;
+				List<Long> departmentIdsList = dto.getDepartmentIds(); // Assuming departmentIds is a List<Long>
 
-				// Same Recommendation with in the excel
-				if (!uniqueEntries.add(entryString)) {
-					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Duplicate Recommendation found", null);
+				// Iterate over each department ID and construct entry string
+				for (Long departmentId : departmentIdsList) {
+					String entryString = description + "_" + typeId + "_" + priorityId + "_" + recommendDate + "_"
+							+ componentId + "_" + departmentId;
+
+					// Same Recommendation within the excel
+					if (!uniqueEntries.add(entryString)) {
+						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Duplicate Recommendation found", null);
+					}
 				}
 
 				// If recommendation already exists in db

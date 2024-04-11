@@ -180,18 +180,10 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 					if (user.isPresent() && credentialMaster.isPresent()) {
 
 						if (user.get().getUserType() != null
-								&& user.get().getUserType().name().equals(UserType.USER.name())) {
+								&& (user.get().getUserType().name().equals(UserType.USER.name())
+										|| user.get().getUserType().name().equals(UserType.DGM.name()))) {
 
 							if (departmentApproverExist.isPresent()) {
-
-								// Check if user is already an approver of other department.
-//								Optional<DepartmentApprover> isUserAlreadyAnApprover = departmentApproverRepository
-//										.findAgmOrApplicationOwnerByUserId(departmentApproverRequest.getUserId());
-//
-//								if (isUserAlreadyAnApprover.isPresent()) {
-//									return new Response<>(HttpStatus.BAD_REQUEST.value(), "User is already an approver",
-//											null);
-//								}
 
 								// Check if the role already exist in the department
 								if (departmentApproverRequest.getUserType().equalsIgnoreCase(UserType.AGM.name())
@@ -310,12 +302,18 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())) {
 
 					List<User> userList = userRepository.findAllUnAssignedUsers(departmentId);
+					List<User> dgms = userRepository.findAllDgm(4l);
 					Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 							.findAllByDepartmentId(departmentId);
 
 					DepartmentApproverResponseDto approverDataDto = new DepartmentApproverResponseDto();
 					List<UserType> userTypeList = new ArrayList<>();
 					List<User> approverList = new ArrayList<>();
+					if (!dgms.isEmpty()) {
+						for (User user : dgms) {
+							userList.add(user);
+						}
+					}
 
 					if (departmentApprover != null && departmentApprover.isPresent()) {
 

@@ -115,16 +115,16 @@ public class DashboardServiceImpl implements DashboardService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
-					Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-							.findByAgmId(master.get().getUserId().getId());
+					List<DepartmentApprover> departmentApprover = departmentApproverRepository
+							.findByAgmIdOrDgmId(master.get().getUserId().getId());
 					List<Recommendation> recommendationList = new ArrayList<>();
-					if (departmentApprover != null && departmentApprover.isPresent()) {
+					if (!departmentApprover.isEmpty()) {
 						if (!value.equals(Constant.TILL_TODAY)) {
 							recommendationList = recommendationRepository.findByAgmIdAndUpdatedAtBetween(
-									departmentApprover.get().getDepartment().getId(), fromDate, toDate);
+									departmentApprover.get(0).getDepartment().getId(), fromDate, toDate);
 						} else {
 							recommendationList = recommendationRepository.findAllByDepartmentIdAndCreatedAtBetweenToday(
-									departmentApprover.get().getDepartment().getId(), toDate);
+									departmentApprover.get(0).getDepartment().getId(), toDate);
 						}
 						if (recommendationList != null && recommendationList.size() > 0) {
 							Integer totalRecommendation = recommendationList.size();

@@ -83,7 +83,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 					if (!departmentExist.isPresent()) {
 						Department department = new Department();
-						department.setName(addDepartmentDto.getName());
+						department.setName(addDepartmentDto.getName().trim());
 						department.setCode(addDepartmentDto.getCode());
 						department.setIsActive(true);
 						department.setCompany(master.get().getUserId().getCompany());
