@@ -699,26 +699,26 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				try {
-					Date fromDate = new SimpleDateFormat("yyyy-MM-dd").parse(searchDto.getFromDate());
-					Date toDate = new SimpleDateFormat("yyyy-MM-dd").parse(searchDto.getToDate());
+					Date fromDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getFromDate());
+					Date toDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getToDate());
 
-					predicates.add(criteriaBuilder.between(root.get("recommendDate"), fromDate, toDate));
+					predicates.add(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate));
 				} catch (ParseException e) {
 					e.printStackTrace();
 					// Handle or log the parsing exception
 				}
 			} else if (searchDto.getFromDate() != null) {
 				try {
-					Date fromDate = new SimpleDateFormat("yyyy-MM-dd").parse(searchDto.getFromDate());
-					predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("recommendDate"), fromDate));
+					Date fromDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getFromDate());
+					predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), fromDate));
 				} catch (ParseException e) {
 					e.printStackTrace();
 					// Handle or log the parsing exception
 				}
 			} else if (searchDto.getToDate() != null) {
 				try {
-					Date toDate = new SimpleDateFormat("yyyy-MM-dd").parse(searchDto.getToDate());
-					predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("recommendDate"), searchDto.getToDate()));
+					Date toDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getToDate());
+					predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
 				} catch (ParseException e) {
 					e.printStackTrace();
 					// Handle or log the parsing exception
@@ -810,7 +810,6 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				}
 				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
 			}
-
 			if (searchDto.getCreatedBy() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
 			}
@@ -1120,7 +1119,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			List<Predicate> predicates = new ArrayList<>();
 
 			if (requestDto.getDescription() != null) {
-				predicates.add(criteriaBuilder.equal(root.get("descriptions"), requestDto.getDescription()));
+				predicates.add(criteriaBuilder.equal(root.get("descriptions"), requestDto.getDescription().trim()));
 			}
 
 			if (requestDto.getTypeId() != null) {
@@ -1137,6 +1136,18 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (requestDto.getComponentId() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("component"), requestDto.getComponentId()));
+			}
+
+			if (requestDto.getFileName() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("fileName"), requestDto.getFileName().trim()));
+			}
+
+			if (requestDto.getExpectedImpact() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("expectedImpact"), requestDto.getExpectedImpact().trim()));
+			}
+
+			if (requestDto.getUrlLink() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("documentUrl"), requestDto.getUrlLink().trim()));
 			}
 
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

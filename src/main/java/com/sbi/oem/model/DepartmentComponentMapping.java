@@ -33,6 +33,9 @@ public class DepartmentComponentMapping {
 	@Column(name = "updated_at")
 	private Date updatedAt;
 
+	@Column(name = "is_active")
+	private Boolean isActive;
+
 	public Long getId() {
 		return id;
 	}
@@ -73,11 +76,20 @@ public class DepartmentComponentMapping {
 		this.updatedAt = updatedAt;
 	}
 
-	public DepartmentComponentMapping(Long id, Department department, Component component) {
+	public Boolean getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
+	}
+
+	public DepartmentComponentMapping(Long id, Department department, Component component, Boolean isActive) {
 		super();
 		this.id = id;
 		this.department = department;
 		this.component = component;
+		this.isActive = isActive;
 	}
 
 	public DepartmentComponentMapping() {

@@ -358,12 +358,18 @@ public class NotificationServiceImpl implements NotificationService {
 						createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
 								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.RECCOMENDATION_REJECTED)) {
-						User oem = recommendation.getCreatedBy();
-						User appOwner = departmentApprover.get().getApplicationOwner();
 						List<User> userList = new ArrayList<>();
-						userList.add(appOwner);
-						userList.add(oem);
-						userList.addAll(seniorManagementUsers);
+						if(recommendation.getCreatedBy().getUserType().name().equals(UserType.APPLICATION_OWNER.name())) {
+							User appOwner = departmentApprover.get().getApplicationOwner();
+							userList.add(appOwner);
+							userList.addAll(seniorManagementUsers);
+						} else {							
+							User oem = recommendation.getCreatedBy();
+							User appOwner = departmentApprover.get().getApplicationOwner();
+							userList.add(appOwner);
+							userList.add(oem);
+							userList.addAll(seniorManagementUsers);
+						}
 						String text = "";
 						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId().longValue()
 								&& recommendationObj.get().getIsAppOwnerRejected().booleanValue() == true) {

@@ -395,6 +395,10 @@ public class UserServiceImpl implements UserService {
 							if (departmentApprover.get().getDgm() == null) {
 								userTypeList.add(UserType.DGM);
 							}
+						} else {
+							userTypeList.add(UserType.APPLICATION_OWNER);
+							userTypeList.add(UserType.AGM);
+							userTypeList.add(UserType.DGM);
 						}
 						userTypeList.add(UserType.USER);
 

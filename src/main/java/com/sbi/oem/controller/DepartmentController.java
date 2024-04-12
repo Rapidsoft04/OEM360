@@ -10,10 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sbi.oem.dto.AddDepartmentComponentMapDto;
 import com.sbi.oem.dto.AddDepartmentDto;
-import com.sbi.oem.dto.DepartmentDto;
-import com.sbi.oem.dto.DepartmentListDto;
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.dto.UpdateDepartmentComponentMapRequestDto;
+import com.sbi.oem.model.DepartmentComponentMapping;
 import com.sbi.oem.service.DepartmentService;
 
 @RestController
@@ -44,6 +45,25 @@ public class DepartmentController {
 	@GetMapping("/get/common/components")
 	public ResponseEntity<?> getCommonComponentsOfDepartments(@RequestParam("departmentList") String departmentList) {
 		Response<?> response = departmentService.getCommonComponents(departmentList);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
+	@GetMapping("/component/data")
+	public ResponseEntity<?> getDepartmentComponentDataToMapNewComponents(
+			@RequestParam("departmentId") Long departmentId) {
+		Response<?> response = departmentService.getDepartmentComponentDataToMapNewComponents(departmentId);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
+	@PostMapping("/component/map/update")
+	public ResponseEntity<?> updateDepartmentComponent(@RequestBody UpdateDepartmentComponentMapRequestDto requestDto) {
+		Response<?> response = departmentService.updateDepartmentComponent(requestDto);
+		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	}
+
+	@PostMapping("/component/map/save")
+	public ResponseEntity<?> saveDepartmentComponent(@RequestBody AddDepartmentComponentMapDto requestDto) {
+		Response<?> response = departmentService.departmentComponentMapSave(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 

@@ -70,6 +70,7 @@ public class ComponentServiceImpl implements ComponentService {
 								departmentComponentMapping.setDepartment(new Department(departmentId));
 								departmentComponentMapping.setCreatedAt(new Date());
 								departmentComponentMapping.setUpdatedAt(new Date());
+								departmentComponentMapping.setIsActive(true);
 								componentMappingRepository.save(departmentComponentMapping);
 							}
 						}

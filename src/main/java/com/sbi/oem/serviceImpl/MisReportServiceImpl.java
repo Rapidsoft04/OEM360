@@ -81,6 +81,12 @@ public class MisReportServiceImpl implements MisReportService {
 			SearchDto searchDto = new SearchDto();
 			searchDto.setFromDate(fromDate);
 			searchDto.setToDate(toDate);
+			if (fromDate.isEmpty() || fromDate.trim().equals("")) {
+				searchDto.setFromDate(null);
+			}
+			if (toDate.isEmpty() || toDate.trim().equals("")) {
+				searchDto.setToDate(null);
+			}
 			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 			List<Recommendation> recommendationList = new ArrayList<>();
 			if (master != null && master.isPresent()) {
@@ -97,7 +103,7 @@ public class MisReportServiceImpl implements MisReportService {
 					searchDto.setDepartmentId(master.get().getUserId().getDepartment() != null
 							? master.get().getUserId().getDepartment().getId()
 							: null);
-					searchDto.setCreatedBy(null);
+					searchDto.setCreatedBy(master.get().getUserId().getId());
 					recommendationList = recommendationRepository.findAllRecommendationsOemAndAgmBySearchDto(null,
 							searchDto);
 				} else if (master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
