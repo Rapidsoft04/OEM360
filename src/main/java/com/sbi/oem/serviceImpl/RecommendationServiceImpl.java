@@ -508,35 +508,36 @@ public class RecommendationServiceImpl implements RecommendationService {
 										recommendationDetailsRequestDto,
 										RecommendationStatusEnum.UPDATE_DEPLOYMENT_DETAILS);
 
-								List<User> users = new ArrayList<>();
-								String[] impactedDepartmentsArray = recommendationDetailsRequestDto
-										.getImpactedDepartment().split(", ");
-								List<String> impactedDepartment = Arrays.asList(impactedDepartmentsArray);
-								List<Department> departments = departmentRepository.findAll();
-								for (Department department : departments) {
-									if (impactedDepartment.contains(department.getName())) {
-										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-												.findAllByDepartmentId(department.getId());
-										if (departmentApprover.isPresent()) {
-											User agmUser = departmentApprover.get().getAgm();
-											User appOwner = departmentApprover.get().getApplicationOwner();
-											if (agmUser != null) {
-												users.add(agmUser);
-											}
-											if (appOwner != null) {
-												users.add(appOwner);
-											}
-										}
-									}
-								}
-
-								for (User user : seniorManagementUsers) {
-									users.add(user);
-								}
-
-								for (User user : users) {
-									responseText += user.getUserName() + "(" + user.getEmail() + ") ";
-								}
+//								// newly added
+//								List<User> users = new ArrayList<>();
+//								String[] impactedDepartmentsArray = recommendationDetailsRequestDto
+//										.getImpactedDepartment().split(", ");
+//								List<String> impactedDepartment = Arrays.asList(impactedDepartmentsArray);
+//								List<Department> departments = departmentRepository.findAll();
+//								for (Department department : departments) {
+//									if (impactedDepartment.contains(department.getName())) {
+//										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+//												.findAllByDepartmentId(department.getId());
+//										if (departmentApprover.isPresent()) {
+//											User agmUser = departmentApprover.get().getAgm();
+//											User appOwner = departmentApprover.get().getApplicationOwner();
+//											if (agmUser != null) {
+//												users.add(agmUser);
+//											}
+//											if (appOwner != null) {
+//												users.add(appOwner);
+//											}
+//										}
+//									}
+//								}
+//
+//								for (User user : seniorManagementUsers) {
+//									users.add(user);
+//								}
+//
+//								for (User user : users) {
+//									responseText += user.getUserName() + "(" + user.getEmail() + ") ";
+//								}
 
 								return new Response<>(HttpStatus.OK.value(), responseText, null);
 
@@ -595,35 +596,35 @@ public class RecommendationServiceImpl implements RecommendationService {
 								emailTemplateService.sendMailRecommendationDeplyomentDetails(
 										recommendationDetailsRequestDto, RecommendationStatusEnum.APPROVED_BY_APPOWNER);
 
-								List<User> users = new ArrayList<>();
-								String[] impactedDepartmentsArray = recommendationDetailsRequestDto
-										.getImpactedDepartment().split(", ");
-								List<String> impactedDepartment = Arrays.asList(impactedDepartmentsArray);
-								List<Department> departments = departmentRepository.findAll();
-								for (Department department : departments) {
-									if (impactedDepartment.contains(department.getName())) {
-										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-												.findAllByDepartmentId(department.getId());
-										if (departmentApprover.isPresent()) {
-											User agmUser = departmentApprover.get().getAgm();
-											User appOwner = departmentApprover.get().getApplicationOwner();
-											if (agmUser != null) {
-												users.add(agmUser);
-											}
-											if (appOwner != null) {
-												users.add(appOwner);
-											}
-										}
-									}
-								}
-
-								for (User user : seniorManagementUsers) {
-									users.add(user);
-								}
-
-								for (User user : users) {
-									responseText += user.getUserName() + "(" + user.getEmail() + ") ";
-								}
+//								List<User> users = new ArrayList<>();
+//								String[] impactedDepartmentsArray = recommendationDetailsRequestDto
+//										.getImpactedDepartment().split(", ");
+//								List<String> impactedDepartment = Arrays.asList(impactedDepartmentsArray);
+//								List<Department> departments = departmentRepository.findAll();
+//								for (Department department : departments) {
+//									if (impactedDepartment.contains(department.getName())) {
+//										Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
+//												.findAllByDepartmentId(department.getId());
+//										if (departmentApprover.isPresent()) {
+//											User agmUser = departmentApprover.get().getAgm();
+//											User appOwner = departmentApprover.get().getApplicationOwner();
+//											if (agmUser != null) {
+//												users.add(agmUser);
+//											}
+//											if (appOwner != null) {
+//												users.add(appOwner);
+//											}
+//										}
+//									}
+//								}
+//
+//								for (User user : seniorManagementUsers) {
+//									users.add(user);
+//								}
+//
+//								for (User user : users) {
+//									responseText += user.getUserName() + "(" + user.getEmail() + ") ";
+//								}
 
 								return new Response<>(HttpStatus.OK.value(), responseText, null);
 

@@ -236,8 +236,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 //		try {
 //			Optional<CredentialMaster> master = userDetailsService.getUserDetails();
 //			if (master.isPresent()) {
-//				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())
-//						|| master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
+//				if (master.get().getUserTypeId().name().equals(UserType.SUPER_ADMIN.name())) {
 //					List<Department> departmentList = departmentRepository.findAllByCompanyId(companyId);
 //					List<DepartmentComponentDto> list = new ArrayList<>();
 //					if (!departmentList.isEmpty()) {
@@ -247,8 +246,15 @@ public class DepartmentServiceImpl implements DepartmentService {
 //									.findAllByDepartmentId(department.getId());
 //							List<Component> components = new ArrayList<>();
 //							if (!componentMappings.isEmpty()) {
-//								components = componentMappings.stream().map(DepartmentComponentMapping::getComponent)
-//										.collect(Collectors.toList());
+//
+//								for (DepartmentComponentMapping componentMapping : componentMappings) {
+//									if (!componentMapping.getIsActive()) {
+//										componentMapping.getComponent().setIsActive(false);
+//									} else {
+//										componentMapping.getComponent().setIsActive(true);
+//									}
+//									components.add(componentMapping.getComponent());
+//								}
 //							}
 //							departmentComponentDto.setId(department.getId());
 //							departmentComponentDto.setName(department.getName());
@@ -260,7 +266,34 @@ public class DepartmentServiceImpl implements DepartmentService {
 //						}
 //					}
 //					return new Response<>(HttpStatus.OK.value(), "Department List", list);
-//				} else if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
+//				}
+//
+//				else if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
+//					List<Department> departmentList = departmentRepository.findAllByCompanyId(companyId);
+//					List<DepartmentComponentDto> list = new ArrayList<>();
+//					if (!departmentList.isEmpty()) {
+//						for (Department department : departmentList) {
+//							DepartmentComponentDto departmentComponentDto = new DepartmentComponentDto();
+//							List<DepartmentComponentMapping> componentMappings = componentMappingRepository
+//									.findAllByDepartmentId(department.getId());
+//							List<Component> components = new ArrayList<>();
+//							if (!componentMappings.isEmpty()) {
+//								components = componentMappings.stream().filter(mapping -> mapping.getIsActive())
+//										.map(DepartmentComponentMapping::getComponent).collect(Collectors.toList());
+//							}
+//							departmentComponentDto.setId(department.getId());
+//							departmentComponentDto.setName(department.getName());
+//							departmentComponentDto.setCompany(department.getCompany());
+//							departmentComponentDto.setCode(department.getCode());
+//							departmentComponentDto.setComponentList(components);
+//							departmentComponentDto.setIsActive(department.getIsActive());
+//							list.add(departmentComponentDto);
+//						}
+//					}
+//					return new Response<>(HttpStatus.OK.value(), "Department List", list);
+//				}
+//
+//				else if (master.get().getUserTypeId().name().equals(UserType.APPLICATION_OWNER.name())) {
 //					List<DepartmentComponentDto> list = new ArrayList<>();
 //					Department department = master.get().getUserId().getDepartment() != null
 //							? master.get().getUserId().getDepartment()
@@ -311,14 +344,9 @@ public class DepartmentServiceImpl implements DepartmentService {
 									.findAllByDepartmentId(department.getId());
 							List<Component> components = new ArrayList<>();
 							if (!componentMappings.isEmpty()) {
-
-								for (DepartmentComponentMapping componentMapping : componentMappings) {
-									if (!componentMapping.getIsActive()) {
-										componentMapping.getComponent().setIsActive(false);
-									} else {
-										componentMapping.getComponent().setIsActive(true);
-									}
-									components.add(componentMapping.getComponent());
+								if (!componentMappings.isEmpty()) {
+									components = componentMappings.stream().filter(mapping -> mapping.getIsActive())
+											.map(DepartmentComponentMapping::getComponent).collect(Collectors.toList());
 								}
 							}
 							departmentComponentDto.setId(department.getId());
@@ -331,7 +359,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 						}
 					}
 					return new Response<>(HttpStatus.OK.value(), "Department List", list);
-
 				}
 
 				else if (master.get().getUserTypeId().name().equals(UserType.OEM_SI.name())) {
