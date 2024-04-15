@@ -359,11 +359,12 @@ public class NotificationServiceImpl implements NotificationService {
 								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.RECCOMENDATION_REJECTED)) {
 						List<User> userList = new ArrayList<>();
-						if(recommendation.getCreatedBy().getUserType().name().equals(UserType.APPLICATION_OWNER.name())) {
+						if (recommendation.getCreatedBy().getUserType().name()
+								.equals(UserType.APPLICATION_OWNER.name())) {
 							User appOwner = departmentApprover.get().getApplicationOwner();
 							userList.add(appOwner);
 							userList.addAll(seniorManagementUsers);
-						} else {							
+						} else {
 							User oem = recommendation.getCreatedBy();
 							User appOwner = departmentApprover.get().getApplicationOwner();
 							userList.add(appOwner);
@@ -472,12 +473,19 @@ public class NotificationServiceImpl implements NotificationService {
 								recommendationStatus);
 
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
-						User agm = departmentApprover.get().getAgm();
-						User oem = recommendation.getCreatedBy();
 						List<User> userList = new ArrayList<>();
-						userList.add(agm);
-						userList.add(oem);
-						userList.addAll(seniorManagementUsers);
+						if (recommendation.getCreatedBy().getUserType().name()
+								.equals(UserType.APPLICATION_OWNER.name())) {
+							User agm = departmentApprover.get().getAgm();
+							userList.add(agm);
+							userList.addAll(seniorManagementUsers);
+						} else {
+							User agm = departmentApprover.get().getAgm();
+							User oem = recommendation.getCreatedBy();
+							userList.add(agm);
+							userList.add(oem);
+							userList.addAll(seniorManagementUsers);
+						}
 						String text = "Recommendation status has been changed";
 
 						String descriptions = "Your recommendation with referenceId = "

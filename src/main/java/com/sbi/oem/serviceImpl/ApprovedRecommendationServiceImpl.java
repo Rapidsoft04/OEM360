@@ -1280,8 +1280,14 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 								}
 								Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 										.findAllByDepartmentId(rcmnd.getDepartment().getId());
-								responseDto.setApprover(departmentApprover.get().getAgm());
-								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+								if (departmentApprover.isPresent() && departmentApprover.get().getAgm() != null) {
+									responseDto.setApprover(departmentApprover.get().getAgm());
+								}
+								if (departmentApprover.isPresent()
+										&& departmentApprover.get().getApplicationOwner() != null) {
+									responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+								}
+
 								if (recommendDate.before(trailObj.getCreatedAt())) {
 									RecommendationStatus status = new RecommendationStatus();
 									status.setId(StatusEnum.Released_With_Delay.getId());
@@ -1374,8 +1380,13 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 							}
 							Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
 									.findAllByDepartmentId(rcmnd.getDepartment().getId());
-							responseDto.setApprover(departmentApprover.get().getAgm());
-							responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+							if (departmentApprover.isPresent() && departmentApprover.get().getAgm() != null) {
+								responseDto.setApprover(departmentApprover.get().getAgm());
+							}
+							if (departmentApprover.isPresent()
+									&& departmentApprover.get().getApplicationOwner() != null) {
+								responseDto.setAppOwner(departmentApprover.get().getApplicationOwner());
+							}
 							Date rcmdDate = com.sbi.oem.util.DateUtil
 									.convertDateToNigh12AM(responseDto.getRecommendDate());
 

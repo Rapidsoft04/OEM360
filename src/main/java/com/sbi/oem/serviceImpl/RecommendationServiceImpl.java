@@ -1821,7 +1821,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 													.replace("*", "");
 
 											if (!dataRetrievalService.getAllDepartmentsMap()
-													.containsKey(standardizedDepartment)) {
+													.containsKey(standardizedDepartment)
+													&& dataRetrievalService
+															.findDepartmentByName(standardizedDepartment) == null) {
 												invalidDepartments.add(departmentName);
 											}
 										}
