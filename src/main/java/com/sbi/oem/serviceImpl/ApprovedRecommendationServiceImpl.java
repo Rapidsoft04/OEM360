@@ -7630,6 +7630,7 @@ public class ApprovedRecommendationServiceImpl implements ApprovedRecommendation
 							responseDto.setStatus(status);
 						}
 
+						// to be modified here if rcmd is released and search dto statusId is null.
 						if (rcmnd.getRecommendationStatus().getId() == StatusEnum.Released.getId()
 								&& (searchDto.getStatusId() != null
 										&& searchDto.getStatusId() != StatusEnum.Released.getId())) {
