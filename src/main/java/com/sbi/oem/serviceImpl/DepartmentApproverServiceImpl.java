@@ -222,9 +222,11 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 										.getUserType().equalsIgnoreCase(UserType.DGM.name())) {
 									departmentApproverExist.get()
 											.setDgm(new User(departmentApproverRequest.getUserId()));
-									user.get().setUserType(UserType.DGM);
-									user.get()
-											.setDepartment(new Department(departmentApproverRequest.getDepartmentId()));
+									if (user.get().getUserType() == null) {
+										user.get().setUserType(UserType.DGM);
+										user.get().setDepartment(
+												new Department(departmentApproverRequest.getDepartmentId()));
+									}
 									credentialMaster.get().setUserTypeId(UserType.DGM);
 								}
 								User updatedUser = userRepository.save(user.get());
@@ -254,9 +256,11 @@ public class DepartmentApproverServiceImpl implements DepartmentApproverService 
 								} else if (departmentApproverRequest.getUserType()
 										.equalsIgnoreCase(UserType.DGM.name())) {
 									newDepartmentApprover.setDgm(new User(departmentApproverRequest.getUserId()));
-									user.get().setUserType(UserType.DGM);
-									user.get()
-											.setDepartment(new Department(departmentApproverRequest.getDepartmentId()));
+									if (user.get().getUserType() == null) {
+										user.get().setUserType(UserType.DGM);
+										user.get().setDepartment(
+												new Department(departmentApproverRequest.getDepartmentId()));
+									}
 									credentialMaster.get().setUserTypeId(UserType.DGM);
 								} else if (departmentApproverRequest.getUserType()
 										.equalsIgnoreCase(UserType.APPLICATION_OWNER.name())) {

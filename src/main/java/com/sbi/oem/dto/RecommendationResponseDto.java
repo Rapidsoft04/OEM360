@@ -75,6 +75,10 @@ public class RecommendationResponseDto {
 
 	private String fileName;
 
+	private Date recommendationReleasedDate;
+
+	private String recommendedBy;
+
 	public Long getId() {
 		return id;
 	}
@@ -348,7 +352,8 @@ public class RecommendationResponseDto {
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,
 			RecommendationType recommendationType, String priority, Date recommendDate, Department department,
 			Component component, String expectedImpact, String impactedDepartment, String documentUrl, String fileUrl,
-			Date createdAt, User createdBy, RecommendationStatus status, String pastExperienceComment, String fileName) {
+			Date createdAt, User createdBy, RecommendationStatus status, String pastExperienceComment,
+			String fileName) {
 		super();
 		this.id = id;
 		this.referenceId = referenceId;
@@ -367,6 +372,22 @@ public class RecommendationResponseDto {
 		this.status = status;
 		this.pastExperienceComment = pastExperienceComment;
 		this.fileName = fileName;
+	}
+
+	public Date getRecommendationReleasedDate() {
+		return recommendationReleasedDate;
+	}
+
+	public void setRecommendationReleasedDate(Date recommendationReleasedDate) {
+		this.recommendationReleasedDate = recommendationReleasedDate;
+	}
+
+	public String getRecommendedBy() {
+		return recommendedBy;
+	}
+
+	public void setRecommendedBy(String recommendedBy) {
+		this.recommendedBy = recommendedBy;
 	}
 
 }

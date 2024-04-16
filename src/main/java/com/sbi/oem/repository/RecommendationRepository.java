@@ -731,6 +731,10 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 						criteriaBuilder.like(root.get("referenceId"), "%" + searchDto.getSearchKey() + "%")));
 			}
 
+			if (searchDto.getDepartmentIds() != null && !searchDto.getDepartmentIds().isEmpty()) {
+				predicates.add(root.get("department").get("id").in(searchDto.getDepartmentIds()));
+			}
+
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
@@ -1143,7 +1147,8 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			}
 
 			if (requestDto.getExpectedImpact() != null) {
-				predicates.add(criteriaBuilder.equal(root.get("expectedImpact"), requestDto.getExpectedImpact().trim()));
+				predicates
+						.add(criteriaBuilder.equal(root.get("expectedImpact"), requestDto.getExpectedImpact().trim()));
 			}
 
 			if (requestDto.getUrlLink() != null) {
@@ -1155,5 +1160,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 		return findAll(specification);
 	}
+
+	@Query(value = "SELECT * FROM recommendation WHERE department_id IN ?1 AND created_at BETWEEN ?2 AND ?3", nativeQuery = true)
+	List<Recommendation> findByDgmDepartmentIdsAndUpdatedAtBetween(List<Long> ids, String fromDate, String toDate);
+
+	@Query(value = "SELECT * FROM recommendation WHERE department_id IN ?1 and created_at<?2", nativeQuery = true)
+	List<Recommendation> findAllByDgmDepartmentIdsAndCreatedAtBetweenToday(List<Long> ids, String toDate);
 
 }
