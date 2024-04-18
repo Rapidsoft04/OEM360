@@ -22,8 +22,10 @@ import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.CredentialMaster;
 import com.sbi.oem.model.DepartmentApprover;
 import com.sbi.oem.model.Recommendation;
+import com.sbi.oem.model.RecommendationDeplyomentDetails;
 import com.sbi.oem.model.RecommendationTrail;
 import com.sbi.oem.repository.DepartmentApproverRepository;
+import com.sbi.oem.repository.RecommendationDeplyomentDetailsRepository;
 import com.sbi.oem.repository.RecommendationRepository;
 import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.security.JwtUserDetailsService;
@@ -43,6 +45,9 @@ public class MisReportServiceImpl implements MisReportService {
 
 	@Autowired
 	private RecommendationTrailRepository recommendationTrailRepository;
+	
+	@Autowired
+	private RecommendationDeplyomentDetailsRepository deplyomentDetailsRepository;
 
 	@Override
 	public Response<?> exportMisReportData(SearchDto searchDto) {
@@ -162,6 +167,10 @@ public class MisReportServiceImpl implements MisReportService {
 					Optional<RecommendationTrail> trailObj = recommendationTrailRepository
 							.findAllByReferenceIdAndStatusId(recommendation.getReferenceId(),
 									StatusEnum.Released.getId());
+					Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository.findByRecommendRefId(recommendation.getReferenceId());
+					if(deploymentDetails.isPresent()) {
+						responseDto.setImpactedDepartment(deploymentDetails.get().getImpactedDepartment());
+					}
 					if (trailObj.isPresent()) {
 						responseDto.setRecommendationReleasedDate(trailObj.get().getCreatedAt());
 					}
