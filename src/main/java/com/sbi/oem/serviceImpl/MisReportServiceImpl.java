@@ -45,7 +45,7 @@ public class MisReportServiceImpl implements MisReportService {
 
 	@Autowired
 	private RecommendationTrailRepository recommendationTrailRepository;
-	
+
 	@Autowired
 	private RecommendationDeplyomentDetailsRepository deplyomentDetailsRepository;
 
@@ -67,6 +67,15 @@ public class MisReportServiceImpl implements MisReportService {
 					String formattedDate = formatter.format(todayDate);
 					fromDate = formattedDate + " " + addedFromTime;
 					toDate = formattedDate + " " + addedToTime;
+				} else if (value.equals(Constant.YESTERDAY)) {
+					Calendar today = Calendar.getInstance();
+					Calendar yesterday = (Calendar) today.clone();
+					yesterday.add(Calendar.DAY_OF_MONTH, -1);
+					Date utilYesterday = yesterday.getTime();
+					SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+					String formattedDate = formatter.format(utilYesterday);
+					fromDate = formattedDate + " " + addedFromTime;
+					toDate = formattedDate + " " + addedToTime;
 				} else if (value.equals(Constant.THIS_MONTH)) {
 					Calendar calendar = Calendar.getInstance();
 					calendar.set(Calendar.DAY_OF_MONTH, 1);
@@ -78,6 +87,18 @@ public class MisReportServiceImpl implements MisReportService {
 					String formattedEndDate = dateFormat.format(endDate);
 					fromDate = formattedStartDate + " " + addedFromTime;
 					toDate = formattedEndDate + " " + addedToTime;
+				} else if (value.equals(Constant.LAST_MONTH)) {
+					Calendar calendar = Calendar.getInstance();
+					calendar.set(Calendar.DAY_OF_MONTH, 1);
+					calendar.add(Calendar.MONTH, -1);
+					Date lastMonthStartDate = calendar.getTime();
+					calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+					Date lastMonthEndDate = calendar.getTime();
+					SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+					String formattedLastMonthStartDate = dateFormat.format(lastMonthStartDate);
+					String formattedLastMonthEndDate = dateFormat.format(lastMonthEndDate);
+					fromDate = formattedLastMonthStartDate + " " + addedFromTime;
+					toDate = formattedLastMonthEndDate + " " + addedToTime;
 				} else if (value.equals(Constant.THIS_WEEK)) {
 					Calendar calendar = Calendar.getInstance();
 					calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
@@ -100,11 +121,14 @@ public class MisReportServiceImpl implements MisReportService {
 					String formattedEndDate = dateFormat.format(endDate);
 					fromDate = formattedStartDate + " " + addedFromTime;
 					toDate = formattedEndDate + " " + addedToTime;
+				} else if (value.equals(Constant.CUSTOM)) {
+					if (fromDate != null && !fromDate.isEmpty() && !fromDate.equals("")) {
+						fromDate = fromDate + " " + addedFromTime;
+					}
+					if (toDate != null && !toDate.isEmpty() && !fromDate.equals("")) {
+						toDate = toDate + " " + addedToTime;
+					}
 				}
-			} else if (fromDate != null && !fromDate.isEmpty()) {
-				fromDate = fromDate + " " + addedFromTime;
-			} else if (toDate != null && !toDate.isEmpty()) {
-				toDate = toDate + " " + addedToTime;
 			}
 			if (fromDate == null || fromDate.isEmpty() || fromDate.trim().equals("")) {
 				searchDto.setFromDate(null);
@@ -151,6 +175,8 @@ public class MisReportServiceImpl implements MisReportService {
 					}
 					recommendationList = recommendationRepository.findAllRecommendationsOemAndAgmBySearchDto(null,
 							searchDto);
+				} else {
+					return new Response<>(HttpStatus.BAD_REQUEST.value(), "Unauthorized", null);
 				}
 				List<RecommendationResponseDto> list = new ArrayList<>();
 				for (Recommendation recommendation : recommendationList) {
@@ -167,8 +193,9 @@ public class MisReportServiceImpl implements MisReportService {
 					Optional<RecommendationTrail> trailObj = recommendationTrailRepository
 							.findAllByReferenceIdAndStatusId(recommendation.getReferenceId(),
 									StatusEnum.Released.getId());
-					Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository.findByRecommendRefId(recommendation.getReferenceId());
-					if(deploymentDetails.isPresent()) {
+					Optional<RecommendationDeplyomentDetails> deploymentDetails = deplyomentDetailsRepository
+							.findByRecommendRefId(recommendation.getReferenceId());
+					if (deploymentDetails.isPresent()) {
 						responseDto.setImpactedDepartment(deploymentDetails.get().getImpactedDepartment());
 					}
 					if (trailObj.isPresent()) {

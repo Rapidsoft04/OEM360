@@ -769,51 +769,80 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
 			}
 
+//			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
+//				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//				Date fromDate = null;
+//				try {
+//					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				Date toDate = null;
+//				try {
+//					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate)));
+//
+//			}
+//
+//			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+//				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//				Date fromDate = null;
+//				try {
+//					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				Date currentDate = DateUtil.convertISTtoUTC(new Date());
+//				predicates
+//						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, currentDate)));
+//			}
+//
+//			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+//				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//				Date toDate = null;
+//				try {
+//					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
+//			}
+
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate = null;
 				try {
-					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				Date toDate = null;
-				try {
-					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate)));
+					Date fromDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getFromDate());
+					Date toDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getToDate());
 
+					predicates.add(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate));
+				} catch (ParseException e) {
+					e.printStackTrace();
+					// Handle or log the parsing exception
+				}
+			} else if (searchDto.getFromDate() != null) {
+				try {
+					Date fromDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getFromDate());
+					predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), fromDate));
+				} catch (ParseException e) {
+					e.printStackTrace();
+					// Handle or log the parsing exception
+				}
+			} else if (searchDto.getToDate() != null) {
+				try {
+					Date toDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getToDate());
+					predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
+				} catch (ParseException e) {
+					e.printStackTrace();
+					// Handle or log the parsing exception
+				}
 			}
 
-			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate = null;
-				try {
-					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				Date currentDate = DateUtil.convertISTtoUTC(new Date());
-				predicates
-						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, currentDate)));
-			}
-
-			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate = null;
-				try {
-					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
-			}
 			if (searchDto.getCreatedBy() != null) {
 				predicates.add(criteriaBuilder.equal(root.get("createdBy").get("id"), searchDto.getCreatedBy()));
 			}
