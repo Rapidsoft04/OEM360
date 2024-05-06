@@ -17,5 +17,12 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
 	@Query(value = "SELECT * FROM department where name = ?1 OR code = ?2", nativeQuery = true)
 	Optional<Department> findDepartmentByName(String departmentName, String departmentCode);
+	
+//	@Query(value = "SELECT * FROM department where name = ?1", nativeQuery = true)
+//	Optional<Department> findDepartmentByName(String departmentName);
+	
+	@Query(value = "SELECT * FROM department WHERE name = ?1", nativeQuery = true)
+	Optional<Department> findDepartmentByName(String departmentName);
+	
 
 }

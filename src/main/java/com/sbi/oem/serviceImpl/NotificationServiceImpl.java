@@ -269,8 +269,13 @@ public class NotificationServiceImpl implements NotificationService {
 								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_AGM)) {
 						List<User> userList = new ArrayList<>();
-						userList.add(recommendation.getCreatedBy());
-						userList.add(departmentApprover.get().getApplicationOwner());
+						if (recommendation.getCreatedBy().getUserType().name()
+								.equals(UserType.APPLICATION_OWNER.name())) {
+							userList.add(departmentApprover.get().getApplicationOwner());
+						} else {
+							userList.add(recommendation.getCreatedBy());
+							userList.add(departmentApprover.get().getApplicationOwner());
+						}
 						for (User user : seniorManagementUsers) {
 							userList.add(user);
 						}
@@ -353,12 +358,19 @@ public class NotificationServiceImpl implements NotificationService {
 						createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
 								recommendationStatus);
 					} else if (status.equals(RecommendationStatusEnum.RECCOMENDATION_REJECTED)) {
-						User oem = recommendation.getCreatedBy();
-						User appOwner = departmentApprover.get().getApplicationOwner();
 						List<User> userList = new ArrayList<>();
-						userList.add(appOwner);
-						userList.add(oem);
-						userList.addAll(seniorManagementUsers);
+						if (recommendation.getCreatedBy().getUserType().name()
+								.equals(UserType.APPLICATION_OWNER.name())) {
+							User appOwner = departmentApprover.get().getApplicationOwner();
+							userList.add(appOwner);
+							userList.addAll(seniorManagementUsers);
+						} else {
+							User oem = recommendation.getCreatedBy();
+							User appOwner = departmentApprover.get().getApplicationOwner();
+							userList.add(appOwner);
+							userList.add(oem);
+							userList.addAll(seniorManagementUsers);
+						}
 						String text = "";
 						if (recommendationObj.get().getPriorityId().longValue() == PriorityEnum.High.getId().longValue()
 								&& recommendationObj.get().getIsAppOwnerRejected().booleanValue() == true) {
@@ -461,12 +473,19 @@ public class NotificationServiceImpl implements NotificationService {
 								recommendationStatus);
 
 					} else if (status.equals(RecommendationStatusEnum.RECOMMENDATION_STATUS_CHANGED)) {
-						User agm = departmentApprover.get().getAgm();
-						User oem = recommendation.getCreatedBy();
 						List<User> userList = new ArrayList<>();
-						userList.add(agm);
-						userList.add(oem);
-						userList.addAll(seniorManagementUsers);
+						if (recommendation.getCreatedBy().getUserType().name()
+								.equals(UserType.APPLICATION_OWNER.name())) {
+							User agm = departmentApprover.get().getAgm();
+							userList.add(agm);
+							userList.addAll(seniorManagementUsers);
+						} else {
+							User agm = departmentApprover.get().getAgm();
+							User oem = recommendation.getCreatedBy();
+							userList.add(agm);
+							userList.add(oem);
+							userList.addAll(seniorManagementUsers);
+						}
 						String text = "Recommendation status has been changed";
 
 						String descriptions = "Your recommendation with referenceId = "
@@ -679,8 +698,17 @@ public class NotificationServiceImpl implements NotificationService {
 
 				if (departmentApprover != null && departmentApprover.isPresent()) {
 					if (status.equals(RecommendationStatusEnum.CREATED)) {
-
 						User appOwner = departmentApprover.get().getApplicationOwner();
+						User agm = departmentApprover.get().getAgm();
+						List<User> userList = new ArrayList<>();
+
+						if (recommendation.getCreatedBy().getUserType().name()
+								.equals(UserType.APPLICATION_OWNER.name())) {
+							userList.add(agm);
+						} else {
+							userList.add(appOwner);
+							userList.add(agm);
+						}
 
 						String text = "New recommendation request has been created.";
 
@@ -706,7 +734,10 @@ public class NotificationServiceImpl implements NotificationService {
 
 						RecommendationStatus recommendationStatus = recommendation.getRecommendationStatus();
 
-						createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
+//						createNotification(recommendation.getReferenceId(), text, descriptions, appOwner,
+//								recommendationStatus);
+
+						createNotificationV2(recommendation.getReferenceId(), text, descriptions, userList,
 								recommendationStatus);
 
 					} else if (status.equals(RecommendationStatusEnum.APPROVED_BY_APPOWNER)) {

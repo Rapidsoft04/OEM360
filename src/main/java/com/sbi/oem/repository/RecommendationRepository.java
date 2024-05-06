@@ -97,7 +97,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
@@ -111,7 +111,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -165,14 +165,14 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -185,7 +185,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
@@ -199,7 +199,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -259,14 +259,14 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -279,7 +279,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
@@ -293,7 +293,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -344,14 +344,14 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -364,7 +364,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
@@ -378,7 +378,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -437,14 +437,14 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -457,7 +457,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
@@ -471,7 +471,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -522,14 +522,14 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -542,7 +542,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
@@ -556,7 +556,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -612,14 +612,14 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -632,7 +632,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
@@ -646,7 +646,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -697,65 +697,44 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
 			}
 
-			if (searchDto.getFromDate() != null) {
-				predicates
-						.add(criteriaBuilder.greaterThanOrEqualTo(root.get("recommendDate"), searchDto.getFromDate()));
-			}
-
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
 				try {
-					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
+					Date fromDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getFromDate());
+					Date toDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getToDate());
+
+					predicates.add(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate));
 				} catch (ParseException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+					// Handle or log the parsing exception
 				}
-				Date toDate=null;
+			} else if (searchDto.getFromDate() != null) {
 				try {
-					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
+					Date fromDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getFromDate());
+					predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), fromDate));
 				} catch (ParseException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+					// Handle or log the parsing exception
 				}
-				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate)));
+			} else if (searchDto.getToDate() != null) {
+				try {
+					Date toDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getToDate());
+					predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
+				} catch (ParseException e) {
+					e.printStackTrace();
+					// Handle or log the parsing exception
+				}
 			}
 
-			if (searchDto.getToDate() != null) {
-				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("recommendDate"), searchDto.getToDate()));
-			}
-
-			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
-				try {
-					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				Date currentDate = DateUtil.convertISTtoUTC(new Date());
-				predicates
-						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, currentDate)));
-			}
-
-			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
-				try {
-					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
-			}
 			if (searchDto.getSearchKey() != null) {
 				predicates.add(criteriaBuilder.or(
 						criteriaBuilder.like(root.get("descriptions"), "%" + searchDto.getSearchKey() + "%"),
 						criteriaBuilder.like(root.get("referenceId"), "%" + searchDto.getSearchKey() + "%")));
-
 			}
+
+			if (searchDto.getDepartmentIds() != null && !searchDto.getDepartmentIds().isEmpty()) {
+				predicates.add(root.get("department").get("id").in(searchDto.getDepartmentIds()));
+			}
+
 			query.orderBy(criteriaBuilder.desc(root.get("updatedAt")));
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
@@ -790,50 +769,78 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 						criteriaBuilder.equal(root.get("recommendationStatus").get("id"), searchDto.getStatusId()));
 			}
 
+//			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
+//				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//				Date fromDate = null;
+//				try {
+//					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				Date toDate = null;
+//				try {
+//					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate)));
+//
+//			}
+//
+//			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
+//				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//				Date fromDate = null;
+//				try {
+//					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				Date currentDate = DateUtil.convertISTtoUTC(new Date());
+//				predicates
+//						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, currentDate)));
+//			}
+//
+//			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
+//				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//				Date toDate = null;
+//				try {
+//					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
+//			}
+
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
 				try {
-					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				Date toDate=null;
-				try {
-					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				predicates.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate)));
+					Date fromDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getFromDate());
+					Date toDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getToDate());
 
-			}
-
-			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
-				try {
-					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
+					predicates.add(criteriaBuilder.between(root.get("createdAt"), fromDate, toDate));
 				} catch (ParseException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+					// Handle or log the parsing exception
 				}
-				Date currentDate = DateUtil.convertISTtoUTC(new Date());
-				predicates
-						.add(criteriaBuilder.or(criteriaBuilder.between(root.get("createdAt"), fromDate, currentDate)));
-			}
-
-			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+			} else if (searchDto.getFromDate() != null) {
 				try {
-					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
+					Date fromDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getFromDate());
+					predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), fromDate));
 				} catch (ParseException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+					// Handle or log the parsing exception
 				}
-				predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
+			} else if (searchDto.getToDate() != null) {
+				try {
+					Date toDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(searchDto.getToDate());
+					predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), toDate));
+				} catch (ParseException e) {
+					e.printStackTrace();
+					// Handle or log the parsing exception
+				}
 			}
 
 			if (searchDto.getCreatedBy() != null) {
@@ -895,14 +902,14 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -915,7 +922,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
@@ -929,7 +936,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -984,14 +991,14 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -1004,7 +1011,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
@@ -1018,7 +1025,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -1076,14 +1083,14 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -1096,7 +1103,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
 			if (searchDto.getFromDate() != null && searchDto.getToDate() == null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date fromDate=null;
+				Date fromDate = null;
 				try {
 					fromDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getFromDate()));
 				} catch (ParseException e) {
@@ -1115,7 +1122,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			}
 			if (searchDto.getFromDate() == null && searchDto.getToDate() != null) {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				Date toDate=null;
+				Date toDate = null;
 				try {
 					toDate = DateUtil.convertISTtoUTC(formatter.parse(searchDto.getToDate()));
 				} catch (ParseException e) {
@@ -1145,7 +1152,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 			List<Predicate> predicates = new ArrayList<>();
 
 			if (requestDto.getDescription() != null) {
-				predicates.add(criteriaBuilder.equal(root.get("descriptions"), requestDto.getDescription()));
+				predicates.add(criteriaBuilder.equal(root.get("descriptions"), requestDto.getDescription().trim()));
 			}
 
 			if (requestDto.getTypeId() != null) {
@@ -1164,10 +1171,29 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 				predicates.add(criteriaBuilder.equal(root.get("component"), requestDto.getComponentId()));
 			}
 
+			if (requestDto.getFileName() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("fileName"), requestDto.getFileName().trim()));
+			}
+
+			if (requestDto.getExpectedImpact() != null) {
+				predicates
+						.add(criteriaBuilder.equal(root.get("expectedImpact"), requestDto.getExpectedImpact().trim()));
+			}
+
+			if (requestDto.getUrlLink() != null) {
+				predicates.add(criteriaBuilder.equal(root.get("documentUrl"), requestDto.getUrlLink().trim()));
+			}
+
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 
 		return findAll(specification);
 	}
+
+	@Query(value = "SELECT * FROM recommendation WHERE department_id IN ?1 AND created_at BETWEEN ?2 AND ?3", nativeQuery = true)
+	List<Recommendation> findByDgmDepartmentIdsAndUpdatedAtBetween(List<Long> ids, String fromDate, String toDate);
+
+	@Query(value = "SELECT * FROM recommendation WHERE department_id IN ?1 and created_at<?2", nativeQuery = true)
+	List<Recommendation> findAllByDgmDepartmentIdsAndCreatedAtBetweenToday(List<Long> ids, String toDate);
 
 }

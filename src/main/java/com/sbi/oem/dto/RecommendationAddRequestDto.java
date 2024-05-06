@@ -30,6 +30,8 @@ public class RecommendationAddRequestDto {
 	private UserType userType;
 	private String recommendedBy;
 	private String impactedDepartments;
+	private String fileName;
+	private String fileUrl;
 
 	public String getReferenceId() {
 		return referenceId;
@@ -165,6 +167,22 @@ public class RecommendationAddRequestDto {
 
 	public void setImpactedDepartments(String impactedDepartments) {
 		this.impactedDepartments = impactedDepartments;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public String getFileUrl() {
+		return fileUrl;
+	}
+
+	public void setFileUrl(String fileUrl) {
+		this.fileUrl = fileUrl;
 	}
 
 }

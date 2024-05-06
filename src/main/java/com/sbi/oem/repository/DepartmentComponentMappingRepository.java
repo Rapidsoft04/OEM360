@@ -1,6 +1,7 @@
 package com.sbi.oem.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,8 +20,15 @@ public interface DepartmentComponentMappingRepository extends JpaRepository<Depa
 	@Query(value = "SELECT * FROM department_component WHERE component_id = ?1 ORDER BY updated_at DESC", nativeQuery = true)
 	List<DepartmentComponentMapping> findAllByComponentId(Long componentId);
 
-	@Query(value = "SELECT component FROM DepartmentComponentMapping where department_id in :departmentIds group by component_id having count(department_id) = :departmentCount")
+//	@Query(value = "SELECT component FROM DepartmentComponentMapping where department_id in :departmentIds group by component_id having count(department_id) = :departmentCount")
+//	List<Component> findCommonComponents(@Param("departmentIds") List<Long> departmentIds,
+//			@Param("departmentCount") Long departmentCount);
+//	
+	@Query(value = "SELECT d.component FROM DepartmentComponentMapping as d  where d.isActive = true and department_id in :departmentIds group by component_id having count(department_id) = :departmentCount")
 	List<Component> findCommonComponents(@Param("departmentIds") List<Long> departmentIds,
 			@Param("departmentCount") Long departmentCount);
+
+	@Query(value = "SELECT * FROM department_component WHERE department_id = ?1 AND component_id = ?2", nativeQuery = true)
+	Optional<DepartmentComponentMapping> findByDepartmentIdAndComponentId(Long departmentId, Long componentId);
 
 }

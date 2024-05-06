@@ -3,6 +3,7 @@ package com.sbi.oem.backup.data;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,6 +63,20 @@ public class DataRetrievalService {
 			}
 		}
 		return departmentMap;
+	}
+
+	public Department findDepartmentByName(String departmentName) {
+		try {
+			Optional<Department> department = departmentRepository.findDepartmentByName(departmentName);
+			if (department != null && department.isPresent()) {
+				return department.get();
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			return null;
+		}
+
 	}
 
 }

@@ -73,6 +73,12 @@ public class RecommendationResponseDto {
 
 	private String pastExperienceComment;
 
+	private String fileName;
+
+	private Date recommendationReleasedDate;
+
+	private String recommendedBy;
+
 	public Long getId() {
 		return id;
 	}
@@ -301,7 +307,7 @@ public class RecommendationResponseDto {
 			RecommendationType recommendationType, Date recommendDate, Department department, Component component,
 			String expectedImpact, String impactedDepartment, String documentUrl, String fileUrl, Date createdAt,
 			User createdBy, RecommendationStatus status, Boolean isAppOwnerApproved, Boolean isAgmApproved,
-			Boolean isAppOwnerRejected) {
+			Boolean isAppOwnerRejected, String fileName) {
 		super();
 		this.id = id;
 		this.referenceId = referenceId;
@@ -320,6 +326,7 @@ public class RecommendationResponseDto {
 		this.isAppOwnerApproved = isAppOwnerApproved;
 		this.isAgmApproved = isAgmApproved;
 		this.isAppOwnerRejected = isAppOwnerRejected;
+		this.fileName = fileName;
 	}
 
 	public RecommendationResponseDto() {
@@ -334,10 +341,19 @@ public class RecommendationResponseDto {
 		this.notification = notification;
 	}
 
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
 	public RecommendationResponseDto(Long id, String referenceId, String descriptions,
 			RecommendationType recommendationType, String priority, Date recommendDate, Department department,
 			Component component, String expectedImpact, String impactedDepartment, String documentUrl, String fileUrl,
-			Date createdAt, User createdBy, RecommendationStatus status, String pastExperienceComment) {
+			Date createdAt, User createdBy, RecommendationStatus status, String pastExperienceComment,
+			String fileName) {
 		super();
 		this.id = id;
 		this.referenceId = referenceId;
@@ -355,6 +371,23 @@ public class RecommendationResponseDto {
 		this.createdBy = createdBy;
 		this.status = status;
 		this.pastExperienceComment = pastExperienceComment;
+		this.fileName = fileName;
+	}
+
+	public Date getRecommendationReleasedDate() {
+		return recommendationReleasedDate;
+	}
+
+	public void setRecommendationReleasedDate(Date recommendationReleasedDate) {
+		this.recommendationReleasedDate = recommendationReleasedDate;
+	}
+
+	public String getRecommendedBy() {
+		return recommendedBy;
+	}
+
+	public void setRecommendedBy(String recommendedBy) {
+		this.recommendedBy = recommendedBy;
 	}
 
 }

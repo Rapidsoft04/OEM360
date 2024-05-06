@@ -55,7 +55,7 @@ public class ComponentServiceImpl implements ComponentService {
 							.findComponentByName(componentDto.getName().trim());
 					if (!componentExist.isPresent()) {
 						Component component = new Component();
-						component.setName(componentDto.getName());
+						component.setName(componentDto.getName().trim());
 						component.setCompany(master.get().getUserId().getCompany());
 						component.setIsActive(true);
 						component.setCreatedAt(new Date());
@@ -70,10 +70,11 @@ public class ComponentServiceImpl implements ComponentService {
 								departmentComponentMapping.setDepartment(new Department(departmentId));
 								departmentComponentMapping.setCreatedAt(new Date());
 								departmentComponentMapping.setUpdatedAt(new Date());
+								departmentComponentMapping.setIsActive(true);
 								componentMappingRepository.save(departmentComponentMapping);
 							}
 						}
-						return new Response<>(HttpStatus.OK.value(), "success", null);
+						return new Response<>(HttpStatus.OK.value(), "Component Added Successfully", null);
 					} else {
 						return new Response<>(HttpStatus.BAD_REQUEST.value(), "Component already exist.", null);
 					}

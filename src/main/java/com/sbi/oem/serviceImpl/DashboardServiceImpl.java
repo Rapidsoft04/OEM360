@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.sbi.oem.constant.Constant;
 import com.sbi.oem.dto.DashboardResponseDto;
 import com.sbi.oem.dto.Response;
+import com.sbi.oem.enums.PriorityEnum;
 import com.sbi.oem.enums.StatusEnum;
 import com.sbi.oem.enums.UserType;
 import com.sbi.oem.model.CredentialMaster;
@@ -115,16 +117,56 @@ public class DashboardServiceImpl implements DashboardService {
 			if (master != null && master.isPresent()) {
 				if (master.get().getUserTypeId().name().equals(UserType.AGM.name())
 						|| master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
-					Optional<DepartmentApprover> departmentApprover = departmentApproverRepository
-							.findByAgmId(master.get().getUserId().getId());
+					List<DepartmentApprover> departmentApprover = departmentApproverRepository
+							.findByAgmIdOrDgmId(master.get().getUserId().getId());
 					List<Recommendation> recommendationList = new ArrayList<>();
-					if (departmentApprover != null && departmentApprover.isPresent()) {
+					if (!departmentApprover.isEmpty()) {
 						if (!value.equals(Constant.TILL_TODAY)) {
-							recommendationList = recommendationRepository.findByAgmIdAndUpdatedAtBetween(
-									departmentApprover.get().getDepartment().getId(), fromDate, toDate);
+							if (!departmentApprover.isEmpty()) {
+								if (master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+									List<Long> departmentIds = departmentApprover.stream()
+											.map(department -> department.getDepartment().getId())
+											.collect(Collectors.toList());
+									List<Recommendation> list = recommendationRepository
+											.findByDgmDepartmentIdsAndUpdatedAtBetween(departmentIds, fromDate, toDate);
+									for (Recommendation recommendation : list) {
+										if (recommendation.getDepartment().getId().longValue() == master.get()
+												.getUserId().getDepartment().getId().longValue()
+												|| (recommendation.getPriorityId().longValue() == PriorityEnum.High
+														.getId().longValue()
+														&& recommendation.getIsAppOwnerRejected())) {
+											recommendationList.add(recommendation);
+										}
+									}
+								} else {
+									recommendationList = recommendationRepository.findByAgmIdAndUpdatedAtBetween(
+											departmentApprover.get(0).getDepartment().getId(), fromDate, toDate);
+								}
+							}
 						} else {
-							recommendationList = recommendationRepository.findAllByDepartmentIdAndCreatedAtBetweenToday(
-									departmentApprover.get().getDepartment().getId(), toDate);
+							if (!departmentApprover.isEmpty()) {
+								if (master.get().getUserTypeId().name().equals(UserType.DGM.name())) {
+									List<Long> departmentIds = departmentApprover.stream()
+											.map(department -> department.getDepartment().getId())
+											.collect(Collectors.toList());
+
+									List<Recommendation> list = recommendationRepository
+											.findAllByDgmDepartmentIdsAndCreatedAtBetweenToday(departmentIds, toDate);
+									for (Recommendation recommendation : list) {
+										if (recommendation.getDepartment().getId().longValue() == master.get()
+												.getUserId().getDepartment().getId().longValue()
+												|| (recommendation.getPriorityId().longValue() == PriorityEnum.High
+														.getId().longValue()
+														&& recommendation.getIsAppOwnerRejected())) {
+											recommendationList.add(recommendation);
+										}
+									}
+								} else {
+									recommendationList = recommendationRepository
+											.findAllByDepartmentIdAndCreatedAtBetweenToday(
+													departmentApprover.get(0).getDepartment().getId(), toDate);
+								}
+							}
 						}
 						if (recommendationList != null && recommendationList.size() > 0) {
 							Integer totalRecommendation = recommendationList.size();
@@ -148,11 +190,13 @@ public class DashboardServiceImpl implements DashboardService {
 											.findAllByReferenceIdAndStatusId(recommendation.getReferenceId(),
 													StatusEnum.Released.getId());
 									Date rcmdDate = DateUtil.convertDateToNigh12AM(recommendation.getRecommendDate());
-
-									if (trailObj.get().getCreatedAt().before(rcmdDate)) {
-										onTimeDoneRecommendationCount = onTimeDoneRecommendationCount + 1L;
-									} else {
-										delayRecommendationCount = delayRecommendationCount + 1L;
+									// newly added -> Checking if trail obj is not null
+									if (trailObj.isPresent()) {
+										if (trailObj.get().getCreatedAt().before(rcmdDate)) {
+											onTimeDoneRecommendationCount = onTimeDoneRecommendationCount + 1L;
+										} else {
+											delayRecommendationCount = delayRecommendationCount + 1L;
+										}
 									}
 								}
 								if (recommendation.getIsAgmApproved() != null
