@@ -25,9 +25,15 @@ public class MisReportController {
 //		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 //	}
 	
+//	@PostMapping("/export/mis/report")
+//	public ResponseEntity<?> exportMisReport(@RequestBody SearchDto searchDto) {
+//		Response<?> response = misReportService.exportMisReportData(searchDto);
+//		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+//	}
+	
 	@PostMapping("/export/mis/report")
-	public ResponseEntity<?> exportMisReport(@RequestBody SearchDto searchDto) {
-		Response<?> response = misReportService.exportMisReportData(searchDto);
+	public ResponseEntity<?> exportMisReportV2(@RequestBody SearchDto searchDto) {
+		Response<?> response = misReportService.exportMisReportDataV2(searchDto);
 		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
 	}
 }

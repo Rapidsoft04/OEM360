@@ -7,4 +7,6 @@ public interface MisReportService {
 
 	Response<?> exportMisReportData(SearchDto searchDto);
 
+	Response<?> exportMisReportDataV2(SearchDto searchDto);
+
 }

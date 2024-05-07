@@ -3,6 +3,7 @@ package com.sbi.oem.dto;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -15,6 +16,7 @@ public class Response<T> {
 	private String message;
 	private String requestedURI;
 	private T data;
+	private MultipartFile file;
 
 	public int getResponseCode() {
 		return responseCode;
@@ -47,7 +49,6 @@ public class Response<T> {
 	public void setData(T data) {
 		this.data = data;
 	}
-	
 
 //	public com.sfa.stock_management.util.Pagination<List<?>> getPaginationData() {
 //		return paginationData;
@@ -57,6 +58,14 @@ public class Response<T> {
 //		this.paginationData = paginationData;
 //	}
 
+	public MultipartFile getFile() {
+		return file;
+	}
+
+	public void setFile(MultipartFile file) {
+		this.file = file;
+	}
+
 	public Response(int responseCode, String message, T data) {
 		super();
 		this.responseCode = responseCode;
@@ -64,11 +73,9 @@ public class Response<T> {
 		this.data = data;
 	}
 
-
 	public Response() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	
 }
