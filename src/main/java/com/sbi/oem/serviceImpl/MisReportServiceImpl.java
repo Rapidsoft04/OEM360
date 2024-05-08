@@ -18,7 +18,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -429,6 +431,8 @@ public class MisReportServiceImpl implements MisReportService {
 					cell.setCellValue("Consolidated - All Departments");
 					CellStyle style = workbook.createCellStyle();
 					style.setFont(getHeadingFont(workbook));
+					style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+					style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 					cell.setCellStyle(style);
 					rowNum = rowNum + 1;
 					for (int i = 1; i <= 7; i++) {
@@ -490,6 +494,8 @@ public class MisReportServiceImpl implements MisReportService {
 						Cell cell1 = row.createCell(0);
 						cell1.setCellValue(str);
 						style.setFont(getHeadingFont(workbook));
+						style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+						style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 						cell1.setCellStyle(style);
 						rowNum = rowNum + 1;
 						List<RecommendationResponseDto> pendingApprovalListForThisDept = new ArrayList<>();
@@ -595,6 +601,8 @@ public class MisReportServiceImpl implements MisReportService {
 							row = sheet1.createRow(rowNum);
 							cell = row.createCell(0);
 							style.setFont(getTextFont(workbook));
+							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 							cell.setCellStyle(style);
 							cell.setCellValue("Completed");
 							cell = row.createCell(1);
@@ -610,6 +618,8 @@ public class MisReportServiceImpl implements MisReportService {
 							row = sheet1.createRow(rowNum);
 							cell = row.createCell(0);
 							style.setFont(getTextFont(workbook));
+							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 							cell.setCellStyle(style);
 							cell.setCellValue("Pending for Approval");
 							cell = row.createCell(1);
@@ -624,6 +634,8 @@ public class MisReportServiceImpl implements MisReportService {
 							row = sheet1.createRow(rowNum);
 							cell = row.createCell(0);
 							style.setFont(getTextFont(workbook));
+							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 							cell.setCellStyle(style);
 							cell.setCellValue("Implementation");
 							cell = row.createCell(1);
@@ -639,6 +651,8 @@ public class MisReportServiceImpl implements MisReportService {
 							row = sheet1.createRow(rowNum);
 							cell = row.createCell(0);
 							style.setFont(getTextFont(workbook));
+							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 							cell.setCellStyle(style);
 							cell.setCellValue("Rejected");
 							cell = row.createCell(1);
@@ -927,5 +941,12 @@ public class MisReportServiceImpl implements MisReportService {
 		fis.read(fileContent);
 		fis.close();
 		return fileContent;
+	}
+	
+	public CellStyle getYellowBackgroundCellStyle(Workbook workbook) {
+	    CellStyle cellStyle = workbook.createCellStyle();
+	    cellStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+	    cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+	    return cellStyle;
 	}
 }
