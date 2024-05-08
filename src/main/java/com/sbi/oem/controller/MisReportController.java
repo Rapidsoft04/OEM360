@@ -1,5 +1,7 @@
 package com.sbi.oem.controller;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +34,8 @@ public class MisReportController {
 //	}
 	
 	@PostMapping("/export/mis/report")
-	public ResponseEntity<?> exportMisReportV2(@RequestBody SearchDto searchDto) {
-		Response<?> response = misReportService.exportMisReportDataV2(searchDto);
-		return new ResponseEntity<>(response, HttpStatus.valueOf(response.getResponseCode()));
+	public ResponseEntity<?> exportMisReportV2(@RequestBody SearchDto searchDto,HttpServletResponse response) {
+		misReportService.exportMisReportDataV2(searchDto,response);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

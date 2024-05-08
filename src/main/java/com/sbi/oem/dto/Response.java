@@ -1,5 +1,7 @@
 package com.sbi.oem.dto;
 
+import java.io.File;
+
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -58,6 +60,15 @@ public class Response<T> {
 //		this.paginationData = paginationData;
 //	}
 
+	public Response(int responseCode, String message, T data) {
+		super();
+		this.responseCode = responseCode;
+		this.message = message;
+		this.data = data;
+	}
+
+	
+
 	public MultipartFile getFile() {
 		return file;
 	}
@@ -66,16 +77,17 @@ public class Response<T> {
 		this.file = file;
 	}
 
-	public Response(int responseCode, String message, T data) {
-		super();
-		this.responseCode = responseCode;
-		this.message = message;
-		this.data = data;
-	}
-
 	public Response() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+
+	public Response(int responseCode, String message, MultipartFile file) {
+		super();
+		this.responseCode = responseCode;
+		this.message = message;
+		this.file = file;
+	}
+	
 
 }
