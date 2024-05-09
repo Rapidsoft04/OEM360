@@ -24,6 +24,9 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.IndexedColorMap;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +52,7 @@ import com.sbi.oem.repository.RecommendationTrailRepository;
 import com.sbi.oem.security.JwtUserDetailsService;
 import com.sbi.oem.service.MisReportService;
 import com.sbi.oem.util.DateUtil;
+import org.apache.poi.ss.usermodel.*;
 
 @Service
 public class MisReportServiceImpl implements MisReportService {
@@ -409,8 +413,9 @@ public class MisReportServiceImpl implements MisReportService {
 					if (responseDto.getStatus().getId().longValue() == StatusEnum.Rejected.getId().longValue()) {
 						rejectedRecommendation.add(responseDto);
 					}
-					if (responseDto.getStatus().getId().longValue() >= StatusEnum.Approved.getId().longValue()
-							&& responseDto.getStatus().getId().longValue() < StatusEnum.Released.getId().longValue()) {
+					if (responseDto.getStatus().getId() >= StatusEnum.Approved.getId()
+							&& responseDto.getStatus().getId() < StatusEnum.Released.getId()
+							&& responseDto.getStatus().getId() != StatusEnum.Rejected.getId()) {
 						inProgressRecommendation.add(responseDto);
 					}
 					responseDto.setRecommendedBy(recommendation.getRecommendedBy());
@@ -429,11 +434,11 @@ public class MisReportServiceImpl implements MisReportService {
 					Row row = sheet.createRow(rowNum);
 					Cell cell = row.createCell(0);
 					cell.setCellValue("Consolidated - All Departments");
-					CellStyle style = workbook.createCellStyle();
-					style.setFont(getHeadingFont(workbook));
-					style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-					style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-					cell.setCellStyle(style);
+//					CellStyle style = workbook.createCellStyle();
+//					style.setFont(getHeadingFont(workbook));
+//					style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+//					style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+					cell.setCellStyle(getGreyBackgroundStyle(workbook));
 					rowNum = rowNum + 1;
 					for (int i = 1; i <= 7; i++) {
 						row = sheet.createRow(rowNum);
@@ -442,49 +447,49 @@ public class MisReportServiceImpl implements MisReportService {
 							cells.setCellValue("Total Recommendations");
 							Cell valueCell = row.createCell(1);
 							valueCell.setCellValue(list.size());
-
+							cells.setCellStyle(getBlueBackgroundStyle(workbook));
 							rowNum = rowNum + 1;
 						} else if (i == 2) {
 							Cell cells = row.createCell(0);
 							cells.setCellValue("Pending for Approval");
 							Cell valueCell = row.createCell(1);
 							valueCell.setCellValue(pendingApprovalList.size());
-
+							cells.setCellStyle(getPinkBackgroundStyle(workbook));
 							rowNum = rowNum + 1;
 						} else if (i == 3) {
 							Cell cells = row.createCell(0);
 							cells.setCellValue("Total Completed");
 							Cell valueCell = row.createCell(1);
 							valueCell.setCellValue(completedRecommendation.size());
-
+							cells.setCellStyle(getGreenBackgroundStyle(workbook));
 							rowNum = rowNum + 1;
 						} else if (i == 4) {
 							Cell cells = row.createCell(0);
 							cells.setCellValue("Completed - On Time");
 							Cell valueCell = row.createCell(1);
 							valueCell.setCellValue(onTimeCompletedRecommendation.size());
-
+							cells.setCellStyle(getLightGreenBackgroundStyle(workbook));
 							rowNum = rowNum + 1;
 						} else if (i == 5) {
 							Cell cells = row.createCell(0);
 							cells.setCellValue("Completed - With Delay");
 							Cell valueCell = row.createCell(1);
 							valueCell.setCellValue(delayCompletedRecommendation.size());
-
+							cells.setCellStyle(getLightGreenBackgroundStyle(workbook));
 							rowNum = rowNum + 1;
 						} else if (i == 6) {
 							Cell cells = row.createCell(0);
 							cells.setCellValue("In Progress");
 							Cell valueCell = row.createCell(1);
 							valueCell.setCellValue(inProgressRecommendation.size());
-
+							cells.setCellStyle(getOrangeBackgroundStyle(workbook));
 							rowNum = rowNum + 1;
 						} else if (i == 7) {
 							Cell cells = row.createCell(0);
 							cells.setCellValue("Rejected");
 							Cell valueCell = row.createCell(1);
 							valueCell.setCellValue(rejectedRecommendation.size());
-
+							cells.setCellStyle(getOrangeBackgroundStyle(workbook));
 							rowNum = rowNum + 1;
 						}
 					}
@@ -493,10 +498,10 @@ public class MisReportServiceImpl implements MisReportService {
 						row = sheet.createRow(rowNum);
 						Cell cell1 = row.createCell(0);
 						cell1.setCellValue(str);
-						style.setFont(getHeadingFont(workbook));
-						style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-						style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-						cell1.setCellStyle(style);
+//						style.setFont(getHeadingFont(workbook));
+//						style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+//						style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+						cell1.setCellStyle(getYellowBackgroundCellStyle(workbook));
 						rowNum = rowNum + 1;
 						List<RecommendationResponseDto> pendingApprovalListForThisDept = new ArrayList<>();
 						List<RecommendationResponseDto> completedRecommendationForThisDept = new ArrayList<>();
@@ -533,7 +538,8 @@ public class MisReportServiceImpl implements MisReportService {
 							}
 							if (dto.getDepartment().getName().equals(str)
 									&& dto.getStatus().getId().longValue() >= StatusEnum.Approved.getId().longValue()
-									&& dto.getStatus().getId().longValue() < StatusEnum.Released.getId().longValue()) {
+									&& dto.getStatus().getId().longValue() < StatusEnum.Released.getId().longValue()
+									&& dto.getStatus().getId() != StatusEnum.Rejected.getId()) {
 								inProgressRecommendationForThisDept.add(dto);
 							}
 						}
@@ -544,49 +550,49 @@ public class MisReportServiceImpl implements MisReportService {
 								cells.setCellValue("Total Recommendations");
 								Cell valueCell = row.createCell(1);
 								valueCell.setCellValue(totalRecommendationForThisDept.size());
-
+								cells.setCellStyle(getBlueBackgroundStyle(workbook));
 								rowNum = rowNum + 1;
 							} else if (i == 2) {
 								Cell cells = row.createCell(0);
 								cells.setCellValue("Pending for Approval");
 								Cell valueCell = row.createCell(1);
 								valueCell.setCellValue(pendingApprovalListForThisDept.size());
-
+								cells.setCellStyle(getPinkBackgroundStyle(workbook));
 								rowNum = rowNum + 1;
 							} else if (i == 3) {
 								Cell cells = row.createCell(0);
 								cells.setCellValue("Total Completed");
 								Cell valueCell = row.createCell(1);
 								valueCell.setCellValue(completedRecommendationForThisDept.size());
-
+								cells.setCellStyle(getGreenBackgroundStyle(workbook));
 								rowNum = rowNum + 1;
 							} else if (i == 4) {
 								Cell cells = row.createCell(0);
 								cells.setCellValue("Completed - On Time");
 								Cell valueCell = row.createCell(1);
 								valueCell.setCellValue(onTimeCompletedRecommendationForThisDept.size());
-
+								cells.setCellStyle(getLightGreenBackgroundStyle(workbook));
 								rowNum = rowNum + 1;
 							} else if (i == 5) {
 								Cell cells = row.createCell(0);
 								cells.setCellValue("Completed - With Delay");
 								Cell valueCell = row.createCell(1);
 								valueCell.setCellValue(delayCompletedRecommendationForThisDept.size());
-
+								cells.setCellStyle(getLightGreenBackgroundStyle(workbook));
 								rowNum = rowNum + 1;
 							} else if (i == 6) {
 								Cell cells = row.createCell(0);
 								cells.setCellValue("In Progress");
 								Cell valueCell = row.createCell(1);
 								valueCell.setCellValue(inProgressRecommendationForThisDept.size());
-
+								cells.setCellStyle(getOrangeBackgroundStyle(workbook));
 								rowNum = rowNum + 1;
 							} else if (i == 7) {
 								Cell cells = row.createCell(0);
 								cells.setCellValue("Rejected");
 								Cell valueCell = row.createCell(1);
 								valueCell.setCellValue(rejectedRecommendationForThisDept.size());
-
+								cells.setCellStyle(getRedBackgroundStyle(workbook));
 								rowNum = rowNum + 1;
 							}
 						}
@@ -600,14 +606,15 @@ public class MisReportServiceImpl implements MisReportService {
 							sheet1 = workbook.createSheet("Completed");
 							row = sheet1.createRow(rowNum);
 							cell = row.createCell(0);
-							style.setFont(getTextFont(workbook));
-							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-							cell.setCellStyle(style);
+//							style.setFont(getTextFont(workbook));
+//							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+//							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+							cell.setCellStyle(getGreenBackgroundStyle(workbook));
 							cell.setCellValue("Completed");
 							cell = row.createCell(1);
-							style.setFont(getTextFont(workbook));
-							cell.setCellStyle(style);
+//							style.setFont(getTextFont(workbook));
+							cell.setCellStyle(getGreenBackgroundStyle(workbook));
+//							cell.setCellStyle(style);
 							cell.setCellValue(completedRecommendation.size());
 							rowNum = rowNum + 1;
 						}
@@ -617,14 +624,14 @@ public class MisReportServiceImpl implements MisReportService {
 							sheet1 = workbook.createSheet("Approval Pending");
 							row = sheet1.createRow(rowNum);
 							cell = row.createCell(0);
-							style.setFont(getTextFont(workbook));
-							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-							cell.setCellStyle(style);
+//							style.setFont(getTextFont(workbook));
+//							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+//							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+							cell.setCellStyle(getPinkBackgroundStyle(workbook));
 							cell.setCellValue("Pending for Approval");
 							cell = row.createCell(1);
-							style.setFont(getTextFont(workbook));
-							cell.setCellStyle(style);
+//							style.setFont(getTextFont(workbook));
+//							cell.setCellStyle(style);
 							cell.setCellValue(pendingApprovalList.size());
 							rowNum = rowNum + 1;
 						}
@@ -633,14 +640,15 @@ public class MisReportServiceImpl implements MisReportService {
 							sheet1 = workbook.createSheet("Implementation");
 							row = sheet1.createRow(rowNum);
 							cell = row.createCell(0);
-							style.setFont(getTextFont(workbook));
-							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-							cell.setCellStyle(style);
+//							style.setFont(getTextFont(workbook));
+//							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+//							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+							cell.setCellStyle(getOrangeBackgroundStyle(workbook));
 							cell.setCellValue("Implementation");
 							cell = row.createCell(1);
-							style.setFont(getTextFont(workbook));
-							cell.setCellStyle(style);
+//							style.setFont(getTextFont(workbook));
+//							cell.setCellStyle(style);
 							cell.setCellValue(inProgressRecommendation.size());
 							rowNum = rowNum + 1;
 						}
@@ -650,14 +658,14 @@ public class MisReportServiceImpl implements MisReportService {
 							sheet1 = workbook.createSheet("Rejected");
 							row = sheet1.createRow(rowNum);
 							cell = row.createCell(0);
-							style.setFont(getTextFont(workbook));
-							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-							cell.setCellStyle(style);
+//							style.setFont(getTextFont(workbook));
+//							style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+//							style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+							cell.setCellStyle(getYellowBackgroundCellStyle(workbook));
 							cell.setCellValue("Rejected");
 							cell = row.createCell(1);
-							style.setFont(getTextFont(workbook));
-							cell.setCellStyle(style);
+//							style.setFont(getTextFont(workbook));
+//							cell.setCellStyle(style);
 							cell.setCellValue(rejectedRecommendation.size());
 							rowNum = rowNum + 1;
 						}
@@ -679,7 +687,8 @@ public class MisReportServiceImpl implements MisReportService {
 								completedRecommendationForThisDept = list.stream().filter(e -> e.getDepartment()
 										.getName().equals(str)
 										&& e.getStatus().getId().longValue() >= StatusEnum.Approved.getId().longValue()
-										&& e.getStatus().getId().longValue() < StatusEnum.Released.getId().longValue())
+										&& e.getStatus().getId().longValue() < StatusEnum.Released.getId().longValue()
+										&& e.getStatus().getId() != StatusEnum.Rejected.getId())
 										.collect(Collectors.toList());
 							}
 							if (i == 4) {
@@ -689,11 +698,15 @@ public class MisReportServiceImpl implements MisReportService {
 										.collect(Collectors.toList());
 							}
 							row = sheet1.createRow(rowNum);
-							cell = row.createCell(0);
-							cell.setCellValue(str);
-							cell = row.createCell(1);
-							cell.setCellValue(completedRecommendationForThisDept.size());
-							rowNum = rowNum + 1;
+							if (completedRecommendationForThisDept.size() > 0) {
+								cell = row.createCell(0);
+								cell.setCellValue(str);
+								cell.setCellStyle(getGreenBackgroundStyle(workbook));
+								cell = row.createCell(1);
+								cell.setCellValue(completedRecommendationForThisDept.size());
+								rowNum = rowNum + 1;
+							}
+
 							if (completedRecommendationForThisDept != null
 									&& completedRecommendationForThisDept.size() > 0) {
 								row = sheet1.createRow(rowNum);
@@ -703,112 +716,112 @@ public class MisReportServiceImpl implements MisReportService {
 
 										cell = row.createCell(k);
 										cell.setCellValue("Reference ID");
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										break;
 									}
 									case 1: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Created on");
 										break;
 									}
 									case 2: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Type");
 										break;
 									}
 									case 3: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Priority");
 										break;
 									}
 									case 4: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Recommended end date");
 										break;
 									}
 									case 5: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Department");
 										break;
 									}
 									case 6: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Component name");
 										break;
 									}
 									case 7: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Approver");
 										break;
 									}
 									case 8: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Send by");
 										break;
 									}
 									case 9: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Status");
 										break;
 									}
 									case 10: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Description");
 										break;
 									}
 									case 11: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Development start date");
 										break;
 									}
 									case 12: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Development end date");
 										break;
 									}
 									case 13: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Test completion date");
 										break;
 									}
 									case 14: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Deployment date");
 										break;
 									}
 									case 15: {
 										cell = row.createCell(k);
-										style.setFont(getHeadingFont(workbook));
-										cell.setCellStyle(style);
+//										style.setFont(getHeadingFont(workbook));
+										cell.setCellStyle(getGoldenBackgroundStyle(workbook));
 										cell.setCellValue("Impacted department");
 										break;
 									}
@@ -823,14 +836,15 @@ public class MisReportServiceImpl implements MisReportService {
 									cell = row.createCell(0);
 									cell.setCellValue(responseDto.getReferenceId());
 									cell = row.createCell(1);
-									String date = formatter.format(responseDto.getCreatedAt());
+									String date = formatter
+											.format(DateUtil.convertUTCTOIST(responseDto.getCreatedAt()));
 									cell.setCellValue(date);
 									cell = row.createCell(2);
 									cell.setCellValue(responseDto.getRecommendationType().getName());
 									cell = row.createCell(3);
 									cell.setCellValue(responseDto.getPriority());
 									cell = row.createCell(4);
-									date = formatter.format(responseDto.getRecommendDate());
+									date = formatter.format(DateUtil.convertUTCTOIST(responseDto.getRecommendDate()));
 									cell.setCellValue(date);
 									cell = row.createCell(5);
 									cell.setCellValue(responseDto.getDepartment().getName());
@@ -838,10 +852,9 @@ public class MisReportServiceImpl implements MisReportService {
 									cell.setCellValue(responseDto.getComponent().getName());
 									// set approver
 									cell = row.createCell(7);
-									if(responseDto.getApprover()!=null) {
+									if (responseDto.getApprover() != null) {
 										cell.setCellValue(responseDto.getApprover().getUserName());
-									}
-									else {
+									} else {
 										cell.setCellValue("--");
 									}
 									cell = row.createCell(8);
@@ -853,17 +866,17 @@ public class MisReportServiceImpl implements MisReportService {
 
 									if (responseDto.getRecommendationDeploymentDetails() != null) {
 										cell = row.createCell(11);
-										cell.setCellValue(formatter.format(responseDto
-												.getRecommendationDeploymentDetails().getDevelopmentStartDate()));
+										cell.setCellValue(formatter.format(DateUtil.convertUTCTOIST(responseDto
+												.getRecommendationDeploymentDetails().getDevelopmentStartDate())));
 										cell = row.createCell(12);
-										cell.setCellValue(formatter.format(responseDto
-												.getRecommendationDeploymentDetails().getDevelopementEndDate()));
+										cell.setCellValue(formatter.format(DateUtil.convertUTCTOIST(responseDto
+												.getRecommendationDeploymentDetails().getDevelopementEndDate())));
 										cell = row.createCell(13);
-										cell.setCellValue(formatter.format(responseDto
-												.getRecommendationDeploymentDetails().getTestCompletionDate()));
+										cell.setCellValue(formatter.format(DateUtil.convertUTCTOIST(responseDto
+												.getRecommendationDeploymentDetails().getTestCompletionDate())));
 										cell = row.createCell(14);
-										cell.setCellValue(formatter.format(
-												responseDto.getRecommendationDeploymentDetails().getDeploymentDate()));
+										cell.setCellValue(formatter.format(DateUtil.convertUTCTOIST(
+												responseDto.getRecommendationDeploymentDetails().getDeploymentDate())));
 										cell = row.createCell(15);
 										cell.setCellValue(responseDto.getRecommendationDeploymentDetails()
 												.getImpactedDepartment());
@@ -942,11 +955,76 @@ public class MisReportServiceImpl implements MisReportService {
 		fis.close();
 		return fileContent;
 	}
-	
+
 	public CellStyle getYellowBackgroundCellStyle(Workbook workbook) {
-	    CellStyle cellStyle = workbook.createCellStyle();
-	    cellStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-	    cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-	    return cellStyle;
+		CellStyle cellStyle = workbook.createCellStyle();
+		cellStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		return cellStyle;
 	}
+
+	public CellStyle getRedBackgroundStyle(Workbook workbook) {
+		CellStyle cellStyle = workbook.createCellStyle();
+		cellStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		return cellStyle;
+	}
+
+	public CellStyle getBlueBackgroundStyle(Workbook workbook) {
+		CellStyle cellStyle = workbook.createCellStyle();
+		cellStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		return cellStyle;
+	}
+
+	public CellStyle getGreenBackgroundStyle(Workbook workbook) {
+		CellStyle cellStyle = workbook.createCellStyle();
+		cellStyle.setFillForegroundColor(IndexedColors.GREEN.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		return cellStyle;
+	}
+
+	public CellStyle getLightGreenBackgroundStyle(Workbook workbook) {
+		CellStyle cellStyle = workbook.createCellStyle();
+		cellStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		return cellStyle;
+	}
+
+	public CellStyle getOrangeBackgroundStyle(Workbook workbook) {
+		CellStyle cellStyle = workbook.createCellStyle();
+		cellStyle.setFillForegroundColor(IndexedColors.LIGHT_ORANGE.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		return cellStyle;
+	}
+
+	public CellStyle getPinkBackgroundStyle(Workbook workbook) {
+		CellStyle cellStyle = workbook.createCellStyle();
+		cellStyle.setFillForegroundColor(IndexedColors.PINK.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		return cellStyle;
+	}
+
+	public CellStyle getGreyBackgroundStyle(Workbook workbook) {
+		CellStyle cellStyle = workbook.createCellStyle();
+		cellStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		Font font = workbook.createFont();
+		font.setBold(true);
+		font.setFontHeightInPoints((short) 14);
+		cellStyle.setFont(font);
+		return cellStyle;
+	}
+
+	public CellStyle getGoldenBackgroundStyle(Workbook workbook) {
+		CellStyle cellStyle = workbook.createCellStyle();
+		cellStyle.setFillForegroundColor(IndexedColors.GOLD.getIndex());
+		cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		Font font = workbook.createFont();
+		font.setBold(true);
+//		font.setFontHeightInPoints((short) 14);
+		cellStyle.setFont(font);
+		return cellStyle;
+	}
+
 }

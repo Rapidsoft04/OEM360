@@ -2174,12 +2174,14 @@ public class RecommendationServiceImpl implements RecommendationService {
 									return new Response<>(HttpStatus.BAD_REQUEST.value(),
 											"File size can't be above 1MB.", null);
 								} else {
+									Recommendation recommendation = rcmd.get();
 									if (recommendationAddRequestDto.getFile() != null) {
 										fileUrl = fileSystemStorageService
 												.getUserExpenseFileUrl(recommendationAddRequestDto.getFile());
+										recommendation.setFileUrl(fileUrl);
 									}
-									Recommendation recommendation = rcmd.get();
-									recommendation.setFileUrl(fileUrl);
+
+//									recommendation.setFileUrl(fileUrl);
 									recommendation.setDocumentUrl(recommendationAddRequestDto.getUrlLink());
 									recommendation.setDescriptions(recommendationAddRequestDto.getDescription());
 									recommendation.setRecommendDate(recommendationAddRequestDto.getRecommendDate());
@@ -2195,8 +2197,8 @@ public class RecommendationServiceImpl implements RecommendationService {
 									} else {
 										if (recommendationAddRequestDto.getFileName() == null
 												|| recommendationAddRequestDto.getFileUrl() == null) {
-											recommendation.setFileUrl(null);
-											recommendation.setFileName(null);
+											recommendation.setFileUrl(rcmd.get().getFileUrl());
+											recommendation.setFileName(rcmd.get().getFileName());
 										}
 									}
 
